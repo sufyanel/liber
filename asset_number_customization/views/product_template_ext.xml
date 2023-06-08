@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data>
+        <record id="product_template_sale_section_inherit_id" model="ir.ui.view">
+            <field name="name">product.template.sale.section.inherit.id</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='sales']/group[2]" position="inside">
+                    <br/>
+                    <group name="asset_number_info" string="Asset No. Info">
+                    </group>
+                    <field name="product_template_sale_ids">
+                        <tree editable="bottom">
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="asset_part_number"/>
+                            <field name="addition_date" readonly="1"/>
+                            <field name="user_id" readonly="1"/>
+                        </tree>
+                    </field>
+
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</odoo>
