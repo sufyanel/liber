@@ -13,7 +13,7 @@
                     </group>
                     <field name="product_template_sale_ids">
                         <tree editable="bottom">
-                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="partner_id"/>
                             <field name="asset_part_number"/>
                             <field name="addition_date" readonly="1"/>
                             <field name="user_id" readonly="1"/>

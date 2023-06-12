@@ -30,7 +30,7 @@
 <!--                    <separator/>-->
 <!--                    <filter name="filter_partner" string="Customer"/>-->
 <!--                    <separator/>-->
-<!--                    <filter name="filter_asset_part_number" string="Asset Part No." />-->
+<!--                    <filter name="filter_asset_part_number" string="Customer Part No." />-->
 <!--                    <separator/>-->
 <!--                    <filter name="filter_last_sale_order_number" string="Last Purchase No."/>-->
 
@@ -39,7 +39,7 @@
                                 context="{'group_by':'product_template_id'}"/>
                         <filter string="Customer Name" name="groupby_partner" domain="[]"
                                 context="{'group_by':'partner_id'}"/>
-                        <filter string="Asset Part Number" name="groupby_asset_part_number" domain="[]"
+                        <filter string="Customer Part Number" name="groupby_asset_part_number" domain="[]"
                                 context="{'group_by':'asset_part_number'}"/>
                         <filter string="Sales Order number" name="groupby_sales_order_number" domain="[]"
                                 context="{'group_by':'last_sale_order_number'}"/>

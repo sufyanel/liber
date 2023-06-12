@@ -6,7 +6,7 @@ from odoo.exceptions import UserError, ValidationError
 class SaleOrderLineExt(models.Model):
     _inherit = 'sale.order.line'
 
-    asset_part_number = fields.Char(string='Asset Part No')
+    asset_part_number = fields.Char(string='Customer Part No')
 
     @api.model_create_multi
     @api.model
@@ -35,5 +35,4 @@ class SaleOrderLineExt(models.Model):
                 customer_part_set = self.env['customer.part.number'].search([('product_template_id', '=',rec.product_id.product_tmpl_id.id), ('partner_id', '=',rec.order_id.partner_id.id)])
                 if customer_part_set:
                     rec.asset_part_number = customer_part_set[0].asset_part_number or ''
-
 
