@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_partner_ext_form_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.form.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_ext_kanban_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.kanban.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="is_google_contact"/>
+            </xpath>
+
+            <xpath expr="//kanban/templates/t[1]/div[1]/div[1]" position="inside">
+                <div t-if="record.is_google_contact" class="float-right"
+                     attrs="{'invisible': [('is_google_contact', '=', False)]}">
+                    <span class="fa fa-circle text-success" role="img" aria-label="Google Contact"
+                          title="Google Contact" name="Google Contact"/>
+                    Google Contact
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
