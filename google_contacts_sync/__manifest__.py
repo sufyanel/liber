@@ -10,7 +10,10 @@
     'depends': ['contacts'],
     'website': 'https://www.axiomworld.net',
     'data': [
+        'security/ir.model.access.csv',
         'views/res_partner_ext.xml',
+        'views/res_company_ext.xml',
+        'views/google_labels.xml',
     ],
     'assets': {
         'web.assets_backend': [
