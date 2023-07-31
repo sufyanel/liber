@@ -32,7 +32,7 @@ def fetch_google_contacts(g_cred, g_token):
         else:
             g_cred_info = json.loads(g_cred)
             flow = InstalledAppFlow.from_client_config(g_cred_info, SCOPES)
-            creds = flow.run_local_server(port=0, open_browser=True)
+            creds = flow.run_local_server(open_browser=True)
 
     try:
         coords.append(creds)
