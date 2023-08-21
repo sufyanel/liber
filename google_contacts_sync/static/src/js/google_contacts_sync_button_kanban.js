@@ -9,16 +9,15 @@ odoo.define('google_contacts_sync.google_contacts_sync_button_kanban', function(
        events: _.extend({}, KanbanController.prototype.events, {
            'click .send_sync_action': '_clickButton',
        }),
-       _clickButton: function () {
-                rpc.query({
-                        model: 'res.partner',
-                        method: 'sync_contacts',
-                        args: ['self'],
-                    }).then(function (result) {
-                    debugger
-                        console.log(result);
-                    })
-         },
+        _clickButton: function () {
+            $.ajax({
+                url: '/oauth/google/start',
+                type: 'GET',
+                success: function() {
+                   window.location = '/oauth/google/start';
+             }
+            });
+        },
    });
    var ResPartnerKanbanView = KanbanView.extend({
        config: _.extend({}, KanbanView.prototype.config, {
