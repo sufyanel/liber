@@ -14,6 +14,7 @@
         'views/res_partner_ext.xml',
         'views/res_company_ext.xml',
         'views/google_labels.xml',
+        'views/res_config_settings_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

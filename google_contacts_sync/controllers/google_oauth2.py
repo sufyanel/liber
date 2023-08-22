@@ -13,46 +13,10 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
 
 
 class GoogleOAuthController(http.Controller):
-    flow = None
-
-    @http.route('/oauth/google/start')
-    def oauth_google_start(self):
-        creds = None
-        company = request.env['res.company'].search([('id', '=', 1)])
-        credentials = company.google_credentials
-        user_token = company.google_token
-
-        if credentials:
-            if user_token:
-                user_token_info = json.loads(user_token)
-                if GoogleOAuthController.flow:
-                    GoogleOAuthController.flow = None
-                creds = Credentials.from_authorized_user_info(user_token_info, SCOPES)
-            if not creds or not creds.valid:
-                if creds and creds.expired and creds.refresh_token:
-                    creds.refresh(Request())
-                    GoogleOAuthController.collect_data(google_token=creds)
-                    return True
-                else:
-                    google_credentials = json.loads(credentials)
-                    if not GoogleOAuthController.flow:
-                        GoogleOAuthController.flow = Flow.from_client_config(
-                            google_credentials,
-                            SCOPES,
-                            redirect_uri='http://localhost:8069/oauth/contacts'
-                        )
-                        auth_url, tkn = GoogleOAuthController.flow.authorization_url()
-                        webbrowser.open_new_tab(auth_url)
-                        return {'message': 'You have been redirected to Google auth.'}
-            GoogleOAuthController.collect_data(google_token=creds)
-            return True
-        else:
-            raise ValidationError(_('Google Credentials are required!'))
 
     @staticmethod
     def collect_data(google_token):
@@ -189,10 +153,31 @@ class GoogleOAuthController(http.Controller):
 
     @http.route('/oauth/contacts', type='http', auth='public', website=True)
     def oauth_contacts_sync(self, **kwargs):
-        authorize = request.httprequest.url
-        if GoogleOAuthController.flow:
-            GoogleOAuthController.flow.fetch_token(authorization_response=authorize)
-            credentials = GoogleOAuthController.flow.credentials
-
+        # auth_code = kwargs.get('code')
+        # config = request.env['ir.config_parameter'].sudo()
+        #
+        # token_url = 'https://oauth2.googleapis.com/token'
+        # redirect_uri = 'http://localhost:8069/oauth/contacts'
+        # client_id = config.get_param('google_gmail_client_id')
+        # client_secret = config.get_param('google_gmail_client_secret')
+        # payload = {
+        #     "code": auth_code,
+        #     "redirect_uri": redirect_uri,
+        #     "client_id": client_id,
+        #     "client_secret": client_secret,
+        #     "grant_type": "authorization_code"
+        # }
+        #
+        # response = requests.post(token_url, data=payload)
+        # token_data = response.json()
         company = request.env['res.company'].search([('id', '=', 1)])
-        company.write({'google_token': credentials})
+        credentials = company.google_credentials
+        google_loaded = json.loads(credentials)
+        flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='http://localhost:8069/oauth/contacts')
+
+        response = request.httprequest.url
+        flow.fetch_token(authorization_response=response)
+
+        GoogleOAuthController.collect_data(flow.credentials)
+        return {'status': 'Success'}
+

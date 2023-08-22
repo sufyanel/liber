@@ -11,15 +11,15 @@ odoo.define('google_contacts_sync.google_contacts_sync_button_tree', function (r
          {
             'click .send_sync_action': '_clickButton',
          }),
-        _clickButton: function () {
-            $.ajax({
-                url: '/oauth/google/start',
-                type: 'GET',
-                success: function() {
-                   window.location = '/oauth/google/start';
-             }
-            });
-        },
+       _clickButton: function () {
+        rpc.query({
+                model: 'res.partner',
+                method: 'google_contracts_trigger',
+                args: ['self'],
+            }).then(function (result) {
+                window.open(result)
+            })
+         },
    });
     var ResPartnerViewList = ListView.extend({
          config: _.extend({}, ListView.prototype.config, {

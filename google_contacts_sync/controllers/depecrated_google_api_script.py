@@ -1,10 +1,11 @@
 from __future__ import print_function
 
 import json
+import webbrowser
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import InstalledAppFlow, Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -12,7 +13,7 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
 
 
-def fetch_google_contacts(g_cred, g_token):
+def fetch_google_contacts(credentials, user_token):
     """Shows basic usage of the People API.
     Prints the name of the first 10 connections.
     """
@@ -23,16 +24,17 @@ def fetch_google_contacts(g_cred, g_token):
     # created automatically when the authorization flow completes for the first
     # time.
 
-    if g_token:
-        g_token_info = json.loads(g_token)
+    if user_token:
+        g_token_info = json.loads(user_token)
         creds = Credentials.from_authorized_user_info(g_token_info, SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            g_cred_info = json.loads(g_cred)
+            g_cred_info = json.loads(credentials)
             flow = InstalledAppFlow.from_client_config(g_cred_info, SCOPES)
             creds = flow.run_local_server(open_browser=True)
+
 
     try:
         coords.append(creds)
@@ -77,6 +79,7 @@ def fetch_google_contacts(g_cred, g_token):
             contact['label_names'] = label_names
         coords.append(connections)
         coords.append(google_labels)
+        m = 5
         return coords
     except HttpError as err:
         print(err)
