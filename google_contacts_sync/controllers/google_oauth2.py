@@ -30,6 +30,8 @@ class GoogleOAuthController(http.Controller):
         if credentials:
             if user_token:
                 user_token_info = json.loads(user_token)
+                if GoogleOAuthController.flow:
+                    GoogleOAuthController.flow = None
                 creds = Credentials.from_authorized_user_info(user_token_info, SCOPES)
             if not creds or not creds.valid:
                 if creds and creds.expired and creds.refresh_token:
@@ -42,7 +44,7 @@ class GoogleOAuthController(http.Controller):
                         GoogleOAuthController.flow = Flow.from_client_config(
                             google_credentials,
                             SCOPES,
-                            redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts'
+                            redirect_uri='http://localhost:8069/oauth/contacts'
                         )
                         auth_url, tkn = GoogleOAuthController.flow.authorization_url()
                         webbrowser.open_new_tab(auth_url)
