@@ -19,7 +19,7 @@ class ResPartnerExt(models.Model):
         google_credentials = self.env.company.google_credentials
         if google_credentials:
             google_loaded = json.loads(google_credentials)
-            flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='http://localhost:8069/oauth/contacts')
+            flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts')
             auth_url, tkn = flow.authorization_url()
             return auth_url
         else:

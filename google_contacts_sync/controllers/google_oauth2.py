@@ -173,7 +173,7 @@ class GoogleOAuthController(http.Controller):
         company = request.env['res.company'].search([('id', '=', 1)])
         credentials = company.google_credentials
         google_loaded = json.loads(credentials)
-        flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='http://localhost:8069/oauth/contacts')
+        flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts')
 
         response = request.httprequest.url
         flow.fetch_token(authorization_response=response)
