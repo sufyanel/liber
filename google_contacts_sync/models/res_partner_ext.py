@@ -20,7 +20,7 @@ class ResPartnerExt(models.Model):
         if google_credentials:
             google_loaded = json.loads(google_credentials)
             flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts')
-            auth_url, tkn = flow.authorization_url()
+            auth_url, tkn = flow.authorization_url(prompt="select_account")
             return auth_url
         else:
             raise ValidationError(_('Google Credentials are required!'))
