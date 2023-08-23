@@ -12,7 +12,8 @@ from googleapiclient.errors import HttpError
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
 
-
+# Not to be used now. The logic was shifted to controllers.
+# Still kept in the dir to test in case of error in original.
 def fetch_google_contacts(credentials, user_token):
     """Shows basic usage of the People API.
     Prints the name of the first 10 connections.
