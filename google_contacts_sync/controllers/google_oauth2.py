@@ -7,6 +7,7 @@ from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
 
+from werkzeug.wrappers import Response
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import Flow
@@ -179,5 +180,7 @@ class GoogleOAuthController(http.Controller):
         flow.fetch_token(authorization_response=response)
 
         GoogleOAuthController.collect_data(flow.credentials)
-        return {'status': 'Success'}
+        response_data = {'status': 'Success'}
+        http_response = Response(json.dumps(response_data), content_type='application/json')
+        return http_response
 
