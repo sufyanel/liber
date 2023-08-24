@@ -87,7 +87,7 @@ class GoogleOAuthController(http.Controller):
                     rec.get('emailAddresses', [])[0].get('value') in google_contacts.mapped('email'):
 
                 # Every contact should be a person, given google contact flag and address set to private address
-                vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'private'}
+                vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
                 names = rec.get('names', [])
                 if names:
                     vals['name'] = names[0].get('displayName')
