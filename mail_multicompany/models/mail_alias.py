@@ -15,9 +15,10 @@ class MailAlias(models.Model):
 
     @api.depends('alias_name')
     def _compute_alias_domain(self):
-        if self.alias_domain:
-            pass
-        else:
-            self.alias_domain = self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain")
+        for record in self:
+            if record.alias_domain:
+                pass
+            else:
+                record.alias_domain = self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain")
 
 
