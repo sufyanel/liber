@@ -80,7 +80,6 @@ def fetch_google_contacts(credentials, user_token):
             contact['label_names'] = label_names
         coords.append(connections)
         coords.append(google_labels)
-        m = 5
         return coords
     except HttpError as err:
         print(err)

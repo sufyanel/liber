@@ -82,40 +82,41 @@ class GoogleOAuthController(http.Controller):
                 })
 
         for rec in data[1]:
-            # Avoiding replication of same contacts, filtering by their email and name
-            if not rec.get('names', [])[0].get('displayName') in google_contacts.mapped('name') or not \
-                    rec.get('emailAddresses', [])[0].get('value') in google_contacts.mapped('email'):
+            if "Customers" in rec.get('label_names', []) or "Vendors" in rec.get('label_names', []):
+                # Avoiding replication of same contacts, filtering by their email and name
+                if not rec.get('names', [])[0].get('displayName') in google_contacts.mapped('name') or not \
+                        rec.get('emailAddresses', [])[0].get('value') in google_contacts.mapped('email'):
 
-                # Every contact should be a person, given google contact flag and address set to private address
-                vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
-                names = rec.get('names', [])
-                if names:
-                    vals['name'] = names[0].get('displayName')
-                emails = rec.get('emailAddresses', [])
-                if emails:
-                    vals['email'] = emails[0].get('value')
+                    # Every contact should be a person, given google contact flag and address set to private address
+                    vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
+                    names = rec.get('names', [])
+                    if names:
+                        vals['name'] = names[0].get('displayName')
+                    emails = rec.get('emailAddresses', [])
+                    if emails:
+                        vals['email'] = emails[0].get('value')
 
-                # Dividing addresses based on 5 different fields of odoo for address, state is not provided by
-                # Google
-                addresses = rec.get('addresses', [])
-                if addresses:
-                    vals['street'] = addresses[0].get('streetAddress')
-                    vals['street2'] = addresses[0].get('extendedAddress')
-                    vals['city'] = addresses[0].get('city')
-                    vals['zip'] = addresses[0].get('postalCode')
-                    vals['country_id'] = request.env['res.country'].search(
-                        [('code', '=', addresses[0].get('country'))]).id
+                    # Dividing addresses based on 5 different fields of odoo for address, state is not provided by
+                    # Google
+                    addresses = rec.get('addresses', [])
+                    if addresses:
+                        vals['street'] = addresses[0].get('streetAddress')
+                        vals['street2'] = addresses[0].get('extendedAddress')
+                        vals['city'] = addresses[0].get('city')
+                        vals['zip'] = addresses[0].get('postalCode')
+                        vals['country_id'] = request.env['res.country'].search(
+                            [('code', '=', addresses[0].get('country'))]).id
 
-                # taking image url converting it into bytes and then encoding it into base64
-                photos = rec.get('photos', [])
-                if photos:
-                    photo = photos[0].get('url')
-                    response = requests.get(photo, stream=True)
-                    if response.status_code == 200:
-                        base64encoded = base64.b64encode(response.content)
-                        vals['image_1920'] = base64encoded
-                    else:
-                        raise ValidationError(_(f"Failed to download image from URL: {photo}"))
+                    # taking image url converting it into bytes and then encoding it into base64
+                    photos = rec.get('photos', [])
+                    if photos:
+                        photo = photos[0].get('url')
+                        response = requests.get(photo, stream=True)
+                        if response.status_code == 200:
+                            base64encoded = base64.b64encode(response.content)
+                            vals['image_1920'] = base64encoded
+                        else:
+                            raise ValidationError(_(f"Failed to download image from URL: {photo}"))
 
                 # getting unique phone number values for phone and mobile in odoo, if type isn't mentioned or anyone
                 # of them is missing, first phonenumbers will be picked
@@ -151,26 +152,11 @@ class GoogleOAuthController(http.Controller):
                     all_matching_labels_ids = request.env['google.labels'].search([('name', 'in', labels)])
                     vals['google_label_ids'] = all_matching_labels_ids.ids
                 request.env['res.partner'].create(vals)
+            else:
+                pass
 
     @http.route('/oauth/contacts', type='http', auth='public', website=True)
     def oauth_contacts_sync(self, **kwargs):
-        # auth_code = kwargs.get('code')
-        # config = request.env['ir.config_parameter'].sudo()
-        #
-        # token_url = 'https://oauth2.googleapis.com/token'
-        # redirect_uri = 'http://localhost:8069/oauth/contacts'
-        # client_id = config.get_param('google_gmail_client_id')
-        # client_secret = config.get_param('google_gmail_client_secret')
-        # payload = {
-        #     "code": auth_code,
-        #     "redirect_uri": redirect_uri,
-        #     "client_id": client_id,
-        #     "client_secret": client_secret,
-        #     "grant_type": "authorization_code"
-        # }
-        #
-        # response = requests.post(token_url, data=payload)
-        # token_data = response.json()
         company = request.env['res.company'].search([('id', '=', 1)])
         credentials = company.google_credentials
         google_loaded = json.loads(credentials)

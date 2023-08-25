@@ -12,7 +12,7 @@ odoo.define('google_contacts_sync.google_contacts_sync_button_kanban', function(
        _clickButton: function () {
         rpc.query({
                 model: 'res.partner',
-                method: 'google_contracts_trigger',
+                method: 'google_contacts_trigger',
                 args: ['self'],
             }).then(function (result) {
                 window.open(result)
