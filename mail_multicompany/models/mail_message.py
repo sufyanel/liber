@@ -23,7 +23,7 @@ class MailMessage(models.Model):
                     self.sudo()
                     .env["ir.mail_server"]
                     .search(
-                        [("company_id", "=", vals.get("company_id", False))],
+                        [("company_id", "=", self.env.company.id or False)],
                         order="sequence",
                         limit=1,
                     )

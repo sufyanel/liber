@@ -1,11 +1,4 @@
-import ast
-import re
-
-from markupsafe import Markup
-
 from odoo import _, api, fields, models
-from odoo.exceptions import ValidationError, UserError
-from odoo.tools import is_html_empty, remove_accents
 
 
 class MailAlias(models.Model):
