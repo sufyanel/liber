@@ -13,5 +13,3 @@ class MailAlias(models.Model):
                 pass
             else:
                 record.alias_domain = self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain")
-
-
