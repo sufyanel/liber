@@ -117,6 +117,8 @@ class GoogleOAuthController(http.Controller):
                             vals['image_1920'] = base64encoded
                         else:
                             raise ValidationError(_(f"Failed to download image from URL: {photo}"))
+                else:
+                    continue
 
                 # getting unique phone number values for phone and mobile in odoo, if type isn't mentioned or anyone
                 # of them is missing, first phonenumbers will be picked
