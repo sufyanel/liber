@@ -15,12 +15,8 @@
                             </div>
                             <div class="content-group">
                                 <div class="row mt16" id="contacts_client_identifier">
-                                    <label string="Google Client ID" for="google_contacts_client_identifier" class="col-lg-3 o_light_label"/>
-                                    <field name="google_contacts_client_identifier" password="False" class="ml-2"/>
-                                </div>
-                                <div class="row mt16" id="contacts_client_secret">
-                                    <label string="Google Client Secret" for="google_contacts_client_secret" class="col-lg-3 o_light_label"/>
-                                    <field name="google_contacts_client_secret" password="True" class="ml-2"/>
+                                    <label string="Google Credentials" for="google_contacts_credentials" class="col-lg-3 o_light_label"/>
+                                    <field name="google_contacts_credentials" class="ml-2"/>
                                 </div>
                             </div>
                         </div>
