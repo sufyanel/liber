@@ -85,9 +85,16 @@ class GoogleOAuthController(http.Controller):
         for rec in data[1]:
             if "Customers" in rec.get('label_names', []) or "Vendors" in rec.get('label_names', []):
                 # Avoiding replication of same contacts, filtering by their email and name
-                if not rec.get('names', [])[0].get('displayName') in google_contacts.mapped('name') or not \
-                        rec.get('emailAddresses', [])[0].get('value') in google_contacts.mapped('email'):
+                if rec.get('emailAddresses'):
+                    email = rec.get('emailAddresses', [])[0].get('value')
+                else:
+                    email = "None"
+                if rec.get('names'):
+                    name = rec.get('names', [])[0].get('displayName')
+                else:
+                    name = "None"
 
+                if not email in google_contacts.mapped('name') or not name in google_contacts.mapped('email'):
                     # Every contact should be a person, given google contact flag and address set to private address
                     vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
                     names = rec.get('names', [])
