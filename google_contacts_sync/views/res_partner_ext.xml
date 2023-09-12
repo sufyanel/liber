@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_partner_ext_form_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.form.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <field name="is_google_contact" invisible="1"/>
+                <field name="google_label_ids" string="Google Labels" widget="many2many_tags" readonly="1"
+                       attrs="{'invisible': [('is_google_contact', '=', False)]}"
+                       options="{'color_field': 'color_picker'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_ext_tree_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.tree.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//tree" position="attributes">
+                <attribute name="js_class">button_in_tree</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_ext_kanban_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.kanban.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.res_partner_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='type']" position="after">
+                <field name="is_google_contact"/>
+                <field name="google_label_ids"/>
+            </xpath>
+
+            <xpath expr="//kanban/templates/t[1]/div[1]/div[1]" position="inside">
+                <div t-if="record.is_google_contact" class="float-right"
+                     attrs="{'invisible': [('is_google_contact', '=', False)]}">
+                    <span class="fa fa-circle text-success" role="img" aria-label="Google Contact"
+                          title="Google Contact" name="Google Contact"/>
+                    Google Contact
+                    <span class="oe_kanban_list_many2many">
+                        <field name="google_label_ids" widget="many2many_tags"
+                               options="{'color_field': 'color_picker'}"/>
+                    </span>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="res_partner_ext_search_view" model="ir.ui.view">
+        <field name="name">res.partner.ext.search.view</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='inactive']" position="before">
+                <filter string="Google Contacts" name="google_contacts" domain="[('is_google_contact','=', True)]"/>
+            </xpath>
+            <xpath expr="//group[@name='group_by']" position="after">
+                <filter name="google_labels" string="Google Labels" context="{'group_by': 'google_label_ids'}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
