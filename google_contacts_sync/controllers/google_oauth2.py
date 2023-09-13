@@ -7,6 +7,7 @@ from odoo import http, _
 from odoo.http import request
 from odoo.exceptions import ValidationError
 
+from werkzeug.urls import url_join
 from werkzeug.wrappers import Response
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -84,9 +85,16 @@ class GoogleOAuthController(http.Controller):
         for rec in data[1]:
             if "Customers" in rec.get('label_names', []) or "Vendors" in rec.get('label_names', []):
                 # Avoiding replication of same contacts, filtering by their email and name
-                if not rec.get('names', [])[0].get('displayName') in google_contacts.mapped('name') or not \
-                        rec.get('emailAddresses', [])[0].get('value') in google_contacts.mapped('email'):
+                if rec.get('emailAddresses'):
+                    email = rec.get('emailAddresses', [])[0].get('value')
+                else:
+                    email = "None"
+                if rec.get('names'):
+                    name = rec.get('names', [])[0].get('displayName')
+                else:
+                    name = "None"
 
+                if not email in google_contacts.mapped('name') or not name in google_contacts.mapped('email'):
                     # Every contact should be a person, given google contact flag and address set to private address
                     vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
                     names = rec.get('names', [])
@@ -159,10 +167,12 @@ class GoogleOAuthController(http.Controller):
 
     @http.route('/oauth/contacts', type='http', auth='public', website=True)
     def oauth_contacts_sync(self, **kwargs):
-        company = request.env['res.company'].search([('id', '=', 1)])
-        credentials = company.google_credentials
+        Config = request.env['ir.config_parameter'].sudo()
+        base_url = request.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        redirect_uri = url_join(base_url, '/oauth/contacts')
+        credentials = Config.get_param('google_contacts_credentials')
         google_loaded = json.loads(credentials)
-        flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts')
+        flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri=redirect_uri)
 
         response = request.httprequest.url
         flow.fetch_token(authorization_response=response)

@@ -4,6 +4,7 @@ import json
 from odoo.exceptions import ValidationError
 import base64
 from google_auth_oauthlib.flow import Flow
+from werkzeug.urls import url_join
 from ..controllers.depecrated_google_api_script import fetch_google_contacts
 
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
@@ -16,10 +17,13 @@ class ResPartnerExt(models.Model):
     google_label_ids = fields.Many2many('google.labels')
 
     def google_contacts_trigger(self):
-        google_credentials = self.env.company.google_credentials
+        Config = self.env['ir.config_parameter'].sudo()
+        google_credentials = Config.get_param('google_contacts_credentials')
         if google_credentials:
+            base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
             google_loaded = json.loads(google_credentials)
-            flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri='https://liber-liber-new-test-8929913.dev.odoo.com/oauth/contacts')
+            redirect_uri = url_join(base_url, '/oauth/contacts')
+            flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri=redirect_uri)
             auth_url, tkn = flow.authorization_url(prompt="select_account")
             return auth_url
         else:
