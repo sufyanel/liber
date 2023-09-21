@@ -83,7 +83,8 @@ class GoogleOAuthController(http.Controller):
                 })
 
         for rec in data[1]:
-            if "Customers" in rec.get('label_names', []) or "Vendors" in rec.get('label_names', []):
+            if "Customer" in rec.get('label_names', []) or "Vendor" in rec.get('label_names', []) \
+                    or "Lead" in rec.get('label_names', []):
                 # Avoiding replication of same contacts, filtering by their email and name
                 if rec.get('emailAddresses'):
                     email = rec.get('emailAddresses', [])[0].get('value')
