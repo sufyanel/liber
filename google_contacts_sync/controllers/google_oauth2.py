@@ -2,6 +2,7 @@ import json
 import webbrowser
 import requests
 import base64
+import logging
 
 from odoo import http, _
 from odoo.http import request
@@ -16,6 +17,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleOAuthController(http.Controller):
@@ -41,10 +44,11 @@ class GoogleOAuthController(http.Controller):
                     pageToken=results['nextPageToken']).execute()
     
                 connections.extend(results.get('connections', []))
+                logger.info(f"....Connections: {connections}.........")
             for contact in connections:
                 memberships = contact.get('memberships', [])
                 label_names = []
-    
+                logger.info(f"....Memberships: {memberships}.........")
                 for membership in memberships:
                     contact_group_id = membership['contactGroupMembership']['contactGroupId']
     
@@ -63,6 +67,7 @@ class GoogleOAuthController(http.Controller):
     
                 # Add the label_names list to the contact dictionary
                 contact['label_names'] = label_names
+                logger.info(f"....Labels: {label_names}.........")
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
