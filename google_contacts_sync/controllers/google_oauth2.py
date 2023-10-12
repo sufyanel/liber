@@ -91,7 +91,7 @@ class GoogleOAuthController(http.Controller):
             google_contacts = request.env['res.partner'].search([('is_google_contact', '=', True)])
 
             # Creating every possible labels of Google in google.labels model, they will be unique by their name
-            print(data[2])
+            logger.info(f"Data: {data[2]}")
             for label in data[2]:
                 google_labels = request.env['google.labels'].search([]).mapped('name')
                 if label not in google_labels and label != 'myContacts':
