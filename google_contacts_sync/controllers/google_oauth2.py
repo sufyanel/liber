@@ -35,6 +35,7 @@ class GoogleOAuthController(http.Controller):
                 pageSize=1000,
                 personFields='names,emailAddresses,addresses,photos,phoneNumbers,organizations,memberships').execute()
             connections = results.get('connections', [])
+            print(connections)
             while 'nextPageToken' in results:
                 # Make the subsequent request with the nextPageToken
                 results = service.people().connections().list(
@@ -44,11 +45,10 @@ class GoogleOAuthController(http.Controller):
                     pageToken=results['nextPageToken']).execute()
     
                 connections.extend(results.get('connections', []))
-                logger.info(f"....Connections: {connections}.........")
+
             for contact in connections:
                 memberships = contact.get('memberships', [])
                 label_names = []
-                logger.info(f"....Memberships: {memberships}.........")
                 for membership in memberships:
 
                     if 'contactGroupMembership' not in memberships:
@@ -71,10 +71,9 @@ class GoogleOAuthController(http.Controller):
                     # creating another list so can create separate label records avoiding duplication
                     if label not in google_labels:
                         google_labels.append(label)
-
                 # Add the label_names list to the contact dictionary
                 contact['label_names'] = label_names
-                logger.info(f"....Labels: {label_names}.........")
+                # logger.info(f"....Labels: {label_names}.........")
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
