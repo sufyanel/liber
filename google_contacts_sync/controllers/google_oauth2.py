@@ -19,6 +19,7 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
 
 logger = logging.getLogger(__name__)
+logging.getLogger('googleapicliet.discovery_cache').setLevel(logging.ERROR)
 
 
 class GoogleOAuthController(http.Controller):
