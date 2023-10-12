@@ -51,7 +51,7 @@ class GoogleOAuthController(http.Controller):
             for contact in connections:
                 memberships = contact.get('memberships', [])
                 label_names = []
-                logger.info(".....Fetching Labels Now.....")
+                # logger.info(".....Fetching Labels Now.....")
                 for membership in memberships:
 
                     if 'contactGroupMembership' not in memberships:
@@ -66,6 +66,7 @@ class GoogleOAuthController(http.Controller):
                     group_details = service.contactGroups().get(
                         resourceName=f'contactGroups/{contact_group_id}'
                     ).execute()
+                    logger.info(f".....Groups: {group_details}")
                     label = group_details.get('name', '')
 
                     # Get the label name and append it to label_names list
@@ -75,8 +76,9 @@ class GoogleOAuthController(http.Controller):
                     if label not in google_labels:
                         google_labels.append(label)
                 # Add the label_names list to the contact dictionary
+                logger.info(f".....Label Names: {label_names}")
                 contact['label_names'] = label_names
-                logger.info(".....Labels Fetched Successfully.....")
+                # logger.info(".....Labels Fetched Successfully.....")
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
