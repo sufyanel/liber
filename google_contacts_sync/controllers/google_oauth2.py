@@ -78,8 +78,8 @@ class GoogleOAuthController(http.Controller):
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
-        except HttpError as err:
-            print(err)
+        except Exception as e:
+            raise e
 
     @staticmethod
     def sync_google_data(data):
