@@ -97,6 +97,7 @@ class GoogleOAuthController(http.Controller):
                     request.env['google.labels'].create({
                         'name': label,
                     })
+                print(label)
             logger.info(".....Now about to Sync Customers.....")
             for rec in data[1]:
                 if "Customer" in rec.get('label_names', []) or "Vendor" in rec.get('label_names', []) \
