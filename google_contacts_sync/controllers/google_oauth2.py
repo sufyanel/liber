@@ -74,7 +74,7 @@ class GoogleOAuthController(http.Controller):
 
                 # Add the label_names list to the contact dictionary
                 contact['label_names'] = label_names
-                logger.info(f"....Labels:{label_names}")
+                logger.info(f"....Labels: {label_names}.........")
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
