@@ -29,6 +29,7 @@ class GoogleOAuthController(http.Controller):
         data = []
         google_labels = []
         try:
+            logger.info(".....Beginning to Collect Data.....")
             data.append(google_token)
             service = build('people', 'v1', credentials=google_token)
             results = service.people().connections().list(
@@ -36,7 +37,7 @@ class GoogleOAuthController(http.Controller):
                 pageSize=1000,
                 personFields='names,emailAddresses,addresses,photos,phoneNumbers,organizations,memberships').execute()
             connections = results.get('connections', [])
-            print(connections)
+            logger.info(f"Connections: {connections}")
             while 'nextPageToken' in results:
                 # Make the subsequent request with the nextPageToken
                 results = service.people().connections().list(
@@ -50,6 +51,7 @@ class GoogleOAuthController(http.Controller):
             for contact in connections:
                 memberships = contact.get('memberships', [])
                 label_names = []
+                logger.info(".....Fetching Labels Now.....")
                 for membership in memberships:
 
                     if 'contactGroupMembership' not in memberships:
@@ -74,7 +76,7 @@ class GoogleOAuthController(http.Controller):
                         google_labels.append(label)
                 # Add the label_names list to the contact dictionary
                 contact['label_names'] = label_names
-                # logger.info(f"....Labels: {label_names}.........")
+                logger.info(".....Labels Fetched Successfully.....")
             data.append(connections)
             data.append(google_labels)
             GoogleOAuthController.sync_google_data(data)
@@ -83,7 +85,7 @@ class GoogleOAuthController(http.Controller):
 
     @staticmethod
     def sync_google_data(data):
-
+        logger.info(".....Now about to Sync Google Data.....")
         google_contacts = request.env['res.partner'].search([('is_google_contact', '=', True)])
 
         # Creating every possible labels of Google in google.labels model, they will be unique by their name
@@ -93,7 +95,7 @@ class GoogleOAuthController(http.Controller):
                 request.env['google.labels'].create({
                     'name': label,
                 })
-
+        logger.info(".....Now about to Sync Customers.....")
         for rec in data[1]:
             if "Customer" in rec.get('label_names', []) or "Vendor" in rec.get('label_names', []) \
                     or "Lead" in rec.get('label_names', []):
@@ -175,6 +177,7 @@ class GoogleOAuthController(http.Controller):
                     all_matching_labels_ids = request.env['google.labels'].search([('name', 'in', labels)])
                     vals['google_label_ids'] = all_matching_labels_ids.ids
                 request.env['res.partner'].create(vals)
+                logger.info(".....End of the Entire Process.....")
             else:
                 pass
 
@@ -187,8 +190,12 @@ class GoogleOAuthController(http.Controller):
         google_loaded = json.loads(credentials)
         flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri=redirect_uri)
 
+        logger.info(".....Fetching Google Token.....")
+
         response = request.httprequest.url
         flow.fetch_token(authorization_response=response)
+
+        logger.info(".....Google Token has been fetched successfully.....")
 
         GoogleOAuthController.collect_data(flow.credentials)
         response_data = {'status': 'Success'}
