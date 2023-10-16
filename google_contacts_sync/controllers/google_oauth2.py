@@ -55,19 +55,19 @@ class GoogleOAuthController(http.Controller):
                 logger.info(f".....Memberships: {memberships}")
                 for membership in memberships:
 
-                    if 'contactGroupMembership' not in memberships:
+                    if 'contactGroupMembership' not in membership:
                         continue
 
                     if 'contactGroupId' not in membership['contactGroupMembership']:
                         continue
 
                     contact_group_id = membership['contactGroupMembership']['contactGroupId']
-
+                    logger.info(f".....Contact Group: {contact_group_id}")
                     # Fetch the contact group details using the contact_group_id
                     group_details = service.contactGroups().get(
                         resourceName=f'contactGroups/{contact_group_id}'
                     ).execute()
-                    # logger.info(f".....Groups: {group_details}")
+                    logger.info(f".....Groups: {group_details}")
                     label = group_details.get('name', '')
 
                     # Get the label name and append it to label_names list
