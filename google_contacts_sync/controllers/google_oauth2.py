@@ -2,6 +2,7 @@ import json
 import webbrowser
 import requests
 import base64
+import logging
 
 from odoo import http, _
 from odoo.http import request
@@ -16,6 +17,8 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleOAuthController(http.Controller):
@@ -41,50 +44,45 @@ class GoogleOAuthController(http.Controller):
                     pageToken=results['nextPageToken']).execute()
     
                 connections.extend(results.get('connections', []))
-            for contact in connections:
-                memberships = contact.get('memberships', [])
-                label_names = []
-    
-                for membership in memberships:
-                    contact_group_id = membership['contactGroupMembership']['contactGroupId']
-    
-                    # Fetch the contact group details using the contact_group_id
-                    group_details = service.contactGroups().get(
-                        resourceName=f'contactGroups/{contact_group_id}'
-                    ).execute()
-                    label = group_details.get('name', '')
-    
-                    # Get the label name and append it to label_names list
-                    label_names.append(label)
-    
-                    # creating another list so can create separate label records avoiding duplication
-                    if label not in google_labels:
-                        google_labels.append(label)
-    
-                # Add the label_names list to the contact dictionary
-                contact['label_names'] = label_names
-            data.append(connections)
-            data.append(google_labels)
-            GoogleOAuthController.sync_google_data(data)
-        except HttpError as err:
-            print(err)
+
+            resource_names = list()
+            groups = service.contactGroups().list().execute()
+            groups = groups.get('contactGroups')
+
+            for group in groups:
+                if group.get('name') in ['Vendor', 'Lead', 'Customer']:
+                    resource_names.append(group.get('resourceName'))
+                    google_labels.append(group)
+
+            valid_contacts = list()
+            for connection in connections:
+                memberships = connection.get('memberships')
+                if memberships:
+                    contact_groups = memberships.get('contactGroupMembership')
+                    if not contact_groups:
+                        continue
+                else:
+                    continue
+                labels = list()
+                for group in contact_groups:
+                    for label in google_labels:
+                        if group.get('contactGroupResourceName') == label.get("resourceName"):
+                            labels.append(label.get("name"))
+                if labels:
+                    connection["google_labels"] = labels
+                    valid_contacts.append(connection)
+            GoogleOAuthController.sync_google_data(valid_contacts)
+        except Exception as e:
+            raise e
 
     @staticmethod
     def sync_google_data(data):
 
-        google_contacts = request.env['res.partner'].search([('is_google_contact', '=', True)])
+        try:
+            logger.info(".....Now about to Sync Google Data.....")
+            google_contacts = request.env['res.partner'].search([('is_google_contact', '=', True)])
 
-        # Creating every possible labels of Google in google.labels model, they will be unique by their name
-        for label in data[2]:
-            google_labels = request.env['google.labels'].search([]).mapped('name')
-            if label not in google_labels and label != 'myContacts':
-                request.env['google.labels'].create({
-                    'name': label,
-                })
-
-        for rec in data[1]:
-            if "Customer" in rec.get('label_names', []) or "Vendor" in rec.get('label_names', []) \
-                    or "Lead" in rec.get('label_names', []):
+            for rec in data:
                 # Avoiding replication of same contacts, filtering by their email and name
                 if rec.get('emailAddresses'):
                     email = rec.get('emailAddresses', [])[0].get('value')
@@ -95,7 +93,7 @@ class GoogleOAuthController(http.Controller):
                 else:
                     name = "None"
 
-                if not email in google_contacts.mapped('name') or not name in google_contacts.mapped('email'):
+                if name not in google_contacts.mapped('name') or email not in google_contacts.mapped('email'):
                     # Every contact should be a person, given google contact flag and address set to private address
                     vals = {'company_type': 'person', 'is_google_contact': True, 'type': 'contact'}
                     names = rec.get('names', [])
@@ -158,13 +156,14 @@ class GoogleOAuthController(http.Controller):
 
                 # labels are actually groups which are termed as labels in google contacts to sort every contact
                 # label wise
-                labels = rec.get('label_names', [])
+                labels = rec.get('google_labels', [])
                 if labels:
                     all_matching_labels_ids = request.env['google.labels'].search([('name', 'in', labels)])
                     vals['google_label_ids'] = all_matching_labels_ids.ids
                 request.env['res.partner'].create(vals)
-            else:
-                pass
+                logger.info(".....End of the Entire Process.....")
+        except Exception as e:
+            raise e
 
     @http.route('/oauth/contacts', type='http', auth='public', website=True)
     def oauth_contacts_sync(self, **kwargs):
