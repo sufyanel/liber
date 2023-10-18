@@ -59,19 +59,18 @@ class GoogleOAuthController(http.Controller):
             for connection in connections:
                 memberships = connection.get('memberships')
                 if memberships:
-                    contact_groups = memberships.get('contactGroupMembership')
-                    if not contact_groups:
-                        continue
-                else:
-                    continue
-                labels = list()
-                for group in contact_groups:
-                    for label in google_labels:
-                        if group.get('contactGroupResourceName') == label.get("resourceName"):
-                            labels.append(label.get("name"))
-                if labels:
-                    connection["google_labels"] = labels
-                    valid_contacts.append(connection)
+                    labels = list()
+                    for membership in memberships:
+                        resource_name = membership.get('contactGroupMembership').get('contactGroupResourceName')
+                        if not resource_name:
+                            continue
+
+                        for label in google_labels:
+                            if resource_name == label.get("resourceName"):
+                                labels.append(label.get("name"))
+                    if labels:
+                        connection["google_labels"] = labels
+                        valid_contacts.append(connection)
             GoogleOAuthController.sync_google_data(valid_contacts)
         except Exception as e:
             raise e
