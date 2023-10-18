@@ -144,7 +144,7 @@ class GoogleOAuthController(http.Controller):
                     if organizations:
                         company = organizations[0].get('name')
                         vals['parent_id'] = request.env['res.partner'].search([('name', '!=', False)]).filtered(
-                            lambda x: x.name.lower() == company.lower()).id or False
+                            lambda x: x.name == company).id or False
                         vals['function'] = organizations[0].get('title')
 
                 # labels are actually groups which are termed as labels in google contacts to sort every contact
