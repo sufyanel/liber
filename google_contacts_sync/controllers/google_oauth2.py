@@ -61,7 +61,11 @@ class GoogleOAuthController(http.Controller):
                 if memberships:
                     labels = list()
                     for membership in memberships:
-                        resource_name = membership.get('contactGroupMembership').get('contactGroupResourceName')
+                        contact_group = membership.get('contactGroupMembership')
+                        if contact_group:
+                            resource_name = contact_group.get('contactGroupResourceName')
+                        else:
+                            continue
                         if not resource_name:
                             continue
 
