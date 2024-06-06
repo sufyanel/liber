@@ -8,7 +8,7 @@
     <template id="report_delivery_document_inherit_libers_add_description" inherit_id="stock.stock_report_delivery_aggregated_move_lines">
         <xpath expr="//td[position()=1]" position="replace">
         <td name="td_name">
-                <span t-esc="aggregated_lines[line]['name']"/>
+                <span t-esc="aggregated_lines[line]['product']['name']"/>
             </td>
         </xpath>
          <xpath expr="//td[position()=1]" position="after">
