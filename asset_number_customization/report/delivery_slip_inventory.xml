@@ -50,7 +50,7 @@
                 <t t-set="show_partner" t-value="False"/>
                 <div t-if="o.picking_type_id.code=='outgoing' and partner and partner != partner.commercial_partner_id">
                     <span>
-                        <strong>Shipping Address:</strong>
+                        <strong>Shipping  Address:</strong>
                     </span>
                     <t t-set="show_partner" t-value="True"/>
                 </div>
