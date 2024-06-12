@@ -20,7 +20,9 @@
         'views/product_template_ext.xml',
         'views/customer_part_number.xml',
         'views/sale_order_line_ext.xml',
-        'report/sale_report_templates_ext.xml'
+        'report/sale_report_templates_ext.xml',
+        'report/delivery_slip_inventory.xml',
+        'report/invoice_report.xml',
     ],
     'installable': True,
     'auto_install': False,
