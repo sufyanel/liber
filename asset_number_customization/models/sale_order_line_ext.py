@@ -32,7 +32,8 @@ class SaleOrderLineExt(models.Model):
     def compute_asset_part_number(self):
         for rec in self:
             if rec.product_id:
-                customer_part_set = self.env['customer.part.number'].search([('product_template_id', '=',rec.product_id.product_tmpl_id.id), ('partner_id', '=',rec.order_id.partner_id.id)])
+                customer_part_set = self.env['customer.part.number'].search(
+                    [('product_template_id', '=', rec.product_id.product_tmpl_id.id),
+                     ('partner_id', '=', rec.order_id.partner_id.id)])
                 if customer_part_set:
                     rec.asset_part_number = customer_part_set[0].asset_part_number or ''
-

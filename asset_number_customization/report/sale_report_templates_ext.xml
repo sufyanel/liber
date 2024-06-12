@@ -11,7 +11,7 @@
         </xpath>
         <xpath expr="//td[@name='td_name']" position='replace'>
             <td name="td_name">
-                <span t-field="line.product_id.description_sale"/>
+                <span t-esc="line.name if '[' not in line.name else line.name.split('[', 1)[0] + line.name.split(']', 1)[1]"/>
             </td>
         </xpath>
     </template>
