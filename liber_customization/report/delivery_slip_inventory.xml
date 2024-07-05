@@ -21,7 +21,8 @@
                         </p>
                     </td>
                     <td>
-                        <span t-field="move.name"/>
+                        <span t-esc="move.sale_line_id.name.split('[')[0] + (move.sale_line_id.name.split(']', 1)[1] if ']' in move.sale_line_id.name else '') if '[' in move.sale_line_id.name else move.sale_line_id.name"/>
+
                     </td>
                     <td>
                         <span t-field="move.product_uom_qty"/>
@@ -66,7 +67,9 @@
                             </p>
                         </td>
                         <td>
-                            <span t-field="move.name"/>
+                            <span t-esc="move.sale_line_id.name.split('[')[0] + (move.sale_line_id.name.split(']', 1)[1] if ']' in move.sale_line_id.name else '') if '[' in move.sale_line_id.name else move.sale_line_id.name"/>
+
+
                         </td>
                         <td>
                             <span t-field="move.product_uom_qty"/>
