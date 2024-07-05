@@ -198,6 +198,10 @@
                 </div>
                 <div t-if="show_partner" name="partner_header">
                     <div t-field="o.sale_id.partner_shipping_id"/>
+                    <div t-field="o.sale_id.partner_shipping_id.street"/>
+                    <div t-esc="'%s %s %s'  % (o.sale_id.partner_shipping_id.city, o.sale_id.partner_shipping_id.state_id.code, o.sale_id.partner_shipping_id.zip)"/>
+                    <div t-field="o.sale_id.partner_shipping_id.country_id.name"/>
+                    <div t-field="o.sale_id.partner_shipping_id.phone"/>
                     <!--                    <p t-if="o.sale_id.partner_shipping_id.vat">-->
                     <!--                        <t t-esc="o.company_id.country_id.vat_label or 'Tax ID'"/>:-->
                     <!--                        <span t-field="o.sale_id.partner_shipping_id.vat"/>-->
