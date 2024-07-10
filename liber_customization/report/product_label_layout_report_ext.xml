@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <data>
+        <record id="paperformat_label_print" model="report.paperformat">
+            <field name="name">Custom Label</field>
+            <field name="default" eval="True"/>
+            <field name="format">custom</field>
+            <field name="page_width">54</field> <!-- Width in inches -->
+            <field name="page_height">70</field> <!-- Height in inches -->
+            <field name="orientation">Portrait</field>
+            <field name="margin_top">15</field>
+            <field name="margin_bottom">0</field>
+            <field name="margin_left">0</field>
+            <field name="margin_right">0</field>
+            <field name="header_line" eval="False"/>
+            <field name="header_spacing">14</field>
+            <field name="dpi">90</field>
+        </record>
+
+        <record id="action_print_label_pdf" model="ir.actions.report">
+            <field name="name">Print Label</field>
+            <field name="model">stock.picking</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">liber_customization.print_label_demo_format_pdf</field>
+            <field name="report_file">liber_customization.print_label_demo_format_pdf</field>
+            <field name="paperformat_id" ref="liber_customization.paperformat_label_print"/>
+            <field name="binding_type">report</field>
+        </record>
+           <template id="print_label_header">
+            <div class="header">
+                <div>
+                    <style>
+                        @font-face { font-family: 'Times New Roman'; src: url('liber_customization/static/fonts/Times-New-Roman/Times New Roman/times new roman.ttf'); }
+                    </style>
+                    <t t-foreach="docs" t-as="stock">
+                        <!-- Define a container div for each 'stock' record -->
+                        <div class="header-content" style="font-family:Times New Roman; font-size:10px;">
+                            <!-- Display company details -->
+                            <p style="text-align: center">
+                                <span style="font-weight: bold;" t-field="stock.company_id"/>
+                                <span style="font-weight: bold;">LLC</span>
+                                <br/>
+                                <span t-field="stock.company_id.street"/>
+                                <br/>
+                                <span t-field="stock.company_id.phone"/>
+                                <br/>
+                            </p>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </template>
+
+        <template id="print_label_demo_format_pdf">
+            <t t-call="web.basic_layout">
+                <t t-call="web.html_container">
+                    <t t-call="liber_customization.print_label_header"/>
+
+                    <div class="page">
+                        <style>
+                            @font-face { font-family: 'Times New Roman'; src: url('liber_customization/static/fonts/Times-New-Roman/Times New Roman/times new roman.ttf'); }
+                        </style>
+
+                        <!-- Iterate over each 'stock' record passed as 'docs' -->
+                        <t t-foreach="docs" t-as="stock">
+                            <!-- Define a container div for each 'stock' record -->
+                            <div class="stock-content" style="font-family:Times New Roman; font-size:10px;">
+                                <t t-foreach="stock.move_ids_without_package" t-as="move">
+                                    <t t-foreach="int(sum(move.mapped('product_uom_qty')))" t-as="leng">
+                                        <!--                                        <t t-foreach="range((leng))" t-as="index">-->
+                                        <!-- Display quantity from 'move' and 'line' -->
+                                        <span t-esc="move.sale_line_id.asset_part_number or 'No Value'"/>
+                                        <span t-esc="move.product_uom_qty or '___'"/>
+                                        of Qty
+                                        <span t-field="move.sale_line_id.product_uom_qty"/>
+                                        <br/>
+                                        <br/>
+<!--                                        <span t-field="move.sale_line_id.name"/> test-->
+                                        <span t-esc="move.sale_line_id.name if isinstance(move.sale_line_id.name, str) and '[' not in move.sale_line_id.name else (move.sale_line_id.name.split('[', 1)[0] + move.sale_line_id.name.split(']', 1)[1] if isinstance(move.sale_line_id.name, str) else '')"/>
+                                        <p style="page-break-after:always;"/>
+                                    </t>
+                                </t>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+
+
+    </data>
+</odoo>

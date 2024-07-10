@@ -11,6 +11,7 @@
     'license': 'AGPL-3',
     'depends': [
         'base',
+        'product',
         'stock',
         'sale_management',
         'contacts',
@@ -20,6 +21,7 @@
         'report/sale_report_templates_ext.xml',
         'report/delivery_slip_inventory.xml',
         'report/invoice_report.xml',
+        'report/product_label_layout_report_ext.xml',
 
     ],
     'installable': True,
