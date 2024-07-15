@@ -5,15 +5,15 @@ from odoo.exceptions import UserError
 class ProductLabelLayoutExt(models.TransientModel):
     _inherit = 'product.label.layout'
 
-    stock_picking_ids = fields.Many2many('stock.picking')
-    # print_format = fields.Selection(selection_add=[('demo_label', 'Demo V.8 2010')], ondelete="cascade")
-    print_format = fields.Selection([
-        ('dymo', 'Dymo'),
-        ('demo_label', 'Demo V.8 2010'),
-        ('2x7xprice', '2 x 7 with price'),
-        ('4x7xprice', '4 x 7 with price'),
-        ('4x12', '4 x 12'),
-        ('4x12xprice', '4 x 12 with price')], string="Format", default='demo_label', required=True)
+    # adding new label field
+    print_format = fields.Selection(selection_add=[('demo_label', 'Demo V.8 2010'), ('2x7xprice',) ],
+                                    ondelete={'demo_label': 'cascade'}, default='demo_label',)
+
+
+
+
+
+
 
     def _prepare_report_data(self):
         # xml_id = False
