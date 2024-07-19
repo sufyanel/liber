@@ -8,12 +8,12 @@
             <field name="page_width">54</field> <!-- Width in inches -->
             <field name="page_height">70</field> <!-- Height in inches -->
             <field name="orientation">Portrait</field>
-            <field name="margin_top">17</field>
+            <field name="margin_top">19</field>
             <field name="margin_bottom">0</field>
             <field name="margin_left">0</field>
             <field name="margin_right">0</field>
             <field name="header_line" eval="False"/>
-            <field name="header_spacing">17</field>
+            <field name="header_spacing">15</field>
             <field name="dpi">90</field>
         </record>
 
@@ -34,9 +34,9 @@
                     </style>
                     <t t-foreach="docs" t-as="stock">
                         <!-- Define a container div for each 'stock' record -->
-                        <div class="header-content" style="font-family:Times New Roman;">
+                        <div class="header-content" style="font-family:Times New Roman; ">
                             <!-- Display company details -->
-                            <p style="text-align: center">
+                            <p style="text-align: center; line-height: 0.5; padding-top: 10px;">
                                 <span style="font-weight: bold; font-size:13px;" t-field="stock.company_id"/>
                                 <span style="font-weight: bold; font-size:13px;">LLC</span><br/>
                                 <span t-field="stock.company_id.street" style="font-size:08px;"/>
