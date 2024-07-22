@@ -36,7 +36,7 @@
                         <!-- Define a container div for each 'stock' record -->
                         <div class="header-content" style="font-family:Times New Roman; ">
                             <!-- Display company details -->
-                            <p style="text-align: center; line-height: 0.5; padding-top: 10px;">
+                            <p style="text-align: center; line-height: 0.7; padding-top: 10px;">
                                 <span style="font-weight: bold; font-size:13px;" t-field="stock.company_id"/>
                                 <span style="font-weight: bold; font-size:13px;">LLC</span><br/>
                                 <span t-field="stock.company_id.street" style="font-size:08px;"/>
