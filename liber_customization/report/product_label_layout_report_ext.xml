@@ -68,16 +68,19 @@
                             <div class="stock-content" style="font-family:Times New Roman; font-size:10px;">
                                 <t t-foreach="stock.move_ids_without_package" t-as="move">
                                     <t t-foreach="int(sum(move.mapped('product_uom_qty')))" t-as="leng">
-                                        <!--                                        <t t-foreach="range((leng))" t-as="index">-->
                                         <!-- Display quantity from 'move' and 'line' -->
-                                        <span t-esc="move.sale_line_id.asset_part_number or 'No Value'"/>
-                                        <span t-esc="move.product_uom_qty or '___'"/>
+                                    <t t-set="product_name" t-value="move.product_id.name"/>
+                                    <t t-if="move.product_id.code and ('[' + move.product_id.code + ']' in move.product_id.display_name)">
+                                        <t t-set="product_name" t-value="product_name.replace('[' + move.product_id.code + ']', '').strip()"/>
+                                    </t>
+                                    <span t-esc="product_name"/>
+                                    <span>______</span>
                                         of Qty
                                         <span t-field="move.sale_line_id.product_uom_qty"/>
+                                        <span t-esc="move.sale_line_id.product_uom.name"/>
                                         <br/>
                                         <br/>
-<!--                                        <span t-field="move.sale_line_id.name"/> test-->
-                                        <span t-esc="move.sale_line_id.name if isinstance(move.sale_line_id.name, str) and '[' not in move.sale_line_id.name else (move.sale_line_id.name.split('[', 1)[0] + move.sale_line_id.name.split(']', 1)[1] if isinstance(move.sale_line_id.name, str) else '')"/>
+                                        <span t-esc="move.product_id.description_sale or ''"/>
                                         <p style="page-break-after:always;"/>
                                     </t>
                                 </t>
@@ -87,7 +90,6 @@
                 </t>
             </t>
         </template>
-
 
 
     </data>
