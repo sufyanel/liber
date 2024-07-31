@@ -20,6 +20,7 @@ SCOPES = ['https://www.googleapis.com/auth/contacts.readonly']
 
 logger = logging.getLogger(__name__)
 
+
 class GoogleOAuthController(http.Controller):
 
     @staticmethod
@@ -27,7 +28,6 @@ class GoogleOAuthController(http.Controller):
         data = []
         google_labels = []
         try:
-            logger.info(".....Beginning to Collect Data.....")
             data.append(google_token)
             service = build('people', 'v1', credentials=google_token)
             results = service.people().connections().list(
@@ -35,7 +35,6 @@ class GoogleOAuthController(http.Controller):
                 pageSize=1000,
                 personFields='names,emailAddresses,addresses,photos,phoneNumbers,organizations,memberships').execute()
             connections = results.get('connections', [])
-            logger.info(f"Connections: {connections}")
             while 'nextPageToken' in results:
                 # Make the subsequent request with the nextPageToken
                 results = service.people().connections().list(
@@ -61,11 +60,7 @@ class GoogleOAuthController(http.Controller):
                 if memberships:
                     labels = list()
                     for membership in memberships:
-                        contact_group = membership.get('contactGroupMembership')
-                        if contact_group:
-                            resource_name = contact_group.get('contactGroupResourceName')
-                        else:
-                            continue
+                        resource_name = membership.get('contactGroupMembership').get('contactGroupResourceName')
                         if not resource_name:
                             continue
 
@@ -107,45 +102,56 @@ class GoogleOAuthController(http.Controller):
                     if emails:
                         vals['email'] = emails[0].get('value')
 
-                        # taking image url converting it into bytes and then encoding it into base64
-                        photos = rec.get('photos', [])
-                        if photos:
-                            photo = photos[0].get('url')
-                            response = requests.get(photo, stream=True)
-                            if response.status_code == 200:
-                                base64encoded = base64.b64encode(response.content)
-                                vals['image_1920'] = base64encoded
-                            else:
-                                raise ValidationError(_(f"Failed to download image from URL: {photo}"))
-                    else:
-                        continue
+                    # Dividing addresses based on 5 different fields of odoo for address, state is not provided by
+                    # Google
+                    addresses = rec.get('addresses', [])
+                    if addresses:
+                        vals['street'] = addresses[0].get('streetAddress')
+                        vals['street2'] = addresses[0].get('extendedAddress')
+                        vals['city'] = addresses[0].get('city')
+                        vals['zip'] = addresses[0].get('postalCode')
+                        vals['country_id'] = request.env['res.country'].search(
+                            [('code', '=', addresses[0].get('country'))]).id
 
-                    # getting unique phone number values for phone and mobile in odoo, if type isn't mentioned or anyone
-                    # of them is missing, first phonenumbers will be picked
-                    phone_numbers = rec.get('phoneNumbers', [])
-                    if phone_numbers and any(numbers.get('type') for numbers in phone_numbers):
-                        for number in phone_numbers:
-                            if number.get('type') == 'home':
-                                vals['phone'] = number.get('canonicalForm')
-                            elif number.get('type') == 'mobile':
-                                vals['mobile'] = number.get('canonicalForm')
-                        if 'phone' not in vals:
-                            vals['phone'] = phone_numbers[0].get('canonicalForm')
-                        if 'mobile' not in vals and len(phone_numbers) > 1:
-                            vals['phone'] = phone_numbers[1].get('canonicalForm')
-                    elif phone_numbers:
+                    # taking image url converting it into bytes and then encoding it into base64
+                    photos = rec.get('photos', [])
+                    if photos:
+                        photo = photos[0].get('url')
+                        response = requests.get(photo, stream=True)
+                        if response.status_code == 200:
+                            base64encoded = base64.b64encode(response.content)
+                            vals['image_1920'] = base64encoded
+                        else:
+                            raise ValidationError(_(f"Failed to download image from URL: {photo}"))
+                else:
+                    continue
+
+                # getting unique phone number values for phone and mobile in odoo, if type isn't mentioned or anyone
+                # of them is missing, first phonenumbers will be picked
+                phone_numbers = rec.get('phoneNumbers', [])
+                if phone_numbers and any(numbers.get('type') for numbers in phone_numbers):
+                    for number in phone_numbers:
+                        if number.get('type') == 'home':
+                            vals['phone'] = number.get('canonicalForm')
+                        elif number.get('type') == 'mobile':
+                            vals['mobile'] = number.get('canonicalForm')
+                    if 'phone' not in vals:
                         vals['phone'] = phone_numbers[0].get('canonicalForm')
-                        if len(phone_numbers) > 1:
-                            vals['mobile'] = phone_numbers[1].get('canonicalForm')
+                    if 'mobile' not in vals and len(phone_numbers) > 1:
+                        vals['phone'] = phone_numbers[1].get('canonicalForm')
+                elif phone_numbers:
+                    vals['phone'] = phone_numbers[0].get('canonicalForm')
+                    if len(phone_numbers) > 1:
+                        vals['mobile'] = phone_numbers[1].get('canonicalForm')
 
-                    # organizations giving away both job position as title and company as its name, company id will be
-                    # searched if found, it will be set as parent by default
-                    organizations = rec.get('organizations', [])
-                    if organizations:
-                        company = organizations[0].get('name')
-                        vals['parent_id'] = request.env['res.partner'].search([('name', '!=', False)]).filtered(
-                            lambda x: x.name == company).id or False
-                        vals['function'] = organizations[0].get('title')
+                # organizations giving away both job position as title and company as its name, company id will be
+                # searched if found, it will be set as parent by default
+                organizations = rec.get('organizations', [])
+                if organizations:
+                    company = organizations[0].get('name')
+                    vals['parent_id'] = request.env['res.partner'].search([('name', '!=', False)]).filtered(
+                        lambda x: x.name.lower() == company.lower()).id or False
+                    vals['function'] = organizations[0].get('title')
 
                 # labels are actually groups which are termed as labels in google contacts to sort every contact
                 # label wise
@@ -167,12 +173,8 @@ class GoogleOAuthController(http.Controller):
         google_loaded = json.loads(credentials)
         flow = Flow.from_client_config(google_loaded, SCOPES, redirect_uri=redirect_uri)
 
-        logger.info(".....Fetching Google Token.....")
-
         response = request.httprequest.url
         flow.fetch_token(authorization_response=response)
-
-        logger.info(".....Google Token has been fetched successfully.....")
 
         GoogleOAuthController.collect_data(flow.credentials)
         response_data = {'status': 'Success'}
