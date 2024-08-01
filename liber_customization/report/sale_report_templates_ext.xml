@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <template id="report_saleorder_document_inherit_liber" inherit_id="sale.report_saleorder_document">
-<!--        <xpath expr="//th[@name='th_description']" position="before">-->
-<!--            <th name="th_product" class="text-left">Product</th>-->
-<!--        </xpath>-->
-<!--        <xpath expr="//td[@name='td_name']" position="before">-->
-<!--            <td name="td_product">-->
-<!--                <span t-field="line.product_id.name"/>-->
-<!--            </td>-->
-<!--        </xpath>-->
         <xpath expr="//td[@name='td_name']" position='replace'>
             <td name="td_name">
                 <span t-esc="line.name if '[' not in line.name else line.name.split('[', 1)[0] + line.name.split(']', 1)[1]"/>
