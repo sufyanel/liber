@@ -3,7 +3,8 @@
     <template id="report_saleorder_document_inherit_liber" inherit_id="sale.report_saleorder_document">
         <xpath expr="//td[@name='td_name']" position='replace'>
             <td name="td_name">
-                <span t-esc="line.name if '[' not in line.name else line.name.split('[', 1)[0] + line.name.split(']', 1)[1]"/>
+                <t t-set="custom_line_name" t-value="line.name.replace(line.product_id.name, '').strip()"/>
+                <span t-esc="custom_line_name.split('[')[0] + custom_line_name.split(']')[1] if '[' in custom_line_name else custom_line_name"/>
             </td>
         </xpath>
     </template>
