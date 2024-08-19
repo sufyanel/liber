@@ -10,7 +10,7 @@
     'website': 'https://axiomworld.net',
     'license': 'AGPL-3',
     'depends': [
-        'base',
+
         'product',
         'stock',
         'sale_management',
@@ -22,6 +22,7 @@
         'report/delivery_slip_inventory.xml',
         'report/invoice_report.xml',
         'report/product_label_layout_report_ext.xml',
+        'report/report_delivery_slip_ext.xml'
 
     ],
     'installable': True,
