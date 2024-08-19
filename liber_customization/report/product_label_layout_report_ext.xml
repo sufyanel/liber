@@ -67,7 +67,7 @@
                             <!-- Define a container div for each 'stock' record -->
                             <div class="stock-content" style="font-family:Times New Roman; font-size:10px;">
                                 <t t-foreach="stock.move_ids_without_package" t-as="move">
-                                    <t t-foreach="int(sum(move.mapped('product_uom_qty')))" t-as="leng">
+                                    <t t-foreach="move.mapped('product_uom_qty')" t-as="leng">
                                         <!-- Display quantity from 'move' and 'line' -->
                                     <t t-set="product_name" t-value="move.product_id.name"/>
                                     <t t-if="move.product_id.code and ('[' + move.product_id.code + ']' in move.product_id.display_name)">
