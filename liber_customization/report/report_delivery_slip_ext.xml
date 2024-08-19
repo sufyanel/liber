@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <template id="delivery_slip_ext_123"  inherit_id = "stock.report_delivery_document">
+        <xpath expr="//t[@t-set='address']" position="replace">
+            <div style="margin-top: -45px;">
+                <div name="div_outgoing_address" class="row">
+                    <div name="Vendor Address" class="col-8">
+                        <span><strong>Vendor Address:</strong></span>
+                        <div t-field="o.partner_id"
+                             t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                    </div>
+                    <div class="">
+                        <div t-if="o.should_print_delivery_address()">
+                            <spacol-4n><strong>Delivery Address:</strong></spacol-4n>
+                            <div t-field="o.move_lines[0].partner_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
+                        <div t-elif="o.picking_type_id.code != 'internal' and o.picking_type_id.warehouse_id.partner_id">
+                            <span><strong>Warehouse Address:</strong></span>
+                            <div t-field="o.picking_type_id.warehouse_id.partner_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>
