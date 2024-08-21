@@ -2,10 +2,10 @@
 <odoo>
     <template id="delivery_slip_ext_123" inherit_id="stock.report_delivery_document">
         <xpath expr="//t[@t-set='address']" position="replace">
-            <div style="margin-top: -45px;">
+            <div style="margin-top: -15px;">
                 <div name="div_outgoing_address" class="row">
-                    <div name="Vendor Address" class="col-8">
-                        <t t-if="o.company_id.name == 'Tooling Components'">
+                    <div name="Vendor Address" class="col-7">
+                        <t t-if="o.picking_type_id.code == 'outgoing'">
                             <span>
                                 <strong>Shipping Address:</strong>
                             </span>
@@ -13,7 +13,7 @@
                                  t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
                         </t>
 
-                        <t t-elif="o.company_id.name =='Liber Holdings'">
+                        <t t-elif="o.picking_type_id.code == 'incoming'">
                             <span>
                                 <strong>Vendor Address:</strong>
                             </span>
@@ -22,7 +22,7 @@
                         </t>
                     </div>
                     <div class="">
-                        <div t-if="o.company_id.name == 'Liber Holdings' and o.should_print_delivery_address()">
+                        <div t-if="o.picking_type_id.code == 'incoming' and o.should_print_delivery_address()">
                             <spacol-4n>
                                 <strong>Delivery Address:</strong>
                             </spacol-4n>
