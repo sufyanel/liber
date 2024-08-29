@@ -11,6 +11,9 @@
                 <thead>
                     <tr>
                         <th name="th_description" class="text-left">
+                            <span>Product</span>
+                        </th>
+                        <th name="th_description" class="text-left">
                             <span>Description</span>
                         </th>
                         <th name="th_quantity" class="text-right">
@@ -48,8 +51,21 @@
                         <tr t-att-class="'bg-200 font-weight-bold o_line_section' if line.display_type == 'line_section' else 'font-italic o_line_note' if line.display_type == 'line_note' else ''">
                             <t t-if="not line.display_type" name="account_invoice_line_accountable">
                                 <td name="account_invoice_line_name">
-                                    <span t-esc="line.name if '[' not in line.name else line.name.split('[', 1)[0] + line.name.split(']', 1)[1]"/>
-                                    <span t-options="{'widget': 'text'}"/>
+                                    <span t-field="line.product_id.name"/>
+                                </td>
+                                <td name="account_invoice_line_name">
+                                    <t t-if="line.name">
+                                        <t t-if="line.product_id.name">
+                                            <t t-set="custom_line_name"
+                                               t-value="line.name.replace(line.product_id.name, '').strip()"/>
+                                            <span t-esc="custom_line_name.split('[')[0] + custom_line_name.split(']')[1] if '[' in custom_line_name else custom_line_name"/>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-esc="line.name.split('[', 1)[0] + line.name.split(']', 1)[1] if '[' in line.name else line.name"/>
+                                            <span t-options="{'widget': 'text'}"/>
+                                        </t>
+
+                                    </t>
                                 </td>
                                 <td class="text-right">
                                     <span t-field="line.quantity"/>
