@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_product_template_sales,product.template.sales,model_product_template_sales,,1,1,1,1
+access_customer_part_number,customer.part.number,model_customer_part_number,,1,1,1,1

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<!--    #inheriting create button in kanban view-->
+    <t t-name="google_contacts_sync_kanban_view" t-inherit="web.KanbanView.Buttons" t-inherit-mode="primary" owl="1">
+        <xpath expr="//div[@t-if='props.showButtons']" position="after">
+            <button type="button" class="btn btn-primary" t-on-click="clickSyncButton" style="margin-left:3px;">
+                Sync Contacts
+            </button>
+        </xpath>
+    </t>
+</templates>
