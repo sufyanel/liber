@@ -19,6 +19,6 @@ class ResConfigSettings(models.TransientModel):
 
     def set_values(self):
         super(ResConfigSettings, self).set_values()
-        if self.chart_template_id and self.parent_account_loaded:
-            self.chart_template_id.update_generated_account(code_digits=self.chart_template_id.code_digits,
+        if self.chart_template and self.parent_account_loaded:
+            self.chart_template.update_generated_account(code_digits=self.chart_template.code_digits,
                                                             importing_parent=True)
