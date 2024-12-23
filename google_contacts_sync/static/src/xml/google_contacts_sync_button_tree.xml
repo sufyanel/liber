@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<!--    # adding button in contacts list(tree) view-->
+    <t t-name="google_contacts_sync_tree.buttons" t-inherit="web.ListView.Buttons" owl="1">
+        <xpath expr="//div[@t-if='props.showButtons']" position="before">
+            <button type="button" class="btn btn-primary" t-on-click="clickSyncButton" style="margin-left:3px;">
+                Sync Contacts
+            </button>
+        </xpath>
+    </t>
+
+</templates>

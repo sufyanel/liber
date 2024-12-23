@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <data>
+        <record id="sale_order_in_line_inherit_id" model="ir.ui.view">
+            <field name="name">sale.order.in.line.inherit.id</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='order_line']/tree/field[@name='name']" position="after">
+                    <field name="asset_part_number" readonly="1" force_save="1"/>
+                </xpath>
+            </field>
+        </record>
+<!--        Sale Order List View-->
+<!--        <record id="sale_order_list_view_inherit_id" model="ir.ui.view">-->
+<!--            <field name="name">sale.order.list.view.inherit.id</field>-->
+<!--            <field name="model">sale.order</field>-->
+<!--            <field name="inherit_id" ref="sale.view_order_tree"/>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <xpath expr="//field[@name='partner_id']" position="after">-->
+<!--                    <field name="asset_part_number"/>-->
+<!--                </xpath>-->
+<!--            </field>-->
+<!--        </record>-->
+
+    </data>
+</odoo>
