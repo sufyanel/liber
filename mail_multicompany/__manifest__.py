@@ -7,6 +7,6 @@
     "website": "https://github.com/OCA/multi-company",
     "license": "AGPL-3",
     "depends": ["mail"],
-    "data": ["security/mail_security.xml", "views/ir_mail_server_view.xml"],
+    "data": ["security/mail_security.xml", "views/ir_mail_server_view.xml", "views/mail_alias.xml"],
     "installable": True,
 }
