@@ -39,11 +39,13 @@
                 </thead>
                 <tbody class="invoice_tbody">
                     <t t-set="current_subtotal" t-value="0"/>
+                    <t t-set="price_subtotal" t-value="0"/>
                     <t t-set="lines"
                        t-value="o.invoice_line_ids.sorted(key=lambda l: (-l.sequence, l.date, l.move_name, -l.id), reverse=True)"/>
 
                     <t t-foreach="lines" t-as="line">
-                        <t t-set="current_subtotal" t-value="current_subtotal + line.price_subtotal"
+                        <t t-set="price_subtotal" t-value="line.quantity * line.price_unit"/>
+                        <t t-set="current_subtotal" t-value="current_subtotal + price_subtotal"
                            groups="liber_customization.group_show_line_subtotals_tax_excluded"/>
                         <t t-set="current_subtotal" t-value="current_subtotal + line.price_total"
                            groups="liber_customization.group_show_line_subtotals_tax_included"/>
@@ -83,7 +85,7 @@
                                           id="line_tax_ids"/>
                                 </td>
                                 <td class="text-right o_price_total">
-                                    <span class="text-nowrap" t-field="line.price_subtotal"
+                                    <span class="text-nowrap" t-esc="price_subtotal"
                                           groups="liber_customization.group_show_line_subtotals_tax_excluded"/>
                                     <span class="text-nowrap" t-field="line.price_total"
                                           groups="liber_customization.group_show_line_subtotals_tax_included"/>
