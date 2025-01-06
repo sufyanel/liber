@@ -6,7 +6,7 @@
     "author": "Axiom World",
     "website": "https://github.com/OCA/multi-company",
     "license": "AGPL-3",
-    "depends": ["mail"],
+    "depends": ["mail", "crm", "base", "web"],
     "data": ["security/mail_security.xml", "views/ir_mail_server_view.xml", "views/mail_alias.xml"],
     "installable": True,
 }
