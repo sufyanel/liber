@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
     <template id="report_saleorder_document_inherit_liber" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//th[@name='th_description']" position='before'>
+            <th name="th_product" class="text-start">Product</th>
+        </xpath>
         <xpath expr="//td[@name='td_name']" position='replace'>
+            <td name="product_name"><span t-esc="line.product_id.name"/></td>
             <td name="td_name">
                 <t t-if="line.product_id.name">
                     <t t-set="custom_line_name"
