@@ -192,6 +192,37 @@
         <!--                </div>-->
         <!--            </div>-->
         <!--        </xpath>-->
+        <xpath expr="//table[@name='stock_backorder_table']" position="replace">
+            <table class="table table-sm" name="stock_backorder_table">
+                <thead>
+                    <tr>
+                        <th name="th_sb_product">
+                            <strong>Product</strong>
+                        </th>
+                        <th name="th_description">
+                            <strong>Description</strong>
+                        </th>
+                        <th name="th_sb_quantity">
+                            <strong>Quantity</strong>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="backorders.mapped('move_ids').filtered(lambda x: x.product_uom_qty)" t-as="bo_line">
+                        <td>
+                            <span t-field="bo_line.product_id.name">Office Chair</span>
+                        </td>
+                        <td>
+                            <t t-esc="bo_line.description_picking"/>
+                        </td>
+                        <td>
+                            <span t-field="bo_line.product_uom_qty">3.00</span>
+                            <span t-field="bo_line.product_uom" groups="uom.group_uom">units</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </xpath>
         <xpath expr="//div[@name='div_incoming_address']" position="replace">
             <div class="col-7" name="div_incoming_address">
                 <t t-set="show_partner" t-value="False"/>
@@ -214,6 +245,7 @@
                 </div>
             </div>
         </xpath>
+
 
     </template>
 </odoo>
