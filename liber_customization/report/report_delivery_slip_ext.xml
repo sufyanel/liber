@@ -41,5 +41,18 @@
                 </div>
             </div>
         </xpath>
+
+        <xpath expr="//t[@t-set='information_block']" position="after">
+            <div name="drop_shipping_address" class="row" style="text-align : right; margin-right: 340px;">
+                <t t-if="o.picking_type_id.code == 'dropship'">
+                    <span>
+                        <strong>Vendor Address:</strong>
+                    </span>
+                    <div t-field="o.partner_id"
+                         t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                </t>
+            </div>
+
+        </xpath>
     </template>
 </odoo>
