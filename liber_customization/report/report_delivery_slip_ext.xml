@@ -20,6 +20,8 @@
                             <div t-field="o.partner_id"
                                  t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
                         </t>
+
+
                     </div>
                     <div class="col-6">
                         <div t-if="o.picking_type_id.code == 'incoming' and o.should_print_delivery_address()">
@@ -29,6 +31,13 @@
                             <div t-field="o.move_ids[0].partner_id"
                                  t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
                         </div>
+                        <div t-elif="o.picking_type_id.code == 'dropship'">
+                            <span>
+                                <strong>Vendor Address:</strong>
+                            </span>
+                            <div t-field="o.partner_id"
+                                 t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
+                        </div>
                         <div t-elif="o.picking_type_id.code != 'internal' and o.picking_type_id.warehouse_id.partner_id">
                             <span>
                                 <strong>Warehouse Address:</strong>
@@ -36,30 +45,12 @@
                             <div t-field="o.picking_type_id.warehouse_id.partner_id"
                                  t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
                         </div>
+
                     </div>
 
                 </div>
             </div>
         </xpath>
 
-        <xpath expr="//t[@t-set='information_block']" position="after">
-            <div name="drop_shipping_address" class="row" style="text-align: left; margin-left: 480px;">
-                <t t-if="o.picking_type_id.code == 'dropship'">
-                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <span style="font-weight: bold; margin-bottom: 5px;">Vendor Address:</span>
-                        <div style="display: flex; flex-direction: column; gap: 5px;">
-                            <div t-field="o.partner_id"
-                                 t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
-                            <div t-field="o.partner_id"
-                                 t-options='{"widget": "contact", "fields": ["name"], "no_marker": True}'/>
-                            <div t-field="o.partner_id"
-                                 t-options='{"widget": "contact", "fields": ["phone"], "no_marker": True, "phone_icons": True}'/>
-                        </div>
-                    </div>
-                </t>
-            </div>
-
-
-        </xpath>
     </template>
 </odoo>
