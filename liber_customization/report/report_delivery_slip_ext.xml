@@ -5,7 +5,7 @@
             <div style="margin-top: -15px;">
                 <div name="div_outgoing_address" class="row">
                     <div name="Vendor Address" class="col-6">
-                        <t t-if="o.picking_type_id.code == 'outgoing'">
+                        <t t-if="o.picking_type_id.code == 'outgoing' or o.picking_type_id.code == 'dropship'">
                             <span>
                                 <strong>Shipping Address:</strong>
                             </span>
