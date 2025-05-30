@@ -64,6 +64,7 @@ class AccountMoveExt(models.Model):
                     continue
 
                 # Add interim account line.
+                
                 lines_vals_list.append({
                     'name': line.name[0:] if line.name else '',
                     'move_id': move.id,
