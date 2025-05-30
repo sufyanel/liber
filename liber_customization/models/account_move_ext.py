@@ -10,7 +10,6 @@ class AccountMoveExt(models.Model):
         lines (COGS) for customer invoices.
 
         Example:
-        
 
         Buy a product having a cost of 9 being a storable product and having a perpetual valuation in FIFO.
         Sell this product at a price of 10. The customer invoice's journal entries looks like:
