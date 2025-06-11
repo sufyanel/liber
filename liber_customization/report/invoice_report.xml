@@ -33,6 +33,8 @@
                         </th>
                         <th name="th_subtotal" class="text-right">
                             <span groups="liber_customization.group_show_line_subtotals_tax_excluded">Amount</span>
+                        </th>
+                        <th>
                             <span groups="liber_customization.group_show_line_subtotals_tax_included">Total Price</span>
                         </th>
                     </tr>
@@ -88,6 +90,8 @@
                                 <td class="text-right o_price_total">
                                     <span class="text-nowrap" t-esc="'%.2f' % (line.price_subtotal or 0.0)"
                                           groups="liber_customization.group_show_line_subtotals_tax_excluded"/>
+                                </td>
+                                <td class="text-right o_price_total">
                                     <span class="text-nowrap" t-esc="'%.2f' % (line.price_total or 0.0)"
                                           groups="liber_customization.group_show_line_subtotals_tax_included"/>
                                 </td>
