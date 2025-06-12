@@ -2,7 +2,7 @@
 <odoo>
     <template id="delivery_slip_ext_123" inherit_id="stock.report_delivery_document">
         <xpath expr="//t[@t-set='address']" position="replace">
-            <div style="margin-top: -15px;">
+            <div style="margin-top: -15px; font-size:20px">
                 <div name="div_outgoing_address" class="row">
                     <div name="Vendor Address" class="col-6">
                         <t t-if="o.picking_type_id.code == 'outgoing' or o.picking_type_id.code == 'dropship'">
