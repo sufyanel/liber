@@ -1,0 +1,30 @@
+.pdf_documents {
+  h2 {
+    font-size: 34px;
+  }
+
+  .row {
+    > div {
+      .card {
+        .card-body {
+          img {
+            height: 50px;
+            margin-right: 10px;
+          }
+
+          h5 {
+            font-size: 16px;
+            font-weight: 400;
+          }
+        }
+      }
+
+      @media screen and (max-width: 992px) {
+        width: 50%;
+      }
+      @media screen and (max-width: 767px) {
+        width: 100%;
+      }
+    }
+  }
+}
