@@ -5,7 +5,7 @@
     <template id="pdf_documents" name="PDF Documents">
         <section class="pdf_documents">
             <div class="container py-5">
-                <h2 class="text-center mb-4">Our Catalogue</h2>
+                <h2 class="text-center mb-4">Our Catalog</h2>
                 <div class="row g-3">
                     <div class="col-md-4">
                         <a href="/liber_website_customizations/static/src/pdf_files/Ball Bearing Products Lamina.pdf"
