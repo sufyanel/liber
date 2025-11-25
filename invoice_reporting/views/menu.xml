@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invoice_comparison_wizard" model="ir.actions.act_window">
+        <field name="name">Invoice Comparison Excel</field>
+        <field name="res_model">invoice.comparison.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_invoice_comparison_report"
+              name="Invoice Comparison"
+              parent="account.menu_finance_reports"
+              action="action_invoice_comparison_wizard"
+              sequence="50"/>
+</odoo>
