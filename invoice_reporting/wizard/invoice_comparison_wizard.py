@@ -394,7 +394,7 @@ class InvoiceComparisonWizard(models.TransientModel):
         
         if self.company_ids:
             domain.append(('company_id', 'in', self.company_ids.ids))
-        
+        # test commit to fix rebuild of the staging
         invoices = self.env['account.move'].search(domain)
         
         # Filter invoices for the specific month and group by company, customer and year
