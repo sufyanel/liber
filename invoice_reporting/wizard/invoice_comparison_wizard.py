@@ -376,12 +376,69 @@ class InvoiceComparisonWizard(models.TransientModel):
         
         return {'years': years, 'companies': company_data}
 
+    def _get_customer_amount_for_month(self, customer_id, company_id, year, month):
+        target_date = date(year, month, 1)
+        current_date = fields.Date.today()
+        
+        if target_date <= current_date:
+            # Month has passed - get actual invoices
+            start_date = date(year, month, 1)
+            end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
+            
+            invoices = self.env['account.move'].search([
+                ('partner_id', '=', customer_id),
+                ('company_id', '=', company_id),
+                ('move_type', '=', 'out_invoice'),
+                ('state', '=', 'posted'),
+                ('invoice_date', '>=', start_date),
+                ('invoice_date', '<=', end_date)
+            ])
+            
+            return sum(invoices.mapped('amount_total_signed'))
+        else:
+            # Future month - get budget
+            return self._get_customer_budget_for_month(customer_id, company_id, year, month)
+    
+    def _get_customer_budget_for_month(self, customer_id, company_id, year, month):
+        analytic_account = self.env['account.analytic.account'].search([
+            ('partner_id', '=', customer_id),
+            ('company_id', '=', company_id)
+        ], limit=1)
+        
+        if not analytic_account:
+            return 0.0
+        
+        start_date = date(year, month, 1)
+        end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
+        
+        budget_lines = self.env['crossovered.budget.lines'].search([
+            ('analytic_account_id', '=', analytic_account.id),
+            ('date_from', '<=', end_date),
+            ('date_to', '>=', start_date),
+            ('crossovered_budget_state', 'in', ['confirm', 'validate', 'done']),
+            ('planned_amount', '>', 0)
+        ])
+        
+        total_budget = 0.0
+        for line in budget_lines:
+            line_start = max(line.date_from, start_date)
+            line_end = min(line.date_to, end_date)
+            
+            if line_start <= line_end:
+                line_days = (line.date_to - line.date_from).days + 1
+                month_days = (line_end - line_start).days + 1
+                proportion = month_days / line_days
+                total_budget += line.planned_amount * proportion
+        
+        return total_budget
+    
     def _get_monthly_data(self):
         current_year = datetime.now().year
         years_count = int(self.years_count)
         years = [current_year - years_count + 1 + i for i in range(years_count)]
         month_int = int(self.month)
         
+        # Get all customers from invoices in the date range
         start_date = date(years[0], month_int, 1)
         end_date = (date(years[-1], month_int, 1) + relativedelta(months=1)) - relativedelta(days=1)
         
@@ -394,26 +451,34 @@ class InvoiceComparisonWizard(models.TransientModel):
         
         if self.company_ids:
             domain.append(('company_id', 'in', self.company_ids.ids))
-        # test commit to fix rebuild of the staging
+        
         invoices = self.env['account.move'].search(domain)
         
-        # Filter invoices for the specific month and group by company, customer and year
+        # Group by company and customer, then get amounts (actual or budget)
         company_data = {}
+        processed_customers = set()
+        
         for invoice in invoices:
             if not invoice.invoice_date or invoice.invoice_date.month != month_int:
                 continue
-            year = invoice.invoice_date.year
-            if year not in years:
-                continue
+            
             company = invoice.company_id.name
             customer = invoice.partner_id.name or 'Unknown Customer'
+            customer_key = (invoice.company_id.id, invoice.partner_id.id, customer)
             
             if company not in company_data:
                 company_data[company] = {}
             if customer not in company_data[company]:
                 company_data[company][customer] = {}
-            if year not in company_data[company][customer]:
-                company_data[company][customer][year] = 0
-            company_data[company][customer][year] += invoice.amount_total_signed
+            
+            if customer_key not in processed_customers:
+                # Get amounts for all years (actual or budget)
+                for year in years:
+                    amount = self._get_customer_amount_for_month(
+                        invoice.partner_id.id, invoice.company_id.id, year, month_int
+                    )
+                    company_data[company][customer][year] = amount
+                
+                processed_customers.add(customer_key)
         
         return {'years': years, 'companies': company_data}
