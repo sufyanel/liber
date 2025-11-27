@@ -1,9 +1,9 @@
 {
     'name': 'Invoice Reporting',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Invoice comparison reports',
-    'depends': ['account'],
+    'depends': ['account', 'account_budget', 'analytic'],
     'data': [
         'security/ir.model.access.csv',
         'wizard/invoice_comparison_wizard_view.xml',
