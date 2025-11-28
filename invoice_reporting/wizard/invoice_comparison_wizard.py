@@ -355,7 +355,7 @@ class InvoiceComparisonWizard(models.TransientModel):
         if self.company_ids:
             domain.append(('company_id', 'in', self.company_ids.ids))
         
-        invoices = self.env['account.move'].search(domain)
+        invoices = self.env['account.move'].sudo().search(domain)
         
         # Group by company, customer and year
         company_data = {}
@@ -364,7 +364,7 @@ class InvoiceComparisonWizard(models.TransientModel):
                 continue
             year = invoice.invoice_date.year
             company = invoice.company_id.name
-            customer = invoice.partner_id.name or 'Unknown Customer'
+            customer = invoice.partner_id.name or invoice.partner_id.display_name or  'Unknown Customer'
             
             if company not in company_data:
                 company_data[company] = {}
@@ -385,7 +385,7 @@ class InvoiceComparisonWizard(models.TransientModel):
             start_date = date(year, month, 1)
             end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
             
-            invoices = self.env['account.move'].search([
+            invoices = self.env['account.move'].sudo().search([
                 ('partner_id', '=', customer_id),
                 ('company_id', '=', company_id),
                 ('move_type', '=', 'out_invoice'),
@@ -408,11 +408,21 @@ class InvoiceComparisonWizard(models.TransientModel):
         if not analytic_account:
             return 0.0
         
+        # Find sales budget posts (revenue accounts)
+        sales_budget_posts = self.env['account.budget.post'].search([
+            ('account_ids.account_type', '=', 'income'),
+            ('company_id', '=', company_id)
+        ])
+        
+        if not sales_budget_posts:
+            return 0.0
+        
         start_date = date(year, month, 1)
         end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
         
         budget_lines = self.env['crossovered.budget.lines'].search([
             ('analytic_account_id', '=', analytic_account.id),
+            ('general_budget_id', 'in', sales_budget_posts.ids),
             ('date_from', '<=', end_date),
             ('date_to', '>=', start_date),
             ('crossovered_budget_state', 'in', ['confirm', 'validate', 'done']),
@@ -452,7 +462,7 @@ class InvoiceComparisonWizard(models.TransientModel):
         if self.company_ids:
             domain.append(('company_id', 'in', self.company_ids.ids))
         
-        invoices = self.env['account.move'].search(domain)
+        invoices = self.env['account.move'].sudo().search(domain)
         
         # Group by company and customer, then get amounts (actual or budget)
         company_data = {}
@@ -463,7 +473,7 @@ class InvoiceComparisonWizard(models.TransientModel):
                 continue
             
             company = invoice.company_id.name
-            customer = invoice.partner_id.name or 'Unknown Customer'
+            customer = invoice.partner_id.name or invoice.partner_id.display_name or 'Unknown Customer'
             customer_key = (invoice.company_id.id, invoice.partner_id.id, customer)
             
             if company not in company_data:
