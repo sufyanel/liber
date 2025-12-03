@@ -345,42 +345,80 @@ class InvoiceComparisonWizard(models.TransientModel):
         years_count = int(self.years_count)
         years = [current_year - years_count + 1 + i for i in range(years_count)]
         
-        domain = [
+        # Get ALL company partners to exclude
+        all_company_partners = self.env['res.company'].search([]).mapped('partner_id.id')
+        
+        # Get all customers from invoices
+        invoice_domain = [
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
             ('invoice_date', '>=', date(years[0], 1, 1)),
-            ('invoice_date', '<=', date(years[-1], 12, 31))
+            ('invoice_date', '<=', date(years[-1], 12, 31)),
+            ('partner_id', 'not in', all_company_partners),
+            ('partner_id.active', '=', True)
         ]
         
         if self.company_ids:
-            domain.append(('company_id', 'in', self.company_ids.ids))
+            invoice_domain.append(('company_id', 'in', self.company_ids.ids))
         
-        invoices = self.env['account.move'].sudo().search(domain)
+        invoices = self.env['account.move'].sudo().search(invoice_domain)
         
-        # Group by company, customer and year
-        company_data = {}
+        # Get all customers from budget lines
+        budget_domain = [
+            ('date_from', '<=', date(years[-1], 12, 31)),
+            ('date_to', '>=', date(years[0], 1, 1)),
+            ('planned_amount', '>', 0),
+            ('analytic_account_id.partner_id', 'not in', all_company_partners),
+            ('analytic_account_id.partner_id.active', '=', True)
+        ]
+        
+        if self.company_ids:
+            budget_domain.append(('analytic_account_id.company_id', 'in', self.company_ids.ids))
+        
+        budget_lines = self.env['crossovered.budget.lines'].sudo().search(budget_domain)
+        budget_lines = budget_lines.filtered(lambda rec: rec.crossovered_budget_id.state in ['confirm', 'validate', 'done'])
+        
+        # Collect all unique customers
+        all_customers = set()
+        
+        # Add customers from invoices
         for invoice in invoices:
-            if not invoice.invoice_date:
-                continue
-            year = invoice.invoice_date.year
-            company = invoice.company_id.name
-            customer = invoice.partner_id.name or invoice.partner_id.display_name or  'Unknown Customer'
+            if invoice.invoice_date:
+                all_customers.add((invoice.company_id.id, invoice.partner_id.id, invoice.company_id.name, invoice.partner_id.name or invoice.partner_id.display_name or 'Unknown Customer'))
+        
+        # Add customers from budget lines
+        for budget_line in budget_lines:
+            if budget_line.analytic_account_id.partner_id:
+                all_customers.add((budget_line.analytic_account_id.company_id.id, budget_line.analytic_account_id.partner_id.id, budget_line.analytic_account_id.company_id.name, budget_line.analytic_account_id.partner_id.name or budget_line.analytic_account_id.partner_id.display_name or 'Unknown Customer'))
+        
+        # Group by company and customer, then calculate combined amounts
+        company_data = {}
+        
+        for company_id, partner_id, company_name, customer_name in all_customers:
+            if company_name not in company_data:
+                company_data[company_name] = {}
+            if customer_name not in company_data[company_name]:
+                company_data[company_name][customer_name] = {}
             
-            if company not in company_data:
-                company_data[company] = {}
-            if customer not in company_data[company]:
-                company_data[company][customer] = {}
-            if year not in company_data[company][customer]:
-                company_data[company][customer][year] = 0
-            company_data[company][customer][year] += invoice.amount_total_signed
+            # Calculate combined amounts for all years using month checking logic
+            for year in years:
+                total_amount = 0.0
+                
+                # Use the same logic as monthly - check each month if it has passed or not
+                for month in range(1, 13):
+                    amount = self._get_customer_amount_for_month(partner_id, company_id, year, month)
+                    total_amount += amount
+                
+                company_data[company_name][customer_name][year] = total_amount
         
         return {'years': years, 'companies': company_data}
 
     def _get_customer_amount_for_month(self, customer_id, company_id, year, month):
-        target_date = date(year, month, 1)
+        # Check if the entire month has passed
+        target_month_end = date(year, month, 1) + relativedelta(months=1) - relativedelta(days=1)
         current_date = fields.Date.today()
         
-        if target_date <= current_date:
+        if target_month_end < current_date:
             # Month has passed - get actual invoices
             start_date = date(year, month, 1)
             end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
@@ -425,9 +463,10 @@ class InvoiceComparisonWizard(models.TransientModel):
             ('general_budget_id', 'in', sales_budget_posts.ids),
             ('date_from', '<=', end_date),
             ('date_to', '>=', start_date),
-            ('crossovered_budget_state', 'in', ['confirm', 'validate', 'done']),
             ('planned_amount', '>', 0)
         ])
+        if budget_lines:
+            budget_lines = budget_lines.filtered(lambda rec: rec.crossovered_budget_id.state in ['confirm', 'validate', 'done'])
         
         total_budget = 0.0
         for line in budget_lines:
@@ -452,11 +491,16 @@ class InvoiceComparisonWizard(models.TransientModel):
         start_date = date(years[0], month_int, 1)
         end_date = (date(years[-1], month_int, 1) + relativedelta(months=1)) - relativedelta(days=1)
         
+        # Get ALL company partners to exclude
+        all_company_partners = self.env['res.company'].search([]).mapped('partner_id.id')
+        
         domain = [
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
             ('invoice_date', '>=', start_date),
-            ('invoice_date', '<=', end_date)
+            ('invoice_date', '<=', end_date),
+            ('partner_id', 'not in', all_company_partners),
+            ('partner_id.active', '=', True)
         ]
         
         if self.company_ids:
