@@ -94,9 +94,17 @@ class InvoiceComparisonWizard(models.TransientModel):
         
         years = data['years']
         companies = data['companies']
+        current_year = datetime.now().year
         
-        # Calculate total columns needed
-        total_cols = 1 + (len(years) - 1) * 3
+        # Calculate total columns needed - account for separate invoice/budget columns
+        total_cols = 1  # Customer column
+        for i in range(len(years) - 1):
+            total_cols += 1  # First year (invoice only)
+            if years[i+1] >= current_year:
+                total_cols += 2  # Current/future year (invoice + budget)
+            else:
+                total_cols += 1  # Past year (total only)
+            total_cols += 1  # Growth %
         
         # Main Title
         worksheet.merge_range(1, 0, 2, total_cols - 1, 'INVOICE COMPARISON REPORT - YEARLY', title_format)
@@ -111,10 +119,22 @@ class InvoiceComparisonWizard(models.TransientModel):
         col += 1
         
         for i in range(len(years) - 1):
+            # First year header (always invoice only)
             worksheet.write(6, col, str(years[i]), header_format)
             col += 1
-            worksheet.write(6, col, str(years[i+1]), header_format)
-            col += 1
+            
+            # Second year header(s)
+            if years[i+1] >= current_year:
+                # Current/future year - separate Invoice and Budget columns
+                worksheet.write(6, col, f'{years[i+1]} Invoice', header_format)
+                col += 1
+                worksheet.write(6, col, f'{years[i+1]} Budget', header_format)
+                col += 1
+            else:
+                # Past year - single column
+                worksheet.write(6, col, str(years[i+1]), header_format)
+                col += 1
+            
             worksheet.write(6, col, f'Growth %', header_format)
             col += 1
         
@@ -152,16 +172,50 @@ class InvoiceComparisonWizard(models.TransientModel):
                 worksheet.write(row, col, customer, row_format)
                 col += 1
                 
-                amounts = [year_data.get(year, 0) for year in years]
-                
-                for i in range(len(amounts) - 1):
-                    worksheet.write(row, col, amounts[i], data_row_format)
+                # Write data for each year pair
+                for i in range(len(years) - 1):
+                    year1_data = year_data.get(years[i], {'invoice': 0, 'budget': 0, 'total': 0})
+                    year2_data = year_data.get(years[i+1], {'invoice': 0, 'budget': 0, 'total': 0})
+                    
+                    # Handle both dict and float formats
+                    if isinstance(year1_data, dict):
+                        year1_total = year1_data['total']
+                    else:
+                        year1_total = year1_data
+                    
+                    if isinstance(year2_data, dict):
+                        year2_total = year2_data['total']
+                        year2_invoice = year2_data['invoice']
+                        year2_budget = year2_data['budget']
+                    else:
+                        year2_total = year2_data
+                        year2_invoice = year2_data
+                        year2_budget = 0
+                    
+                    # First year (always invoice only)
+                    worksheet.write(row, col, year1_total, data_row_format)
                     col += 1
-                    worksheet.write(row, col, amounts[i + 1], data_row_format)
-                    col += 1
-                    prev_amt = amounts[i]
-                    curr_amt = amounts[i + 1]
-                    diff = ((curr_amt - prev_amt) / prev_amt) if prev_amt != 0 else (1 if curr_amt > 0 else 0)
+                    
+                    # Second year - check if current/future year
+                    if years[i+1] >= current_year:
+                        # Current/future year - separate Invoice and Budget columns
+                        worksheet.write(row, col, year2_invoice, data_row_format)
+                        col += 1
+                        
+                        budget_format = workbook.add_format({
+                            'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                            'border_color': '#D0D0D0', 'font_size': 9,
+                            'bg_color': '#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF'
+                        })
+                        worksheet.write(row, col, year2_budget if year2_budget > 0 else 0, budget_format)
+                        col += 1
+                    else:
+                        # Past year - show total only
+                        worksheet.write(row, col, year2_total, data_row_format)
+                        col += 1
+                    
+                    # Growth % calculation
+                    diff = ((year2_total - year1_total) / year1_total) if year1_total != 0 else (1 if year2_total > 0 else 0)
                     worksheet.write(row, col, diff, percent_format)
                     col += 1
                 
@@ -402,14 +456,36 @@ class InvoiceComparisonWizard(models.TransientModel):
             
             # Calculate combined amounts for all years using month checking logic
             for year in years:
-                total_amount = 0.0
-                
-                # Use the same logic as monthly - check each month if it has passed or not
-                for month in range(1, 13):
-                    amount = self._get_customer_amount_for_month(partner_id, company_id, year, month)
-                    total_amount += amount
-                
-                company_data[company_name][customer_name][year] = total_amount
+                if year < current_year:
+                    # Past year - only invoice data
+                    total_amount = 0.0
+                    for month in range(1, 13):
+                        amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
+                        total_amount += amount
+                    company_data[company_name][customer_name][year] = total_amount
+                else:
+                    # Current/future year - separate invoice and budget
+                    invoice_amount = 0.0
+                    budget_amount = 0.0
+                    
+                    for month in range(1, 13):
+                        target_month_end = date(year, month, 1) + relativedelta(months=1) - relativedelta(days=1)
+                        current_date = fields.Date.today()
+                        
+                        if target_month_end < current_date:
+                            # Past month - use actual
+                            amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
+                            invoice_amount += amount
+                        else:
+                            # Future month - use budget
+                            amount = self._get_customer_budget_for_month(partner_id, company_id, year, month)
+                            budget_amount += amount
+                    
+                    company_data[company_name][customer_name][year] = {
+                        'invoice': invoice_amount,
+                        'budget': budget_amount,
+                        'total': invoice_amount + budget_amount
+                    }
         
         return {'years': years, 'companies': company_data}
 
@@ -420,22 +496,25 @@ class InvoiceComparisonWizard(models.TransientModel):
         
         if target_month_end < current_date:
             # Month has passed - get actual invoices
-            start_date = date(year, month, 1)
-            end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
-            
-            invoices = self.env['account.move'].sudo().search([
-                ('partner_id', '=', customer_id),
-                ('company_id', '=', company_id),
-                ('move_type', '=', 'out_invoice'),
-                ('state', '=', 'posted'),
-                ('invoice_date', '>=', start_date),
-                ('invoice_date', '<=', end_date)
-            ])
-            
-            return sum(invoices.mapped('amount_total_signed'))
+            return self._get_customer_actual_for_month(customer_id, company_id, year, month)
         else:
             # Future month - get budget
             return self._get_customer_budget_for_month(customer_id, company_id, year, month)
+    
+    def _get_customer_actual_for_month(self, customer_id, company_id, year, month):
+        start_date = date(year, month, 1)
+        end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
+        
+        invoices = self.env['account.move'].sudo().search([
+            ('partner_id', '=', customer_id),
+            ('company_id', '=', company_id),
+            ('move_type', '=', 'out_invoice'),
+            ('state', '=', 'posted'),
+            ('invoice_date', '>=', start_date),
+            ('invoice_date', '<=', end_date)
+        ])
+        
+        return sum(invoices.mapped('amount_total_signed'))
     
     def _get_customer_budget_for_month(self, customer_id, company_id, year, month):
         analytic_account = self.env['account.analytic.account'].search([
