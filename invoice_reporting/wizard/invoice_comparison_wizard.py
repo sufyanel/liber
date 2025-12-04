@@ -358,7 +358,26 @@ class InvoiceComparisonWizard(models.TransientModel):
             for customer, year_data in customers.items():
                 col = 0
                 
-                if customer_count % 2 == 0:
+                # Check if new customer (0 amount in second last year)
+                second_last_year_data = year_data.get(years[-2], {'invoice': 0, 'budget': 0, 'total': 0})
+                if isinstance(second_last_year_data, dict):
+                    second_last_year_total = second_last_year_data['total']
+                else:
+                    second_last_year_total = second_last_year_data
+                
+                is_new_customer = second_last_year_total == 0
+                
+                # Set row background - yellow for new customers, alternating for others
+                if is_new_customer:
+                    row_format = workbook.add_format({
+                        'border': 1, 'align': 'left', 'font_size': 9,
+                        'border_color': '#D0D0D0', 'bg_color': '#FFFF99'
+                    })
+                    data_row_format = workbook.add_format({
+                        'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                        'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#FFFF99'
+                    })
+                elif customer_count % 2 == 0:
                     row_format = workbook.add_format({
                         'border': 1, 'align': 'left', 'font_size': 9,
                         'border_color': '#D0D0D0', 'bg_color': '#F8F9FA'
@@ -414,7 +433,7 @@ class InvoiceComparisonWizard(models.TransientModel):
                 budget_format = workbook.add_format({
                     'border': 1, 'num_format': '#,##0.00', 'align': 'right',
                     'border_color': '#D0D0D0', 'font_size': 9,
-                    'bg_color': '#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF'
+                    'bg_color': '#FFFF99' if is_new_customer else ('#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF')
                 })
                 
                 for year in [y for y in years if y >= current_year]:
