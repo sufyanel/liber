@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="threshold_report_menu" 
+              name="Threshold Report" 
+              parent="account.menu_finance_reports" 
+              action="threshold_report_wizard_action" 
+              sequence="100"/>
+</odoo>
