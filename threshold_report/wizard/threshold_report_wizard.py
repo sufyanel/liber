@@ -255,11 +255,13 @@ class ThresholdReportWizard(models.TransientModel):
             # Use all companies if none selected
             all_companies = self.env['res.company'].search([])
             domain.append(('company_id', 'in', all_companies.ids))
-        
+
         accounts = self.env['account.account'].search(domain)
-        
+
         if not accounts:
             return 0.0
+        if accounts and account_type == 'asset_current':
+            accounts = accounts.filtered(lambda a: a.code in ['101110', '01.1.401'])
         
         # Get all move lines up to the specified date
         move_domain = [
@@ -308,11 +310,33 @@ class ThresholdReportWizard(models.TransientModel):
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet('Threshold Report')
         
-        # Professional Formats
-        title_format = workbook.add_format({
-            'bold': True, 'font_size': 18, 'align': 'center',
-            'font_color': '#FFFFFF', 'bg_color': '#2E5984',
-            'border': 2, 'border_color': '#1F4E79'
+        # Professional Header Formats
+        main_title_format = workbook.add_format({
+            'bold': True, 'font_size': 20, 'align': 'center', 'valign': 'vcenter',
+            'font_color': '#FFFFFF', 'bg_color': '#1F4E79',
+            'border': 2, 'border_color': '#0F2E4F'
+        })
+        
+        subtitle_format = workbook.add_format({
+            'bold': True, 'font_size': 14, 'align': 'center', 'valign': 'vcenter',
+            'font_color': '#1F4E79', 'bg_color': '#F8F9FA',
+            'border': 1, 'border_color': '#DEE2E6'
+        })
+        
+        company_header_format = workbook.add_format({
+            'bold': True, 'font_size': 11, 'align': 'left',
+            'font_color': '#495057', 'bg_color': '#E9ECEF',
+            'border': 1, 'border_color': '#CED4DA'
+        })
+        
+        period_header_format = workbook.add_format({
+            'bold': True, 'font_size': 11, 'align': 'right',
+            'font_color': '#495057', 'bg_color': '#E9ECEF',
+            'border': 1, 'border_color': '#CED4DA'
+        })
+        
+        divider_format = workbook.add_format({
+            'bg_color': '#6C757D', 'border': 0
         })
         
         header_format = workbook.add_format({
@@ -337,8 +361,15 @@ class ThresholdReportWizard(models.TransientModel):
             'font_color': '#C0392B'
         })
         
+        # Total label format with larger font
+        total_label_format = workbook.add_format({
+            'bold': True, 'font_size': 14, 'align': 'left',
+            'border': 2, 'border_color': '#D35400',
+            'font_color': '#D35400'
+        })
+        
         threshold_format = workbook.add_format({
-            'bold': True, 'font_size': 12, 'align': 'right', 'num_format': '#,##0.00_);(#,##0.00)',
+            'bold': True, 'font_size': 16, 'align': 'right', 'num_format': '#,##0.00_);(#,##0.00)',
             'font_color': '#FFFFFF', 'bg_color': '#E67E22',
             'border': 2, 'border_color': '#D35400'
         })
@@ -348,19 +379,34 @@ class ThresholdReportWizard(models.TransientModel):
             'font_color': '#666666'
         })
         
-        # Title
-        worksheet.merge_range(1, 0, 2, 1, 'FINANCIAL SECURITY THRESHOLD REPORT', title_format)
+        # Professional Header Section
+        # Main Title
+        worksheet.set_row(1, 35)  # Set row height
+        worksheet.merge_range(1, 0, 1, 1, 'FINANCIAL SECURITY THRESHOLD REPORT', main_title_format)
         
-        # Report Info
+        # Subtitle
+        worksheet.set_row(2, 25)
+        worksheet.merge_range(2, 0, 2, 1, 'Cash Flow Analysis & Financial Planning', subtitle_format)
+        
+        # Company and Period Information Header
+        worksheet.set_row(4, 20)
         period_text = self._get_period_text()
         company_text = ', '.join(self.company_ids.mapped('name')) if self.company_ids else 'All Companies'
-        worksheet.write(4, 0, f'Companies: {company_text}', info_format)
-        worksheet.write(5, 0, f'Period: {period_text}', info_format)
-        worksheet.write(6, 0, f'Date Range: {data["date_from"]} to {data["date_to"]}', info_format)
-        worksheet.write(7, 0, f'Generated: {datetime.now().strftime("%B %d, %Y at %H:%M")}', info_format)
+        
+        worksheet.write(4, 0, f'Company: {company_text}', company_header_format)
+        worksheet.write(4, 1, f'Period: {period_text}', period_header_format)
+        
+        # Date Range and Generation Info
+        worksheet.set_row(5, 18)
+        worksheet.write(5, 0, f'Date Range: {data["date_from"]} to {data["date_to"]}', info_format)
+        worksheet.write(5, 1, f'Generated: {datetime.now().strftime("%B %d, %Y at %H:%M")}', info_format)
+        
+        # Decorative divider
+        worksheet.set_row(6, 3)
+        worksheet.merge_range(6, 0, 6, 1, '', divider_format)
         
         # Data rows
-        row = 9
+        row = 8
         
         # Cash Flow Analysis Header
         worksheet.merge_range(row, 0, row, 1, 'CASH FLOW ANALYSIS', header_format)
@@ -386,14 +432,15 @@ class ThresholdReportWizard(models.TransientModel):
             worksheet.write(row, 1, value, format_style)
             row += 1
         
-        # Final Result
+        # Final Result with larger fonts
         row += 1
-        worksheet.write(row, 0, '*Financial Security Threshold', label_format)
+        worksheet.set_row(row, 25)  # Increase row height for total
+        worksheet.write(row, 0, 'Financial Security Threshold', total_label_format)
         worksheet.write(row, 1, data['financial_threshold'], threshold_format)
         
-        # Column widths
-        worksheet.set_column('A:A', 45)
-        worksheet.set_column('B:B', 20)
+        # Column widths - increased for wider header
+        worksheet.set_column('A:A', 55)  # Increased from 45 to 55
+        worksheet.set_column('B:B', 25)  # Increased from 20 to 25
         
         # Footer
         worksheet.write(row + 3, 0, 'Generated by Odoo Threshold Report Module', info_format)
