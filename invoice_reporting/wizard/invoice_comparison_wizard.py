@@ -15,16 +15,13 @@ class InvoiceComparisonWizard(models.TransientModel):
         ('yearly', 'Yearly'),
         ('monthly', 'Monthly')
     ], string='Report Type', required=True, default='yearly')
-    
     years_count = fields.Selection([
         ('2', '2 Years'),
         ('3', '3 Years'),
         ('4', '4 Years'),
         ('5', '5 Years')
     ], string='Number of Years', required=True, default='3')
-    
     company_ids = fields.Many2many('res.company', string='Companies')
-    
     month = fields.Selection([
         ('1', 'January'), ('2', 'February'), ('3', 'March'), ('4', 'April'),
         ('5', 'May'), ('6', 'June'), ('7', 'July'), ('8', 'August'),
@@ -33,9 +30,7 @@ class InvoiceComparisonWizard(models.TransientModel):
     
     @api.onchange('report_type')
     def _onchange_report_type(self):
-        if self.report_type != 'monthly':
-            self.month = False
-
+        if self.report_type != 'monthly': self.month = False
     def action_download_excel(self):
         if self.report_type == 'monthly' and not self.month:
             raise UserError('Please select a month for monthly report.')
