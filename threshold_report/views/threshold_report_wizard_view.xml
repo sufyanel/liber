@@ -17,6 +17,7 @@
                         <field name="capital_investments"/>
                         <field name="savings"/>
                         <field name="investor_return"/>
+                        <field name="tax"/>
                     </group>
                 </group>
                 <footer>
