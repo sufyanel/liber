@@ -282,7 +282,7 @@ class ThresholdReportWizard(models.TransientModel):
     def _calculate_threshold(self, data):
         """Calculate the Financial Security Threshold"""
         cash_flow = (
-                data['taxes'] +
+                - data['taxes'] +
                 data['depreciation'] -
                 data['capital_investments'] +
                 data['change_payables_receivable'] +
@@ -424,7 +424,7 @@ class ThresholdReportWizard(models.TransientModel):
             ('Change in Inventory', -data['change_inventory'], value_format),
             ('Debt Retirement - Principal Only', -data['debt_retirement'], red_value_format),
             ('Investor Return (Equity or Dividend)', -data['investor_return_total'], red_value_format),
-            ('Savings', data['savings'], value_format),
+            ('Savings', -data['savings'], red_value_format),
         ]
 
         for label, value, format_style in items:
