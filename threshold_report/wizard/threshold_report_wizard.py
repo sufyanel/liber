@@ -183,10 +183,10 @@ class ThresholdReportWizard(models.TransientModel):
             domain.append(('company_id', 'in', self.company_ids.ids))
         else:
             # Use all companies if none selected
-            all_companies = self.env['res.company'].search([])
+            all_companies = self.env['res.company'].sudo().search([])
             domain.append(('company_id', 'in', all_companies.ids))
 
-        accounts = self.env['account.account'].search(domain)
+        accounts = self.env['account.account'].sudo().search(domain)
 
         if not accounts:
             return 0.0
@@ -198,7 +198,7 @@ class ThresholdReportWizard(models.TransientModel):
             ('move_id.state', '=', 'posted')
         ]
 
-        moves = self.env['account.move.line'].search(domain)
+        moves = self.env['account.move.line'].sudo().search(domain)
         return sum(moves.mapped('balance'))
 
     def _get_net_profit(self):
@@ -222,7 +222,7 @@ class ThresholdReportWizard(models.TransientModel):
             previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in self.company_ids]
         else:
             # Use all companies if none selected
-            all_companies = self.env['res.company'].search([])
+            all_companies = self.env['res.company'].sudo().search([])
             previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in all_companies]
 
         # Get options using the standard method - this will handle all the complex logic
@@ -259,10 +259,10 @@ class ThresholdReportWizard(models.TransientModel):
             domain.append(('company_id', 'in', self.company_ids.ids))
         else:
             # Use all companies if none selected
-            all_companies = self.env['res.company'].search([])
+            all_companies = self.env['res.company'].sudo().search([])
             domain.append(('company_id', 'in', all_companies.ids))
 
-        accounts = self.env['account.account'].search(domain)
+        accounts = self.env['account.account'].sudo().search(domain)
 
         if not accounts:
             return 0.0
@@ -276,7 +276,7 @@ class ThresholdReportWizard(models.TransientModel):
             ('move_id.state', '=', 'posted')
         ]
 
-        moves = self.env['account.move.line'].search(move_domain)
+        moves = self.env['account.move.line'].sudo().search(move_domain)
         return sum(moves.mapped('balance'))
 
     def _calculate_threshold(self, data):
