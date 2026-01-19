@@ -31,7 +31,6 @@ class InvoiceComparisonWizard(models.TransientModel):
     @api.onchange('report_type')
     def _onchange_report_type(self):
         if self.report_type != 'monthly': self.month = False
-
     def action_download_excel(self):
         if self.report_type == 'monthly' and not self.month:
             raise UserError('Please select a month for monthly report.')
