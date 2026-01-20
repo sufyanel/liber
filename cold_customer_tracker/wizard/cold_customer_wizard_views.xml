@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_cold_customer_wizard_form" model="ir.ui.view">
+        <field name="name">cold.customer.wizard.form</field>
+        <field name="model">cold.customer.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="date_from"/>
+                    <field name="date_to"/>
+                </group>
+                <footer>
+                    <button string="Show Cold Customers" name="action_show_cold_customers" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_cold_customer_wizard" model="ir.actions.act_window">
+        <field name="name">Cold Customer Report</field>
+        <field name="res_model">cold.customer.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_cold_customer_wizard"
+              name="Cold Customer Report"
+              parent="contacts.menu_contacts"
+              action="action_cold_customer_wizard"
+              sequence="100"/>
+</odoo>
