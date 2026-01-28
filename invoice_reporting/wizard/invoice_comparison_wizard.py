@@ -650,7 +650,7 @@ class InvoiceComparisonWizard(models.TransientModel):
         return sum(invoices.mapped('amount_total_signed'))
 
     def _get_customer_budget_for_month(self, customer_id, company_id, year, month):
-        analytic_account = self.env['account.analytic.account'].search([
+        analytic_account = self.env['account.analytic.account'].sudo().search([
             ('partner_id', '=', customer_id),
             ('company_id', '=', company_id)
         ], limit=1)
@@ -659,7 +659,7 @@ class InvoiceComparisonWizard(models.TransientModel):
             return 0.0
 
         # Find sales budget posts (revenue accounts)
-        sales_budget_posts = self.env['account.budget.post'].search([
+        sales_budget_posts = self.env['account.budget.post'].sudo().search([
             ('account_ids.account_type', '=', 'income'),
             ('company_id', '=', company_id)
         ])
@@ -670,7 +670,7 @@ class InvoiceComparisonWizard(models.TransientModel):
         start_date = date(year, month, 1)
         end_date = (start_date + relativedelta(months=1)) - relativedelta(days=1)
 
-        budget_lines = self.env['crossovered.budget.lines'].search([
+        budget_lines = self.env['crossovered.budget.lines'].sudo().search([
             ('analytic_account_id', '=', analytic_account.id),
             ('general_budget_id', 'in', sales_budget_posts.ids),
             ('date_from', '<=', end_date),
