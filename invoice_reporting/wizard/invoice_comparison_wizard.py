@@ -212,7 +212,11 @@ class InvoiceComparisonWizard(models.TransientModel):
                         curr_total = year_totals[i]
                         diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
                             1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, percent_format)
+                        worksheet.write(row, col, diff, workbook.add_format({
+                            'border': 1, 'num_format': '0.00%', 'align': 'right',
+                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                        }))
                         col += 1
 
                 # Then write budget columns at the end
@@ -430,7 +434,11 @@ class InvoiceComparisonWizard(models.TransientModel):
                         curr_total = year_totals[i]
                         diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
                             1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, percent_format)
+                        worksheet.write(row, col, diff, workbook.add_format({
+                            'border': 1, 'num_format': '0.00%', 'align': 'right',
+                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                        }))
                         col += 1
 
                 # Then write budget columns at the end
