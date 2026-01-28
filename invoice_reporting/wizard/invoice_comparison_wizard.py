@@ -104,28 +104,8 @@ class InvoiceComparisonWizard(models.TransientModel):
         worksheet.write(4, max(4, total_cols - 3), f'Date: {datetime.now().strftime("%B %d, %Y at %H:%M")}',
                         info_format)
 
-        # Headers with better styling
-        col = 0
-        worksheet.write(6, col, 'Customer', header_format)
-        col += 1
-
-        # First write all year columns (invoice data)
-        for i, year in enumerate(years):
-            worksheet.write(6, col, str(year), header_format)
-            col += 1
-
-            # Add Growth % column after each year except the first
-            if i > 0:
-                worksheet.write(6, col, f'Growth %', header_format)
-                col += 1
-
-        # Then write budget columns at the end
-        for year in budget_years:
-            worksheet.write(6, col, f'{year} Budget', header_format)
-            col += 1
-
         # Data with alternating row colors
-        row = 7
+        row = 6
         first_company = True
 
         for company_name, customers in companies.items():
@@ -134,6 +114,28 @@ class InvoiceComparisonWizard(models.TransientModel):
 
             # Company section header
             worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {company_name}', company_section_format)
+            row += 1
+
+            # Headers for this company
+            col = 0
+            worksheet.write(row, col, 'Customer', header_format)
+            col += 1
+
+            # First write all year columns (invoice data)
+            for i, year in enumerate(years):
+                worksheet.write(row, col, str(year), header_format)
+                col += 1
+
+                # Add Growth % column after each year except the first
+                if i > 0:
+                    worksheet.write(row, col, f'Growth %', header_format)
+                    col += 1
+
+            # Then write budget columns at the end
+            for year in budget_years:
+                worksheet.write(row, col, f'{year} Budget', header_format)
+                col += 1
+            
             row += 1
 
             # Alternating row colors for customers
@@ -210,7 +212,11 @@ class InvoiceComparisonWizard(models.TransientModel):
                         curr_total = year_totals[i]
                         diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
                             1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, percent_format)
+                        worksheet.write(row, col, diff, workbook.add_format({
+                            'border': 1, 'num_format': '0.00%', 'align': 'right',
+                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                        }))
                         col += 1
 
                 # Then write budget columns at the end
@@ -322,28 +328,7 @@ class InvoiceComparisonWizard(models.TransientModel):
                         info_format)
 
         # Headers
-        col = 0
-        worksheet.write(6, col, 'Customer', header_format)
-        col += 1
-
-        month_short = month_names[int(self.month)][:3]
-        # First write all year columns
-        for i, year in enumerate(years):
-            worksheet.write(6, col, f'{month_short} {year}', header_format)
-            col += 1
-
-            # Add Growth % column after each year except the first
-            if i > 0:
-                worksheet.write(6, col, f'Growth %', header_format)
-                col += 1
-
-        # Then write budget columns at the end
-        for year in budget_years:
-            worksheet.write(6, col, f'{month_short} {year} Budget', header_format)
-            col += 1
-
-        # Data with same styling as yearly
-        row = 7
+        row = 6
         first_company = True
 
         for company_name, customers in companies.items():
@@ -351,6 +336,29 @@ class InvoiceComparisonWizard(models.TransientModel):
                 row += 1
 
             worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {company_name}', company_section_format)
+            row += 1
+
+            # Headers for this company
+            col = 0
+            worksheet.write(row, col, 'Customer', header_format)
+            col += 1
+
+            month_short = month_names[int(self.month)][:3]
+            # First write all year columns
+            for i, year in enumerate(years):
+                worksheet.write(row, col, f'{month_short} {year}', header_format)
+                col += 1
+
+                # Add Growth % column after each year except the first
+                if i > 0:
+                    worksheet.write(row, col, f'Growth %', header_format)
+                    col += 1
+
+            # Then write budget columns at the end
+            for year in budget_years:
+                worksheet.write(row, col, f'{month_short} {year} Budget', header_format)
+                col += 1
+            
             row += 1
 
             customer_count = 0
@@ -426,7 +434,11 @@ class InvoiceComparisonWizard(models.TransientModel):
                         curr_total = year_totals[i]
                         diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
                             1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, percent_format)
+                        worksheet.write(row, col, diff, workbook.add_format({
+                            'border': 1, 'num_format': '0.00%', 'align': 'right',
+                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                        }))
                         col += 1
 
                 # Then write budget columns at the end
@@ -468,6 +480,34 @@ class InvoiceComparisonWizard(models.TransientModel):
             'target': 'self',
         }
 
+    def _get_partner_hierarchy(self, partner_ids):
+        """Get partner hierarchy mapping - parent to all children (including itself)"""
+        if not partner_ids:
+            return {}
+            
+        partners = self.env['res.partner'].browse(partner_ids)
+        hierarchy = {}
+        
+        for partner in partners:
+            # Find the top parent
+            top_parent = partner
+            while top_parent.parent_id and top_parent.parent_id.id in partner_ids:
+                top_parent = top_parent.parent_id
+            
+            # Group all related partners under the top parent
+            if top_parent.id not in hierarchy:
+                hierarchy[top_parent.id] = {
+                    'name': top_parent.name or top_parent.display_name or 'Unknown Customer',
+                    'partner_ids': set()
+                }
+            
+            # Add this partner and all its children to the group
+            hierarchy[top_parent.id]['partner_ids'].add(partner.id)
+            for child in partner.child_ids:
+                if child.id in partner_ids:
+                    hierarchy[top_parent.id]['partner_ids'].add(child.id)
+        
+        return hierarchy
     def _get_yearly_data(self):
         current_year = datetime.now().year
         years_count = int(self.years_count)
@@ -507,64 +547,78 @@ class InvoiceComparisonWizard(models.TransientModel):
         budget_lines = budget_lines.filtered(
             lambda rec: rec.crossovered_budget_id.state in ['confirm', 'validate', 'done'])
 
-        # Collect all unique customers
-        all_customers = set()
-
+        # Collect all unique customers by company
+        company_customers = {}
+        
         # Add customers from invoices
         for invoice in invoices:
             if invoice.invoice_date:
-                all_customers.add((invoice.company_id.id, invoice.partner_id.id, invoice.company_id.name,
-                                   invoice.partner_id.name or invoice.partner_id.display_name or 'Unknown Customer'))
+                company_id = invoice.company_id.id
+                if company_id not in company_customers:
+                    company_customers[company_id] = {'name': invoice.company_id.name, 'partner_ids': set()}
+                company_customers[company_id]['partner_ids'].add(invoice.partner_id.id)
 
         # Add customers from budget lines
         for budget_line in budget_lines:
             if budget_line.analytic_account_id.partner_id:
-                all_customers.add(
-                    (budget_line.analytic_account_id.company_id.id, budget_line.analytic_account_id.partner_id.id,
-                     budget_line.analytic_account_id.company_id.name,
-                     budget_line.analytic_account_id.partner_id.name or budget_line.analytic_account_id.partner_id.display_name or 'Unknown Customer'))
+                company_id = budget_line.analytic_account_id.company_id.id
+                if company_id not in company_customers:
+                    company_customers[company_id] = {'name': budget_line.analytic_account_id.company_id.name, 'partner_ids': set()}
+                company_customers[company_id]['partner_ids'].add(budget_line.analytic_account_id.partner_id.id)
 
-        # Group by company and customer, then calculate combined amounts
+        # Group by company and calculate combined amounts with hierarchy
         company_data = {}
 
-        for company_id, partner_id, company_name, customer_name in all_customers:
-            if company_name not in company_data:
-                company_data[company_name] = {}
-            if customer_name not in company_data[company_name]:
+        for company_id, company_info in company_customers.items():
+            company_name = company_info['name']
+            partner_ids = list(company_info['partner_ids'])
+            
+            # Get partner hierarchy for this company
+            hierarchy = self._get_partner_hierarchy(partner_ids)
+            
+            company_data[company_name] = {}
+            
+            for parent_id, parent_info in hierarchy.items():
+                customer_name = parent_info['name']
+                related_partner_ids = list(parent_info['partner_ids'])
+                
                 company_data[company_name][customer_name] = {}
+                
+                # Calculate combined amounts for all years
+                for year in years:
+                    if year < current_year:
+                        # Past year - only invoice data (sum all related partners)
+                        total_amount = 0.0
+                        for month in range(1, 13):
+                            for partner_id in related_partner_ids:
+                                amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
+                                total_amount += amount
+                        company_data[company_name][customer_name][year] = total_amount
+                    else:
+                        # Current/future year - separate invoice and budget (sum all related partners)
+                        invoice_amount = 0.0
+                        budget_amount = 0.0
 
-            # Calculate combined amounts for all years using month checking logic
-            for year in years:
-                if year < current_year:
-                    # Past year - only invoice data
-                    total_amount = 0.0
-                    for month in range(1, 13):
-                        amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
-                        total_amount += amount
-                    company_data[company_name][customer_name][year] = total_amount
-                else:
-                    # Current/future year - separate invoice and budget
-                    invoice_amount = 0.0
-                    budget_amount = 0.0
+                        for month in range(1, 13):
+                            target_month_end = date(year, month, 1) + relativedelta(months=1) - relativedelta(days=1)
+                            current_date = fields.Date.today()
 
-                    for month in range(1, 13):
-                        target_month_end = date(year, month, 1) + relativedelta(months=1) - relativedelta(days=1)
-                        current_date = fields.Date.today()
+                            if (year, month) <= (current_date.year, current_date.month):
+                                # Past month - use actual (sum all related partners)
+                                for partner_id in related_partner_ids:
+                                    amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
+                                    invoice_amount += amount
+                            else:
+                                # Future month - use budget (sum all related partners)
+                                for partner_id in related_partner_ids:
+                                    amount = self._get_customer_budget_for_month(partner_id, company_id, year, month)
+                                    budget_amount += amount
 
-                        if (year, month) <= (current_date.year, current_date.month):
-                            # Past month - use actual
-                            amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
-                            invoice_amount += amount
-                        else:
-                            # Future month - use budget
-                            amount = self._get_customer_budget_for_month(partner_id, company_id, year, month)
-                            budget_amount += amount
-
-                    company_data[company_name][customer_name][year] = {
-                        'invoice': invoice_amount,
-                        'budget': budget_amount,
-                        'total': invoice_amount + budget_amount
-                    }
+                        company_data[company_name][customer_name][year] = {
+                            'invoice': invoice_amount,
+                            'budget': budget_amount,
+                            'total': invoice_amount + budget_amount
+                        }
 
         return {'years': years, 'companies': company_data}
 
@@ -667,56 +721,69 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         invoices = self.env['account.move'].sudo().search(domain)
 
-        # Group by company and customer, then get amounts (actual or budget)
-        company_data = {}
-        processed_customers = set()
-
+        # Collect all unique customers by company
+        company_customers = {}
+        
         for invoice in invoices:
             if not invoice.invoice_date or invoice.invoice_date.month != month_int:
                 continue
+                
+            company_id = invoice.company_id.id
+            if company_id not in company_customers:
+                company_customers[company_id] = {'name': invoice.company_id.name, 'partner_ids': set()}
+            company_customers[company_id]['partner_ids'].add(invoice.partner_id.id)
 
-            company = invoice.company_id.name
-            customer = invoice.partner_id.name or invoice.partner_id.display_name or 'Unknown Customer'
-            customer_key = (invoice.company_id.id, invoice.partner_id.id, customer)
+        # Group by company and calculate combined amounts with hierarchy
+        company_data = {}
 
-            if company not in company_data:
-                company_data[company] = {}
-            if customer not in company_data[company]:
-                company_data[company][customer] = {}
-
-            if customer_key not in processed_customers:
-                # Get amounts for all years (actual or budget)
+        for company_id, company_info in company_customers.items():
+            company_name = company_info['name']
+            partner_ids = list(company_info['partner_ids'])
+            
+            # Get partner hierarchy for this company
+            hierarchy = self._get_partner_hierarchy(partner_ids)
+            
+            company_data[company_name] = {}
+            
+            for parent_id, parent_info in hierarchy.items():
+                customer_name = parent_info['name']
+                related_partner_ids = list(parent_info['partner_ids'])
+                
+                company_data[company_name][customer_name] = {}
+                
+                # Get amounts for all years (actual or budget) - sum all related partners
                 for year in years:
                     if year < current_year:
-                        # Past year - only invoice data
-                        amount = self._get_customer_actual_for_month(
-                            invoice.partner_id.id, invoice.company_id.id, year, month_int
-                        )
-                        company_data[company][customer][year] = amount
+                        # Past year - only invoice data (sum all related partners)
+                        total_amount = 0.0
+                        for partner_id in related_partner_ids:
+                            amount = self._get_customer_actual_for_month(partner_id, company_id, year, month_int)
+                            total_amount += amount
+                        company_data[company_name][customer_name][year] = total_amount
                     else:
-                        # Current/future year - separate invoice and budget
+                        # Current/future year - separate invoice and budget (sum all related partners)
                         target_month_end = date(year, month_int, 1) + relativedelta(months=1) - relativedelta(days=1)
                         current_date = fields.Date.today()
 
                         if (year, month_int) <= (current_date.year, current_date.month):
-                            # Past month - use actual
-                            invoice_amount = self._get_customer_actual_for_month(
-                                invoice.partner_id.id, invoice.company_id.id, year, month_int
-                            )
+                            # Past month - use actual (sum all related partners)
+                            invoice_amount = 0.0
+                            for partner_id in related_partner_ids:
+                                amount = self._get_customer_actual_for_month(partner_id, company_id, year, month_int)
+                                invoice_amount += amount
                             budget_amount = 0
                         else:
-                            # Future month - use budget
+                            # Future month - use budget (sum all related partners)
                             invoice_amount = 0
-                            budget_amount = self._get_customer_budget_for_month(
-                                invoice.partner_id.id, invoice.company_id.id, year, month_int
-                            )
+                            budget_amount = 0.0
+                            for partner_id in related_partner_ids:
+                                amount = self._get_customer_budget_for_month(partner_id, company_id, year, month_int)
+                                budget_amount += amount
 
-                        company_data[company][customer][year] = {
+                        company_data[company_name][customer_name][year] = {
                             'invoice': invoice_amount,
                             'budget': budget_amount,
                             'total': invoice_amount + budget_amount
                         }
-
-                processed_customers.add(customer_key)
 
         return {'years': years, 'companies': company_data}
