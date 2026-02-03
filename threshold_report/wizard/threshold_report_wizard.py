@@ -141,9 +141,7 @@ class ThresholdReportWizard(models.TransientModel):
         net_profit = self._get_net_profit()
         data['pbt'] = net_profit
 
-        # Get depreciation with company-specific account codes
-        depreciation_accounts = ['02.2.202', '02.1.402', '02.2.201']
-        data['depreciation'] = self._get_account_balance(depreciation_accounts)
+        data['depreciation'] = self._get_account_balance('06.2.102')
 
         # Capital investments from wizard
         data['capital_investments'] = self.capital_investments
@@ -160,8 +158,9 @@ class ThresholdReportWizard(models.TransientModel):
         # Change in Inventory (using Trial Balance approach)
         data['change_inventory'] = self._get_balance_change_from_trial_balance('asset_current')
 
-        # Debt Retirement (account code 02.2.202)
-        data['debt_retirement'] = self._get_account_balance('02.2.202')
+        # Get depreciation with company-specific account codes
+        depreciation_accounts = ['02.2.202', '02.1.402', '02.2.201']
+        data['debt_retirement'] = self._get_account_balance_related(depreciation_accounts)
 
         # Investor Return (wizard value + account 03.0.004)
         account_investor_return = self._get_account_balance('03.0.004')
@@ -178,7 +177,35 @@ class ThresholdReportWizard(models.TransientModel):
         # Default depreciation account
         return ['06.2.102']
 
-    def _get_account_balance(self, account_codes, date_from=None, date_to=None):
+    def _get_account_balance(self, account_code, date_from=None, date_to=None):
+        """Get account balance for specified code and period"""
+        if not date_from or not date_to:
+            date_from, date_to = self._get_date_range()
+
+        domain = [('code', '=', account_code)]
+        if self.company_id:
+            domain.append(('company_id', 'in', self.company_id.ids))
+        else:
+            # Use all companies if none selected
+            all_companies = self.env['res.company'].sudo().search([])
+            domain.append(('company_id', 'in', all_companies.ids))
+
+        accounts = self.env['account.account'].sudo().search(domain)
+
+        if not accounts:
+            return 0.0
+
+        domain = [
+            ('account_id', 'in', accounts.ids),
+            ('date', '>=', date_from),
+            ('date', '<=', date_to),
+            ('move_id.state', '=', 'posted')
+        ]
+
+        moves = self.env['account.move.line'].sudo().search(domain)
+        return sum(moves.mapped('balance'))
+
+    def _get_account_balance_related(self, account_codes, date_from=None, date_to=None):
         """Get account balance for specified codes and period"""
         if not date_from or not date_to:
             date_from, date_to = self._get_date_range()
@@ -187,30 +214,13 @@ class ThresholdReportWizard(models.TransientModel):
             account_codes = [account_codes]
 
         total_balance = 0.0
-        liber_accounts = ['02.2.201', '02.1.402', '01.1.105', '01.1.104']
-        liber_balance = self._get_liber_holding_balance(liber_accounts, date_from, date_to)
+        related_accounts = ['02.2.201', '01.1.110', '01.1.105', '01.1.104']
+        liber_balance = self._get_related_balance(related_accounts, date_from, date_to)
         total_balance += liber_balance * 0.5
 
         for account_code in account_codes:
             company_balance = self._get_single_account_balance(account_code, date_from, date_to)
-
-            if account_code in ['02.2.202', '02.1.402', '02.2.201'] and self.company_id:
-                company_names = self.company_id.mapped('name')
-                company_lower = ' '.join(company_names).lower()
-
-                # Check if company is Tooling/TC or RBC Industrial
-                is_tooling = any(term in company_lower for term in ['tooling', 'tc'])
-                is_rbc_industrial = 'rbc' in company_lower and 'industrial' in company_lower
-
-                # For TC: add 100% company balance + 50% Liber Holding for all accounts
-                if is_tooling:
-                    total_balance += company_balance
-
-                # For RBC Industrial: only apply for account 02.2.201
-                elif is_rbc_industrial and account_code == '02.2.201':
-                    total_balance += company_balance
-
-
+            total_balance += company_balance
 
         return total_balance
 
@@ -237,7 +247,7 @@ class ThresholdReportWizard(models.TransientModel):
         moves = self.env['account.move.line'].sudo().search(domain)
         return sum(moves.mapped('balance'))
 
-    def _get_liber_holding_balance(self, account_codes, date_from, date_to):
+    def _get_related_balance(self, account_codes, date_from, date_to):
         """Get balance from Liber Holding company for specified accounts"""
         liber_company = self.env['res.company'].sudo().search([('name', 'ilike', 'liber holding')], limit=1)
         if not liber_company:
