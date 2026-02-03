@@ -13,6 +13,7 @@
         'security/ir.model.access.csv',
         'views/threshold_report_wizard_view.xml',
         'views/menu_views.xml',
+        'views/res_cpmpany_views_ext.xml',
     ],
     'installable': True,
     'auto_install': False,

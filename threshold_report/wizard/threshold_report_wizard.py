@@ -11,7 +11,7 @@ class ThresholdReportWizard(models.TransientModel):
     _name = 'threshold.report.wizard'
     _description = 'Threshold Report Wizard'
 
-    company_ids = fields.Many2many('res.company', string='Companies')
+    company_id = fields.Many2one('res.company', string='Company')
     capital_investments = fields.Float(string='Capital Investments', default=100000.0)
     savings = fields.Float(string='Savings', default=50000.0)
     investor_return = fields.Float(string='Investor Return', default=0.0)
@@ -179,8 +179,8 @@ class ThresholdReportWizard(models.TransientModel):
             date_from, date_to = self._get_date_range()
 
         domain = [('code', '=', account_code)]
-        if self.company_ids:
-            domain.append(('company_id', 'in', self.company_ids.ids))
+        if self.company_id:
+            domain.append(('company_id', 'in', self.company_id.ids))
         else:
             # Use all companies if none selected
             all_companies = self.env['res.company'].sudo().search([])
@@ -218,8 +218,8 @@ class ThresholdReportWizard(models.TransientModel):
         }
 
         # If companies are selected, add them to previous_options
-        if self.company_ids:
-            previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in self.company_ids]
+        if self.company_id:
+            previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in self.company_id]
         else:
             # Use all companies if none selected
             all_companies = self.env['res.company'].sudo().search([])
@@ -255,8 +255,8 @@ class ThresholdReportWizard(models.TransientModel):
         """Get total balance for account type as of specific date"""
         # Get accounts of the specified type
         domain = [('account_type', '=', account_type)]
-        if self.company_ids:
-            domain.append(('company_id', 'in', self.company_ids.ids))
+        if self.company_id:
+            domain.append(('company_id', 'in', self.company_id.ids))
         else:
             # Use all companies if none selected
             all_companies = self.env['res.company'].sudo().search([])
@@ -392,7 +392,7 @@ class ThresholdReportWizard(models.TransientModel):
         # Company and Period Information Header
         worksheet.set_row(4, 20)
         period_text = self._get_period_text()
-        company_text = ', '.join(self.company_ids.mapped('name')) if self.company_ids else 'All Companies'
+        company_text = ', '.join(self.company_id.mapped('name')) if self.company_id else 'All Companies'
 
         worksheet.write(4, 0, f'Company: {company_text}', company_header_format)
         worksheet.write(4, 1, f'Period: {period_text}', period_header_format)

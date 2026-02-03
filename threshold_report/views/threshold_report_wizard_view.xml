@@ -6,8 +6,8 @@
         <field name="arch" type="xml">
             <form string="Threshold Report">
                 <group>
-                    <group string="Companies &amp; Period">
-                        <field name="company_ids" widget="many2many_tags"/>
+                    <group string="Company &amp; Period">
+                        <field name="company_id" domain="[('required_threshold', '=', True)]"/>
                         <field name="duration" required="1"/>
                         <field name="year" invisible="duration == False" required="duration != False"/>
                         <field name="quarter" invisible="duration != 'quarter'" required="duration == 'quarter'"/>
