@@ -32,6 +32,7 @@ class ThresholdReportWizard(models.TransientModel):
     @api.model
     def _get_year_selection(self):
         """Return years from 2019 to current year"""
+
         current_year = datetime.now().year
         return [(str(year), str(year)) for year in range(2022, current_year + 1)]
 
@@ -75,6 +76,7 @@ class ThresholdReportWizard(models.TransientModel):
     @api.onchange('year')
     def _onchange_year(self):
         """Reset quarter and month when year changes"""
+
         self.quarter = False
         self.month = False
 
@@ -122,6 +124,7 @@ class ThresholdReportWizard(models.TransientModel):
 
     def _get_threshold_data(self):
         """Calculate all threshold report values"""
+
         # Get date range based on selection
         date_from, date_to = self._get_date_range()
 
