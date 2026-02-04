@@ -251,16 +251,16 @@ class ThresholdReportWizard(models.TransientModel):
         return sum(moves.mapped('balance'))
 
     def _get_related_balance(self, account_codes, date_from, date_to):
-        """Get balance from Liber Holding company for specified accounts"""
-        liber_company = self.env['res.company'].sudo().search([('name', 'ilike', 'liber holding')], limit=1)
-        if not liber_company:
+        """Get balance from Related company for specified accounts"""
+        related_company = self.company_id.related_company_id
+        if not related_company:
             return 0.0
 
         total_balance = 0.0
         for account_code in account_codes:
             domain = [
                 ('code', '=', account_code),
-                ('company_id', '=', liber_company.id)
+                ('company_id', '=', related_company.id)
             ]
             accounts = self.env['account.account'].sudo().search(domain)
             if accounts:
