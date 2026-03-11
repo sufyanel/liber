@@ -89,6 +89,8 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         years = data['years']
         companies = data['companies']
+        company_header = data.get('company_header')
+        company_header = data.get('company_header')
         current_year = datetime.now().year
 
         # Calculate total columns needed - invoices, growth %, then budgets
@@ -106,135 +108,150 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         # Data with alternating row colors
         row = 6
-        first_company = True
 
-        for company_name, customers in companies.items():
-            if not first_company:
-                row += 1  # Empty row between companies
+        company_items = list(companies.items())
+        if not company_items:
+            workbook.close()
+            output.seek(0)
+            attachment = self.env['ir.attachment'].create({
+                'name': f'Invoice_Comparison_yearly_{datetime.now().strftime("%Y%m%d")}.xlsx',
+                'type': 'binary',
+                'datas': base64.b64encode(output.read()),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            })
 
-            # Company section header
-            worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {company_name}', company_section_format)
-            row += 1
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'self',
+            }
 
-            # Headers for this company
-            col = 0
-            worksheet.write(row, col, 'Customer', header_format)
+        company_name, customers = company_items[0]
+
+        # Company section header
+        header_label = company_header or company_name
+        worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {header_label}', company_section_format)
+        row += 1
+
+        # Headers for this (aggregated) company
+        col = 0
+        worksheet.write(row, col, 'Customer', header_format)
+        col += 1
+
+        # First write all year columns (invoice data)
+        for i, year in enumerate(years):
+            worksheet.write(row, col, str(year), header_format)
             col += 1
 
-            # First write all year columns (invoice data)
+            # Add Growth % column after each year except the first
+            if i > 0:
+                worksheet.write(row, col, f'Growth %', header_format)
+                col += 1
+
+        # Then write budget columns at the end
+        for year in budget_years:
+            worksheet.write(row, col, f'{year} Budget', header_format)
+            col += 1
+        
+        row += 1
+
+        # Alternating row colors for customers
+        customer_count = 0
+        for customer, year_data in customers.items():
+            col = 0
+
+            # Check if new customer (0 amount in second last year)
+            second_last_year_data = year_data.get(years[-2], {'invoice': 0, 'budget': 0, 'total': 0})
+            if isinstance(second_last_year_data, dict):
+                second_last_year_total = second_last_year_data['total']
+            else:
+                second_last_year_total = second_last_year_data
+
+            is_new_customer = second_last_year_total == 0
+
+            # Set row background - yellow for new customers, alternating for others
+            if is_new_customer:
+                row_format = workbook.add_format({
+                    'border': 1, 'align': 'left', 'font_size': 9,
+                    'border_color': '#D0D0D0', 'bg_color': '#FFFF99'
+                })
+                data_row_format = workbook.add_format({
+                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                    'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#FFFF99'
+                })
+            elif customer_count % 2 == 0:
+                row_format = workbook.add_format({
+                    'border': 1, 'align': 'left', 'font_size': 9,
+                    'border_color': '#D0D0D0', 'bg_color': '#F8F9FA'
+                })
+                data_row_format = workbook.add_format({
+                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                    'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#F8F9FA'
+                })
+            else:
+                row_format = customer_format
+                data_row_format = data_format
+
+            worksheet.write(row, col, customer, row_format)
+            col += 1
+
+            # First write all year data (invoice/total amounts)
+            year_totals = []
+            year_budgets = {}
+
             for i, year in enumerate(years):
-                worksheet.write(row, col, str(year), header_format)
+                year_data_item = year_data.get(year, {'invoice': 0, 'budget': 0, 'total': 0})
+
+                # Handle both dict and float formats
+                if isinstance(year_data_item, dict):
+                    year_total = year_data_item['total']
+                    year_invoice = year_data_item['invoice']
+                    year_budget = year_data_item['budget']
+                else:
+                    year_total = year_data_item
+                    year_invoice = year_data_item
+                    year_budget = 0
+
+                year_totals.append(year_total)
+                if year >= current_year:
+                    year_budgets[year] = year_budget
+
+                # Write year data (for current/future years, use invoice amount only)
+                if year >= current_year:
+                    worksheet.write(row, col, year_invoice, data_row_format)
+                else:
+                    worksheet.write(row, col, year_total, data_row_format)
                 col += 1
 
                 # Add Growth % column after each year except the first
                 if i > 0:
-                    worksheet.write(row, col, f'Growth %', header_format)
+                    prev_total = year_totals[i - 1]
+                    curr_total = year_totals[i]
+                    diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
+                        1 if curr_total > 0 else 0)
+                    worksheet.write(row, col, diff, workbook.add_format({
+                        'border': 1, 'num_format': '0.00%', 'align': 'right',
+                        'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                        'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                    }))
                     col += 1
 
             # Then write budget columns at the end
-            for year in budget_years:
-                worksheet.write(row, col, f'{year} Budget', header_format)
+            budget_format = workbook.add_format({
+                'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                'border_color': '#D0D0D0', 'font_size': 9,
+                'bg_color': '#FFFF99' if is_new_customer else ('#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF')
+            })
+
+            for year in [y for y in years if y >= current_year]:
+                budget_amount = year_budgets.get(year, 0)
+                worksheet.write(row, col, budget_amount if budget_amount > 0 else 0, budget_format)
                 col += 1
-            
+
             row += 1
-
-            # Alternating row colors for customers
-            customer_count = 0
-            for customer, year_data in customers.items():
-                col = 0
-
-                # Check if new customer (0 amount in second last year)
-                second_last_year_data = year_data.get(years[-2], {'invoice': 0, 'budget': 0, 'total': 0})
-                if isinstance(second_last_year_data, dict):
-                    second_last_year_total = second_last_year_data['total']
-                else:
-                    second_last_year_total = second_last_year_data
-
-                is_new_customer = second_last_year_total == 0
-
-                # Set row background - yellow for new customers, alternating for others
-                if is_new_customer:
-                    row_format = workbook.add_format({
-                        'border': 1, 'align': 'left', 'font_size': 9,
-                        'border_color': '#D0D0D0', 'bg_color': '#FFFF99'
-                    })
-                    data_row_format = workbook.add_format({
-                        'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                        'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#FFFF99'
-                    })
-                elif customer_count % 2 == 0:
-                    row_format = workbook.add_format({
-                        'border': 1, 'align': 'left', 'font_size': 9,
-                        'border_color': '#D0D0D0', 'bg_color': '#F8F9FA'
-                    })
-                    data_row_format = workbook.add_format({
-                        'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                        'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#F8F9FA'
-                    })
-                else:
-                    row_format = customer_format
-                    data_row_format = data_format
-
-                worksheet.write(row, col, customer, row_format)
-                col += 1
-
-                # First write all year data (invoice/total amounts)
-                year_totals = []
-                year_budgets = {}
-
-                for i, year in enumerate(years):
-                    year_data_item = year_data.get(year, {'invoice': 0, 'budget': 0, 'total': 0})
-
-                    # Handle both dict and float formats
-                    if isinstance(year_data_item, dict):
-                        year_total = year_data_item['total']
-                        year_invoice = year_data_item['invoice']
-                        year_budget = year_data_item['budget']
-                    else:
-                        year_total = year_data_item
-                        year_invoice = year_data_item
-                        year_budget = 0
-
-                    year_totals.append(year_total)
-                    if year >= current_year:
-                        year_budgets[year] = year_budget
-
-                    # Write year data (for current/future years, use invoice amount only)
-                    if year >= current_year:
-                        worksheet.write(row, col, year_invoice, data_row_format)
-                    else:
-                        worksheet.write(row, col, year_total, data_row_format)
-                    col += 1
-
-                    # Add Growth % column after each year except the first
-                    if i > 0:
-                        prev_total = year_totals[i - 1]
-                        curr_total = year_totals[i]
-                        diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
-                            1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, workbook.add_format({
-                            'border': 1, 'num_format': '0.00%', 'align': 'right',
-                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
-                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
-                        }))
-                        col += 1
-
-                # Then write budget columns at the end
-                budget_format = workbook.add_format({
-                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                    'border_color': '#D0D0D0', 'font_size': 9,
-                    'bg_color': '#FFFF99' if is_new_customer else ('#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF')
-                })
-
-                for year in [y for y in years if y >= current_year]:
-                    budget_amount = year_budgets.get(year, 0)
-                    worksheet.write(row, col, budget_amount if budget_amount > 0 else 0, budget_format)
-                    col += 1
-
-                row += 1
-                customer_count += 1
-
-            first_company = False
+            customer_count += 1
 
         # Professional column widths
         worksheet.set_column('A:A', 28)
@@ -329,134 +346,149 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         # Headers
         row = 6
-        first_company = True
 
-        for company_name, customers in companies.items():
-            if not first_company:
-                row += 1
+        company_items = list(companies.items())
+        if not company_items:
+            workbook.close()
+            output.seek(0)
+            attachment = self.env['ir.attachment'].create({
+                'name': f'Invoice_Comparison_{month_names[int(self.month)]}_{datetime.now().strftime("%Y%m%d")}.xlsx',
+                'type': 'binary',
+                'datas': base64.b64encode(output.read()),
+                'res_model': self._name,
+                'res_id': self.id,
+                'mimetype': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            })
 
-            worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {company_name}', company_section_format)
-            row += 1
+            return {
+                'type': 'ir.actions.act_url',
+                'url': f'/web/content/{attachment.id}?download=true',
+                'target': 'self',
+            }
 
-            # Headers for this company
-            col = 0
-            worksheet.write(row, col, 'Customer', header_format)
+        company_name, customers = company_items[0]
+        header_label = company_header or company_name
+
+        worksheet.merge_range(row, 0, row, total_cols - 1, f'🏢 {header_label}', company_section_format)
+        row += 1
+
+        # Headers for this (aggregated) company
+        col = 0
+        worksheet.write(row, col, 'Customer', header_format)
+        col += 1
+
+        month_short = month_names[int(self.month)][:3]
+        # First write all year columns
+        for i, year in enumerate(years):
+            worksheet.write(row, col, f'{month_short} {year}', header_format)
             col += 1
 
-            month_short = month_names[int(self.month)][:3]
-            # First write all year columns
+            # Add Growth % column after each year except the first
+            if i > 0:
+                worksheet.write(row, col, f'Growth %', header_format)
+                col += 1
+
+        # Then write budget columns at the end
+        for year in budget_years:
+            worksheet.write(row, col, f'{month_short} {year} Budget', header_format)
+            col += 1
+        
+        row += 1
+
+        customer_count = 0
+        for customer, year_data in customers.items():
+            col = 0
+
+            # Check if new customer (0 amount in second last year)
+            second_last_year_data = year_data.get(years[-2], {'invoice': 0, 'budget': 0, 'total': 0})
+            if isinstance(second_last_year_data, dict):
+                second_last_year_total = second_last_year_data['total']
+            else:
+                second_last_year_total = second_last_year_data
+
+            is_new_customer = second_last_year_total == 0
+
+            # Set row background - yellow for new customers, alternating for others
+            if is_new_customer:
+                row_format = workbook.add_format({
+                    'border': 1, 'align': 'left', 'font_size': 9,
+                    'border_color': '#D0D0D0', 'bg_color': '#FFFF99'
+                })
+                data_row_format = workbook.add_format({
+                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                    'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#FFFF99'
+                })
+            elif customer_count % 2 == 0:
+                row_format = workbook.add_format({
+                    'border': 1, 'align': 'left', 'font_size': 9,
+                    'border_color': '#D0D0D0', 'bg_color': '#F8F9FA'
+                })
+                data_row_format = workbook.add_format({
+                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                    'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#F8F9FA'
+                })
+            else:
+                row_format = customer_format
+                data_row_format = data_format
+
+            worksheet.write(row, col, customer, row_format)
+            col += 1
+
+            # First write all year data (invoice/total amounts)
+            year_totals = []
+            year_budgets = {}
+
             for i, year in enumerate(years):
-                worksheet.write(row, col, f'{month_short} {year}', header_format)
+                year_data_item = year_data.get(year, {'invoice': 0, 'budget': 0, 'total': 0})
+
+                # Handle both dict and float formats
+                if isinstance(year_data_item, dict):
+                    year_total = year_data_item['total']
+                    year_invoice = year_data_item['invoice']
+                    year_budget = year_data_item['budget']
+                else:
+                    year_total = year_data_item
+                    year_invoice = year_data_item
+                    year_budget = 0
+
+                year_totals.append(year_total)
+                if year >= current_year:
+                    year_budgets[year] = year_budget
+
+                # Write year data (for current/future years, use invoice amount only)
+                if year >= current_year:
+                    worksheet.write(row, col, year_invoice, data_row_format)
+                else:
+                    worksheet.write(row, col, year_total, data_row_format)
                 col += 1
 
                 # Add Growth % column after each year except the first
                 if i > 0:
-                    worksheet.write(row, col, f'Growth %', header_format)
+                    prev_total = year_totals[i - 1]
+                    curr_total = year_totals[i]
+                    diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
+                        1 if curr_total > 0 else 0)
+                    worksheet.write(row, col, diff, workbook.add_format({
+                        'border': 1, 'num_format': '0.00%', 'align': 'right',
+                        'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
+                        'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
+                    }))
                     col += 1
 
             # Then write budget columns at the end
-            for year in budget_years:
-                worksheet.write(row, col, f'{month_short} {year} Budget', header_format)
+            budget_format = workbook.add_format({
+                'border': 1, 'num_format': '#,##0.00', 'align': 'right',
+                'border_color': '#D0D0D0', 'font_size': 9,
+                'bg_color': '#FFFF99' if is_new_customer else ('#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF')
+            })
+
+            for year in [y for y in years if y >= current_year]:
+                budget_amount = year_budgets.get(year, 0)
+                worksheet.write(row, col, budget_amount if budget_amount > 0 else 0, budget_format)
                 col += 1
-            
+
             row += 1
-
-            customer_count = 0
-            for customer, year_data in customers.items():
-                col = 0
-
-                # Check if new customer (0 amount in second last year)
-                second_last_year_data = year_data.get(years[-2], {'invoice': 0, 'budget': 0, 'total': 0})
-                if isinstance(second_last_year_data, dict):
-                    second_last_year_total = second_last_year_data['total']
-                else:
-                    second_last_year_total = second_last_year_data
-
-                is_new_customer = second_last_year_total == 0
-
-                # Set row background - yellow for new customers, alternating for others
-                if is_new_customer:
-                    row_format = workbook.add_format({
-                        'border': 1, 'align': 'left', 'font_size': 9,
-                        'border_color': '#D0D0D0', 'bg_color': '#FFFF99'
-                    })
-                    data_row_format = workbook.add_format({
-                        'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                        'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#FFFF99'
-                    })
-                elif customer_count % 2 == 0:
-                    row_format = workbook.add_format({
-                        'border': 1, 'align': 'left', 'font_size': 9,
-                        'border_color': '#D0D0D0', 'bg_color': '#F8F9FA'
-                    })
-                    data_row_format = workbook.add_format({
-                        'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                        'border_color': '#D0D0D0', 'font_size': 9, 'bg_color': '#F8F9FA'
-                    })
-                else:
-                    row_format = customer_format
-                    data_row_format = data_format
-
-                worksheet.write(row, col, customer, row_format)
-                col += 1
-
-                # First write all year data (invoice/total amounts)
-                year_totals = []
-                year_budgets = {}
-
-                for i, year in enumerate(years):
-                    year_data_item = year_data.get(year, {'invoice': 0, 'budget': 0, 'total': 0})
-
-                    # Handle both dict and float formats
-                    if isinstance(year_data_item, dict):
-                        year_total = year_data_item['total']
-                        year_invoice = year_data_item['invoice']
-                        year_budget = year_data_item['budget']
-                    else:
-                        year_total = year_data_item
-                        year_invoice = year_data_item
-                        year_budget = 0
-
-                    year_totals.append(year_total)
-                    if year >= current_year:
-                        year_budgets[year] = year_budget
-
-                    # Write year data (for current/future years, use invoice amount only)
-                    if year >= current_year:
-                        worksheet.write(row, col, year_invoice, data_row_format)
-                    else:
-                        worksheet.write(row, col, year_total, data_row_format)
-                    col += 1
-
-                    # Add Growth % column after each year except the first
-                    if i > 0:
-                        prev_total = year_totals[i - 1]
-                        curr_total = year_totals[i]
-                        diff = ((curr_total - prev_total) / prev_total) if prev_total != 0 else (
-                            1 if curr_total > 0 else 0)
-                        worksheet.write(row, col, diff, workbook.add_format({
-                            'border': 1, 'num_format': '0.00%', 'align': 'right',
-                            'font_color': '#E67E22', 'bg_color': '#FFFF99' if is_new_customer else '#FDF2E9',
-                            'border_color': '#D0D0D0', 'bold': True, 'font_size': 9
-                        }))
-                        col += 1
-
-                # Then write budget columns at the end
-                budget_format = workbook.add_format({
-                    'border': 1, 'num_format': '#,##0.00', 'align': 'right',
-                    'border_color': '#D0D0D0', 'font_size': 9,
-                    'bg_color': '#FFFF99' if is_new_customer else ('#E8F4FD' if customer_count % 2 == 0 else '#FFFFFF')
-                })
-
-                for year in [y for y in years if y >= current_year]:
-                    budget_amount = year_budgets.get(year, 0)
-                    worksheet.write(row, col, budget_amount if budget_amount > 0 else 0, budget_format)
-                    col += 1
-
-                row += 1
-                customer_count += 1
-
-            first_company = False
+            customer_count += 1
 
         worksheet.set_column('A:A', 28)
         worksheet.set_column(1, total_cols - 1, 14)
@@ -481,40 +513,59 @@ class InvoiceComparisonWizard(models.TransientModel):
         }
 
     def _get_partner_hierarchy(self, partner_ids):
-        """Get partner hierarchy mapping - parent to all children (including itself)"""
+        """Return mapping of top parent partner -> grouped child partners.
+
+        This walks all the way up the parent chain so that *all* children and
+        grandchildren are rolled up to the main parent (e.g. Waseem), even if
+        the parent itself does not directly have invoices/budgets. Only the
+        partners present in ``partner_ids`` are included in the grouped set.
+        """
         if not partner_ids:
             return {}
-            
+
         partners = self.env['res.partner'].browse(partner_ids)
         hierarchy = {}
-        
+
         for partner in partners:
-            # Find the top parent
+            # Find the absolute top parent in the hierarchy
             top_parent = partner
-            while top_parent.parent_id and top_parent.parent_id.id in partner_ids:
+            while top_parent.parent_id:
                 top_parent = top_parent.parent_id
-            
+
             # Group all related partners under the top parent
             if top_parent.id not in hierarchy:
                 hierarchy[top_parent.id] = {
                     'name': top_parent.name or top_parent.display_name or 'Unknown Customer',
                     'partner_ids': set()
                 }
-            
-            # Add this partner and all its children to the group
+
+            # Add this specific partner to the group (we don't need to walk
+            # child_ids; we only care about partners that actually appear in
+            # partner_ids for the current dataset).
             hierarchy[top_parent.id]['partner_ids'].add(partner.id)
-            for child in partner.child_ids:
-                if child.id in partner_ids:
-                    hierarchy[top_parent.id]['partner_ids'].add(child.id)
-        
+
         return hierarchy
     def _get_yearly_data(self):
         current_year = datetime.now().year
         years_count = int(self.years_count)
         years = [current_year - years_count + 1 + i for i in range(years_count)]
 
-        # Get ALL company partners to exclude
+        # Get ALL company partners to exclude as customers (legal entities themselves)
         all_company_partners = self.env['res.company'].search([]).mapped('partner_id.id')
+
+        # Always exclude contacts that belong to these internal group companies,
+        # whether or not those companies are selected in the wizard.
+        internal_company_names = [
+            'Liber Holdings',
+            'Liber Industrial',
+            'Roger Brown Co.',
+            'Tooling Components',
+            'Globe Electric Supply Co Inc',
+            'RBC Industrial LLC',
+        ]
+        internal_company_partner_ids = self.env['res.company'].search(
+            [('name', 'in', internal_company_names)]
+        ).mapped('partner_id.id')
 
         # Get all customers from invoices
         invoice_domain = [
@@ -523,6 +574,7 @@ class InvoiceComparisonWizard(models.TransientModel):
             ('invoice_date', '>=', date(years[0], 1, 1)),
             ('invoice_date', '<=', date(years[-1], 12, 31)),
             ('partner_id', 'not in', all_company_partners),
+            ('partner_id.commercial_partner_id', 'not in', internal_company_partner_ids),
             ('partner_id.active', '=', True)
         ]
 
@@ -537,6 +589,7 @@ class InvoiceComparisonWizard(models.TransientModel):
             ('date_to', '>=', date(years[0], 1, 1)),
             ('planned_amount', '>', 0),
             ('analytic_account_id.partner_id', 'not in', all_company_partners),
+            ('analytic_account_id.partner_id.commercial_partner_id', 'not in', internal_company_partner_ids),
             ('analytic_account_id.partner_id.active', '=', True)
         ]
 
@@ -549,6 +602,7 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         # Collect all unique customers by company
         company_customers = {}
+        company_names = set()
         
         # Add customers from invoices
         for invoice in invoices:
@@ -556,6 +610,7 @@ class InvoiceComparisonWizard(models.TransientModel):
                 company_id = invoice.company_id.id
                 if company_id not in company_customers:
                     company_customers[company_id] = {'name': invoice.company_id.name, 'partner_ids': set()}
+                company_names.add(invoice.company_id.name)
                 company_customers[company_id]['partner_ids'].add(invoice.partner_id.id)
 
         # Add customers from budget lines
@@ -564,27 +619,29 @@ class InvoiceComparisonWizard(models.TransientModel):
                 company_id = budget_line.analytic_account_id.company_id.id
                 if company_id not in company_customers:
                     company_customers[company_id] = {'name': budget_line.analytic_account_id.company_id.name, 'partner_ids': set()}
+                company_names.add(budget_line.analytic_account_id.company_id.name)
                 company_customers[company_id]['partner_ids'].add(budget_line.analytic_account_id.partner_id.id)
 
-        # Group by company and calculate combined amounts with hierarchy
-        company_data = {}
+        # Group and calculate combined amounts with hierarchy ACROSS companies.
+        # Each top parent customer appears only once with amounts summed from all
+        # selected companies.
+        aggregated_customers = {}
 
         for company_id, company_info in company_customers.items():
-            company_name = company_info['name']
             partner_ids = list(company_info['partner_ids'])
-            
+
             # Get partner hierarchy for this company
             hierarchy = self._get_partner_hierarchy(partner_ids)
-            
-            company_data[company_name] = {}
-            
+
             for parent_id, parent_info in hierarchy.items():
                 customer_name = parent_info['name']
                 related_partner_ids = list(parent_info['partner_ids'])
-                
-                company_data[company_name][customer_name] = {}
-                
-                # Calculate combined amounts for all years
+
+                if customer_name not in aggregated_customers:
+                    aggregated_customers[customer_name] = {}
+
+                # Calculate combined amounts for all years for this company,
+                # then add them into the global customer entry.
                 for year in years:
                     if year < current_year:
                         # Past year - only invoice data (sum all related partners)
@@ -593,7 +650,16 @@ class InvoiceComparisonWizard(models.TransientModel):
                             for partner_id in related_partner_ids:
                                 amount = self._get_customer_actual_for_month(partner_id, company_id, year, month)
                                 total_amount += amount
-                        company_data[company_name][customer_name][year] = total_amount
+
+                        existing = aggregated_customers[customer_name].get(year, 0.0)
+                        if isinstance(existing, dict):
+                            # Existing dict (from current/future year structure)
+                            existing_total = existing.get('total', 0.0)
+                            existing_invoice = existing.get('invoice', 0.0)
+                            aggregated_customers[customer_name][year]['total'] = existing_total + total_amount
+                            aggregated_customers[customer_name][year]['invoice'] = existing_invoice + total_amount
+                        else:
+                            aggregated_customers[customer_name][year] = existing + total_amount
                     else:
                         # Current/future year - separate invoice and budget (sum all related partners)
                         invoice_amount = 0.0
@@ -614,13 +680,25 @@ class InvoiceComparisonWizard(models.TransientModel):
                                     amount = self._get_customer_budget_for_month(partner_id, company_id, year, month)
                                     budget_amount += amount
 
-                        company_data[company_name][customer_name][year] = {
+                        existing = aggregated_customers[customer_name].get(year)
+                        if isinstance(existing, dict):
+                            invoice_amount += existing.get('invoice', 0.0)
+                            budget_amount += existing.get('budget', 0.0)
+
+                        aggregated_customers[customer_name][year] = {
                             'invoice': invoice_amount,
                             'budget': budget_amount,
                             'total': invoice_amount + budget_amount
                         }
 
-        return {'years': years, 'companies': company_data}
+        company_header = ', '.join(sorted(company_names)) if company_names else ''
+        # We wrap aggregated_customers into a single pseudo-company entry so the
+        # Excel writer can remain simple.
+        return {
+            'years': years,
+            'companies': {'ALL_COMPANIES': aggregated_customers},
+            'company_header': company_header,
+        }
 
     def _get_customer_amount_for_month(self, customer_id, company_id, year, month):
         # Check if the entire month has passed
@@ -641,7 +719,10 @@ class InvoiceComparisonWizard(models.TransientModel):
         invoices = self.env['account.move'].sudo().search([
             ('partner_id', '=', customer_id),
             ('company_id', '=', company_id),
-            ('move_type', '=', 'out_invoice'),
+            # Include both customer invoices and credit notes so that the
+            # yearly/monthly totals match the standard "Invoices" smart button
+            # on the contact, which shows the net amount (invoices - refunds).
+            ('move_type', 'in', ['out_invoice', 'out_refund']),
             ('state', '=', 'posted'),
             ('invoice_date', '>=', start_date),
             ('invoice_date', '<=', end_date)
@@ -707,12 +788,27 @@ class InvoiceComparisonWizard(models.TransientModel):
         # Get ALL company partners to exclude
         all_company_partners = self.env['res.company'].search([]).mapped('partner_id.id')
 
+        # Exclude contacts whose commercial partner is one of the internal
+        # group companies (same logic as yearly) regardless of wizard selection.
+        internal_company_names = [
+            'Liber Holdings',
+            'Liber Industrial',
+            'Roger Brown Co.',
+            'Tooling Components',
+            'Globe Electric Supply Co Inc',
+            'RBC Industrial LLC',
+        ]
+        internal_company_partner_ids = self.env['res.company'].search(
+            [('name', 'in', internal_company_names)]
+        ).mapped('partner_id.id')
+
         domain = [
             ('move_type', '=', 'out_invoice'),
             ('state', '=', 'posted'),
             ('invoice_date', '>=', start_date),
             ('invoice_date', '<=', end_date),
             ('partner_id', 'not in', all_company_partners),
+            ('partner_id.commercial_partner_id', 'not in', internal_company_partner_ids),
             ('partner_id.active', '=', True)
         ]
 
@@ -723,6 +819,7 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         # Collect all unique customers by company
         company_customers = {}
+        company_names = set()
         
         for invoice in invoices:
             if not invoice.invoice_date or invoice.invoice_date.month != month_int:
@@ -732,25 +829,24 @@ class InvoiceComparisonWizard(models.TransientModel):
             if company_id not in company_customers:
                 company_customers[company_id] = {'name': invoice.company_id.name, 'partner_ids': set()}
             company_customers[company_id]['partner_ids'].add(invoice.partner_id.id)
+            company_names.add(invoice.company_id.name)
 
-        # Group by company and calculate combined amounts with hierarchy
-        company_data = {}
+        # Group and calculate combined amounts with hierarchy ACROSS companies.
+        aggregated_customers = {}
 
         for company_id, company_info in company_customers.items():
-            company_name = company_info['name']
             partner_ids = list(company_info['partner_ids'])
-            
+
             # Get partner hierarchy for this company
             hierarchy = self._get_partner_hierarchy(partner_ids)
-            
-            company_data[company_name] = {}
-            
+
             for parent_id, parent_info in hierarchy.items():
                 customer_name = parent_info['name']
                 related_partner_ids = list(parent_info['partner_ids'])
-                
-                company_data[company_name][customer_name] = {}
-                
+
+                if customer_name not in aggregated_customers:
+                    aggregated_customers[customer_name] = {}
+
                 # Get amounts for all years (actual or budget) - sum all related partners
                 for year in years:
                     if year < current_year:
@@ -759,7 +855,15 @@ class InvoiceComparisonWizard(models.TransientModel):
                         for partner_id in related_partner_ids:
                             amount = self._get_customer_actual_for_month(partner_id, company_id, year, month_int)
                             total_amount += amount
-                        company_data[company_name][customer_name][year] = total_amount
+
+                        existing = aggregated_customers[customer_name].get(year, 0.0)
+                        if isinstance(existing, dict):
+                            existing_total = existing.get('total', 0.0)
+                            existing_invoice = existing.get('invoice', 0.0)
+                            aggregated_customers[customer_name][year]['total'] = existing_total + total_amount
+                            aggregated_customers[customer_name][year]['invoice'] = existing_invoice + total_amount
+                        else:
+                            aggregated_customers[customer_name][year] = existing + total_amount
                     else:
                         # Current/future year - separate invoice and budget (sum all related partners)
                         target_month_end = date(year, month_int, 1) + relativedelta(months=1) - relativedelta(days=1)
@@ -768,22 +872,32 @@ class InvoiceComparisonWizard(models.TransientModel):
                         if (year, month_int) <= (current_date.year, current_date.month):
                             # Past month - use actual (sum all related partners)
                             invoice_amount = 0.0
+                            budget_amount = 0.0
                             for partner_id in related_partner_ids:
                                 amount = self._get_customer_actual_for_month(partner_id, company_id, year, month_int)
                                 invoice_amount += amount
-                            budget_amount = 0
                         else:
                             # Future month - use budget (sum all related partners)
-                            invoice_amount = 0
+                            invoice_amount = 0.0
                             budget_amount = 0.0
                             for partner_id in related_partner_ids:
                                 amount = self._get_customer_budget_for_month(partner_id, company_id, year, month_int)
                                 budget_amount += amount
 
-                        company_data[company_name][customer_name][year] = {
+                        existing = aggregated_customers[customer_name].get(year)
+                        if isinstance(existing, dict):
+                            invoice_amount += existing.get('invoice', 0.0)
+                            budget_amount += existing.get('budget', 0.0)
+
+                        aggregated_customers[customer_name][year] = {
                             'invoice': invoice_amount,
                             'budget': budget_amount,
                             'total': invoice_amount + budget_amount
                         }
 
-        return {'years': years, 'companies': company_data}
+        company_header = ', '.join(sorted(company_names)) if company_names else ''
+        return {
+            'years': years,
+            'companies': {'ALL_COMPANIES': aggregated_customers},
+            'company_header': company_header,
+        }
