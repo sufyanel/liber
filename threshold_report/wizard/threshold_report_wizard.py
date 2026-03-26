@@ -218,7 +218,10 @@ class ThresholdReportWizard(models.TransientModel):
 
         total_balance = 0.0
         related_accounts = ['02.2.201', '01.1.110', '01.1.105', '01.1.104']
-        liber_balance = self._get_related_balance(related_accounts, date_from, date_to)
+        liber_balance = 0.0
+        for related_account_code in related_accounts:
+            related_company_balance = self._get_related_balance(related_account_code, date_from, date_to)
+            liber_balance += related_company_balance
         total_balance += liber_balance * 0.5
 
         for account_code in account_codes:
@@ -228,52 +231,67 @@ class ThresholdReportWizard(models.TransientModel):
         return total_balance
 
     def _get_single_account_balance(self, account_code, date_from, date_to):
-        """Get balance for a single account code"""
-        domain = [('code', '=', account_code)]
-        if self.company_id:
-            domain.append(('company_id', 'in', self.company_id.ids))
-        else:
-            all_companies = self.env['res.company'].sudo().search([])
-            domain.append(('company_id', 'in', all_companies.ids))
-
-        accounts = self.env['account.account'].sudo().search(domain)
-        if not accounts:
+        """Get balance for a single account code from Trial Balance report."""
+        if not self.company_id:
             return 0.0
 
-        domain = [
-            ('account_id', 'in', accounts.ids),
-            ('date', '>=', date_from),
-            ('date', '<=', date_to),
-            ('move_id.state', '=', 'posted')
-        ]
+        trial_balance_report = self.env.ref('account_reports.trial_balance_report')
+        previous_options = {
+            'date': {
+                'date_from': date_from.strftime('%Y-%m-%d'),
+                'date_to': date_to.strftime('%Y-%m-%d'),
+                'mode': 'range'
+            },
+            'companies': [{'id': self.company_id.id, 'name': self.company_id.name}],
+        }
+        report_options = trial_balance_report.get_options(previous_options)
+        lines = trial_balance_report._get_lines(report_options)
 
-        moves = self.env['account.move.line'].sudo().search(domain)
-        return sum(moves.mapped('balance'))
+        for line in lines:
+            name = (line.get('name') or '').strip()
+            code = (line.get('code') or '').strip()
+            if code == account_code or (name and name.split(' ')[0] == account_code):
+                columns = line.get('columns') or []
+                numeric_columns = [col.get('no_format') for col in columns if isinstance(col.get('no_format'), (int, float))]
+                if len(numeric_columns) >= 2:
+                    return numeric_columns[-2] - numeric_columns[-1]
+                if numeric_columns:
+                    return numeric_columns[-1]
+                return 0.0
+        return 0.0
 
-    def _get_related_balance(self, account_codes, date_from, date_to):
-        """Get balance from Related company for specified accounts"""
+    def _get_related_balance(self, account_code, date_from, date_to):
+        """Get balance for a single related company account code from Trial Balance report."""
         related_company = self.company_id.related_company_id
         if not related_company:
             return 0.0
 
-        total_balance = 0.0
-        for account_code in account_codes:
-            domain = [
-                ('code', '=', account_code),
-                ('company_id', '=', related_company.id)
-            ]
-            accounts = self.env['account.account'].sudo().search(domain)
-            if accounts:
-                move_domain = [
-                    ('account_id', 'in', accounts.ids),
-                    ('date', '>=', date_from),
-                    ('date', '<=', date_to),
-                    ('move_id.state', '=', 'posted')
-                ]
-                moves = self.env['account.move.line'].sudo().search(move_domain)
-                total_balance += sum(moves.mapped('balance'))
+        trial_balance_report = self.env.ref('account_reports.trial_balance_report').sudo().with_company(related_company).with_context(
+            allowed_company_ids=[related_company.id]
+        )
+        previous_options = {
+            'date': {
+                'date_from': date_from.strftime('%Y-%m-%d'),
+                'date_to': date_to.strftime('%Y-%m-%d'),
+                'mode': 'range'
+            },
+            'companies': [{'id': related_company.id, 'name': related_company.name}],
+        }
+        report_options = trial_balance_report.get_options(previous_options)
+        lines = trial_balance_report._get_lines(report_options)
 
-        return total_balance
+        for line in lines:
+            name = (line.get('name') or '').strip()
+            code = (line.get('code') or '').strip()
+            if code == account_code or (name and name.split(' ')[0] == account_code):
+                columns = line.get('columns') or []
+                numeric_columns = [col.get('no_format') for col in columns if isinstance(col.get('no_format'), (int, float))]
+                if len(numeric_columns) >= 2:
+                    return numeric_columns[-2] - numeric_columns[-1]
+                if numeric_columns:
+                    return numeric_columns[-1]
+                return 0.0
+        return 0.0
 
     def _get_net_profit(self):
         """Get net profit from standard P&L report using exact same method as standard report"""
