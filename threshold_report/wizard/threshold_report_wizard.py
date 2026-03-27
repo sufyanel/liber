@@ -184,14 +184,10 @@ class ThresholdReportWizard(models.TransientModel):
         """Get account balance for specified code and period"""
         if not date_from or not date_to:
             date_from, date_to = self._get_date_range()
+        if not self.company_id:
+            return 0.0
 
-        domain = [('code', '=', account_code)]
-        if self.company_id:
-            domain.append(('company_id', 'in', self.company_id.ids))
-        else:
-            # Use all companies if none selected
-            all_companies = self.env['res.company'].sudo().search([])
-            domain.append(('company_id', 'in', all_companies.ids))
+        domain = [('code', '=', account_code), ('company_id', '=', self.company_id.id)]
 
         accounts = self.env['account.account'].sudo().search(domain)
 
@@ -235,7 +231,9 @@ class ThresholdReportWizard(models.TransientModel):
         if not self.company_id:
             return 0.0
 
-        trial_balance_report = self.env.ref('account_reports.trial_balance_report')
+        trial_balance_report = self.env.ref('account_reports.trial_balance_report').sudo().with_company(self.company_id).with_context(
+            allowed_company_ids=[self.company_id.id]
+        )
         previous_options = {
             'date': {
                 'date_from': date_from.strftime('%Y-%m-%d'),
@@ -296,9 +294,13 @@ class ThresholdReportWizard(models.TransientModel):
     def _get_net_profit(self):
         """Get net profit from standard P&L report using exact same method as standard report"""
         date_from, date_to = self._get_date_range()
+        if not self.company_id:
+            return 0.0
 
         # Get the standard P&L report
-        pl_report = self.env.ref('account_reports.profit_and_loss')
+        pl_report = self.env.ref('account_reports.profit_and_loss').sudo().with_company(self.company_id).with_context(
+            allowed_company_ids=[self.company_id.id]
+        )
 
         # Create previous_options exactly like the standard report expects
         previous_options = {
@@ -309,13 +311,7 @@ class ThresholdReportWizard(models.TransientModel):
             }
         }
 
-        # If companies are selected, add them to previous_options
-        if self.company_id:
-            previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in self.company_id]
-        else:
-            # Use all companies if none selected
-            all_companies = self.env['res.company'].sudo().search([])
-            previous_options['companies'] = [{'id': company.id, 'name': company.name} for company in all_companies]
+        previous_options['companies'] = [{'id': self.company_id.id, 'name': self.company_id.name}]
 
         # Get options using the standard method - this will handle all the complex logic
         pl_options = pl_report.get_options(previous_options)
@@ -345,14 +341,10 @@ class ThresholdReportWizard(models.TransientModel):
 
     def _get_balance_as_of_date(self, account_type, as_of_date):
         """Get total balance for account type as of specific date"""
+        if not self.company_id:
+            return 0.0
         # Get accounts of the specified type
-        domain = [('account_type', '=', account_type)]
-        if self.company_id:
-            domain.append(('company_id', 'in', self.company_id.ids))
-        else:
-            # Use all companies if none selected
-            all_companies = self.env['res.company'].sudo().search([])
-            domain.append(('company_id', 'in', all_companies.ids))
+        domain = [('account_type', '=', account_type), ('company_id', '=', self.company_id.id)]
 
         accounts = self.env['account.account'].sudo().search(domain)
 
