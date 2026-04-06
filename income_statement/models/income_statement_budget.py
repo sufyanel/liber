@@ -24,7 +24,7 @@ class IncomeStatementBudget(models.Model):
     @api.model
     def _get_year_selection(self):
         y = fields.Date.today().year
-        return [(str(yyyy), str(yyyy)) for yyyy in range(y, y + 5)]
+        return [(str(yyyy), str(yyyy)) for yyyy in range(y, y + 1)]
 
     year = fields.Selection(
         selection="_get_year_selection",
