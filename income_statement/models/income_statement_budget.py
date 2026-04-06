@@ -17,22 +17,31 @@ BUDGET_LINE_TYPE_ORDER = [
 
 class IncomeStatementBudget(models.Model):
     _name = "income.statement.budget"
+    _inherit = ["mail.thread", "mail.activity.mixin"]
     _description = "Income Statement Budget"
+    _check_company_auto = True
 
-    name = fields.Char(compute="_compute_name", store=True, readonly=True)
+    name = fields.Char(compute="_compute_name", inverse="_inverse_name", store=True, tracking=True)
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+        index=True,
+        tracking=True,
+    )
 
     @api.model
     def _get_year_selection(self):
         y = fields.Date.today().year
-        return [(str(yyyy), str(yyyy)) for yyyy in range(y, y + 1)]
+        return [(str(y), str(y))]
 
     year = fields.Selection(
         selection="_get_year_selection",
         string="Year",
-        readonely=True,
-        store=True,
         required=True,
         default=lambda self: str(fields.Date.today().year),
+        tracking=True,
     )
     quarter = fields.Selection(
         [
@@ -44,18 +53,21 @@ class IncomeStatementBudget(models.Model):
         string="Quarter",
         required=True,
         default="q1",
+        tracking=True,
     )
-    sales_revenue = fields.Float(required=True, digits=(16, 2))
+    sales_revenue = fields.Float(required=True, digits=(16, 2), tracking=True)
     state = fields.Selection(
         [("draft", "Draft"), ("confirmed", "Confirmed")],
         default="draft",
         required=True,
+        tracking=True,
     )
     line_ids = fields.One2many(
         "income.statement.budget.line",
         "budget_id",
         string="Budget Lines",
         copy=True,
+        check_company=True,
     )
 
     def _next_quarter_and_year(self):
@@ -73,10 +85,36 @@ class IncomeStatementBudget(models.Model):
         self.ensure_one()
         default = dict(default or {})
         default.setdefault("state", "draft")
+        default.setdefault("company_id", self.company_id.id)
         nq, ny = self._next_quarter_and_year()
+        today_y = str(fields.Date.today().year)
+        if ny != today_y:
+            raise ValidationError(
+                "Duplicating into year %s is not available when budgets are limited to the current year (%s). "
+                "Add a new budget for that year instead."
+                % (ny, today_y)
+            )
         default["quarter"] = nq
         default["year"] = ny
-        return super().copy(default)
+        dup_domain = [
+            ("year", "=", ny),
+            ("quarter", "=", nq),
+            ("company_id", "=", self.company_id.id),
+        ]
+        if self.search_count(dup_domain):
+            raise ValidationError(
+                "Cannot duplicate: company already has a budget for year %s %s."
+                % (ny, nq.upper())
+            )
+        new_budget = super(
+            IncomeStatementBudget,
+            self.with_context(skip_budget_line_chatter=True),
+        ).copy(default)
+        new_budget.message_post(
+            body="Duplicated from %s." % (self.display_name,),
+            subtype_xmlid="mail.mt_note",
+        )
+        return new_budget
 
     @api.depends("year", "quarter")
     def _compute_name(self):
@@ -85,6 +123,9 @@ class IncomeStatementBudget(models.Model):
             y = record.year or ""
             q = labels.get(record.quarter, "") if record.quarter else ""
             record.name = "Budget %s %s" % (y, q) if y and q else ""
+
+    def _inverse_name(self):
+        pass
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -120,22 +161,23 @@ class IncomeStatementBudget(models.Model):
                     "and calculated amounts are all zero."
                 )
 
-    @api.constrains("year", "quarter")
+    @api.constrains("year", "quarter", "company_id")
     def _check_year_quarter_unique(self):
         labels = {"q1": "Q1", "q2": "Q2", "q3": "Q3", "q4": "Q4"}
         for record in self:
-            if not record.year or not record.quarter:
+            if not record.year or not record.quarter or not record.company_id:
                 continue
             dup = self.search_count([
                 ("year", "=", record.year),
                 ("quarter", "=", record.quarter),
+                ("company_id", "=", record.company_id.id),
                 ("id", "!=", record.id),
             ])
             if dup:
                 q = labels.get(record.quarter, record.quarter)
                 raise ValidationError(
-                    "Year %s already has a budget for %s. "
-                    "Each quarter (Q1–Q4) can only be used once per year."
+                    "Year %s already has a budget for %s for this company. "
+                    "Each quarter (Q1–Q4) can only be used once per year per company."
                     % (record.year, q)
                 )
 
@@ -147,7 +189,9 @@ class IncomeStatementBudget(models.Model):
 
     def _create_default_budget_lines(self):
         self.ensure_one()
-        Line = self.env["income.statement.budget.line"]
+        Line = self.env["income.statement.budget.line"].with_company(self.company_id).with_context(
+            skip_budget_line_chatter=True,
+        )
         for sequence, line_type in enumerate(BUDGET_LINE_TYPE_ORDER, start=1):
             Line.create({
                 "budget_id": self.id,
@@ -161,11 +205,19 @@ class IncomeStatementBudgetLine(models.Model):
     _name = "income.statement.budget.line"
     _description = "Income Statement Budget Line"
     _order = "sequence, id"
+    _check_company_auto = True
 
     budget_id = fields.Many2one(
         "income.statement.budget",
         required=True,
         ondelete="cascade",
+        check_company=True,
+    )
+    company_id = fields.Many2one(
+        "res.company",
+        related="budget_id.company_id",
+        store=True,
+        readonly=True,
     )
     sequence = fields.Integer(default=10)
     line_type = fields.Selection(
@@ -199,6 +251,94 @@ class IncomeStatementBudgetLine(models.Model):
             pct = line.percentage or 0
             line.amount = revenue * pct / 100.0
 
+    def _selection_line_type(self):
+        return dict(self._fields["line_type"].selection)
+
+    def _format_money(self, value):
+        return "%.2f" % (value or 0.0)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        if self.env.context.get("skip_budget_line_chatter"):
+            return lines
+        sel = self._selection_line_type()
+        for line in lines:
+            if not line.budget_id:
+                continue
+            lbl = sel.get(line.line_type, line.line_type)
+            line.budget_id.message_post(
+                body="Budget line added: %s — %s%% — calculated amount %s"
+                % (lbl, line.percentage or 0, self._format_money(line.amount)),
+                subtype_xmlid="mail.mt_note",
+            )
+        return lines
+
+    def write(self, vals):
+        track_fields = {"line_type", "percentage", "sequence"}
+        interested = track_fields & set(vals)
+        snapshots = {}
+        if interested and not self.env.context.get("skip_budget_line_chatter"):
+            for line in self:
+                snapshots[line.id] = {
+                    "line_type": line.line_type,
+                    "percentage": line.percentage,
+                    "sequence": line.sequence,
+                    "amount": line.amount,
+                }
+        res = super().write(vals)
+        if snapshots:
+            sel = self._selection_line_type()
+            for line in self.filtered(lambda l: l.id in snapshots):
+                before = snapshots[line.id]
+                parts = []
+                if "line_type" in vals:
+                    o = sel.get(before["line_type"], before["line_type"])
+                    n = sel.get(line.line_type, line.line_type)
+                    if o != n:
+                        parts.append("Line type: %s → %s" % (o, n))
+                if "percentage" in vals and before["percentage"] != line.percentage:
+                    parts.append(
+                        "Percentage: %s%% → %s%%"
+                        % (before["percentage"], line.percentage)
+                    )
+                if "sequence" in vals and before["sequence"] != line.sequence:
+                    parts.append(
+                        "Sequence: %s → %s" % (before["sequence"], line.sequence)
+                    )
+                if parts and before["amount"] != line.amount:
+                    parts.append(
+                        "Calculated amount: %s → %s"
+                        % (
+                            self._format_money(before["amount"]),
+                            self._format_money(line.amount),
+                        )
+                    )
+                if parts:
+                    row_lbl = sel.get(line.line_type, line.line_type)
+                    line.budget_id.message_post(
+                        body="Budget line (%s): %s" % (row_lbl, " | ".join(parts)),
+                        subtype_xmlid="mail.mt_note",
+                    )
+        return res
+
+    def unlink(self):
+        if not self.env.context.get("skip_budget_line_chatter"):
+            sel = self._selection_line_type()
+            for line in self:
+                if line.budget_id:
+                    lbl = sel.get(line.line_type, line.line_type)
+                    line.budget_id.message_post(
+                        body="Budget line removed: %s (was %s%%, calculated amount %s)"
+                        % (
+                            lbl,
+                            line.percentage or 0,
+                            line._format_money(line.amount),
+                        ),
+                        subtype_xmlid="mail.mt_note",
+                    )
+        return super().unlink()
+
     @api.constrains("budget_id", "line_type")
     def _check_line_type_unique_per_budget(self):
         labels = dict(self.fields_get(["line_type"])["line_type"]["selection"])
@@ -215,14 +355,3 @@ class IncomeStatementBudgetLine(models.Model):
                 "Duplicated line types: %s." % ", ".join(dup_names)
             )
 
-    @api.constrains("percentage", "budget_id")
-    def _check_percentage_sum_max(self):
-        for budget in self.mapped("budget_id"):
-            if not budget:
-                continue
-            total = sum((l.percentage or 0) for l in budget.line_ids)
-            if total > 100:
-                raise ValidationError(
-                    "The sum of percentages on all budget lines cannot exceed "
-                    "100%% (current total: %s%%)." % total
-                )
