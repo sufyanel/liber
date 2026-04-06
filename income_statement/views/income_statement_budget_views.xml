@@ -6,7 +6,7 @@
         <field name="arch" type="xml">
             <tree string="Budgets">
                 <field name="name"/>
-                <field name="year"/>
+                <field name="year" readonly="1" force_save="1"/>
                 <field name="quarter"/>
                 <field name="sales_revenue" required="1"/>
                 <field name="state" widget="badge" decoration-success="state == 'confirmed'" decoration-info="state == 'draft'"/>
