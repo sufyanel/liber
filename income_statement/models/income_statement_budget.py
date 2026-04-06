@@ -18,19 +18,25 @@ BUDGET_LINE_TYPE_ORDER = [
 class IncomeStatementBudget(models.Model):
     _name = "income.statement.budget"
     _description = "Income Statement Budget"
+    _check_company_auto = True
 
-    name = fields.Char(compute="_compute_name", store=True, readonly=True)
+    name = fields.Char(compute="_compute_name", inverse="_inverse_name", store=True)
+    company_id = fields.Many2one(
+        "res.company",
+        string="Company",
+        required=True,
+        default=lambda self: self.env.company,
+        index=True,
+    )
 
     @api.model
     def _get_year_selection(self):
         y = fields.Date.today().year
-        return [(str(yyyy), str(yyyy)) for yyyy in range(y, y + 1)]
+        return [(str(y), str(y))]
 
     year = fields.Selection(
         selection="_get_year_selection",
         string="Year",
-        readonely=True,
-        store=True,
         required=True,
         default=lambda self: str(fields.Date.today().year),
     )
@@ -56,6 +62,7 @@ class IncomeStatementBudget(models.Model):
         "budget_id",
         string="Budget Lines",
         copy=True,
+        check_company=True,
     )
 
     def _next_quarter_and_year(self):
@@ -73,9 +80,27 @@ class IncomeStatementBudget(models.Model):
         self.ensure_one()
         default = dict(default or {})
         default.setdefault("state", "draft")
+        default.setdefault("company_id", self.company_id.id)
         nq, ny = self._next_quarter_and_year()
+        today_y = str(fields.Date.today().year)
+        if ny != today_y:
+            raise ValidationError(
+                "Duplicating into year %s is not available when budgets are limited to the current year (%s). "
+                "Add a new budget for that year instead."
+                % (ny, today_y)
+            )
         default["quarter"] = nq
         default["year"] = ny
+        dup_domain = [
+            ("year", "=", ny),
+            ("quarter", "=", nq),
+            ("company_id", "=", self.company_id.id),
+        ]
+        if self.search_count(dup_domain):
+            raise ValidationError(
+                "Cannot duplicate: company already has a budget for year %s %s."
+                % (ny, nq.upper())
+            )
         return super().copy(default)
 
     @api.depends("year", "quarter")
@@ -85,6 +110,9 @@ class IncomeStatementBudget(models.Model):
             y = record.year or ""
             q = labels.get(record.quarter, "") if record.quarter else ""
             record.name = "Budget %s %s" % (y, q) if y and q else ""
+
+    def _inverse_name(self):
+        pass
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -120,22 +148,23 @@ class IncomeStatementBudget(models.Model):
                     "and calculated amounts are all zero."
                 )
 
-    @api.constrains("year", "quarter")
+    @api.constrains("year", "quarter", "company_id")
     def _check_year_quarter_unique(self):
         labels = {"q1": "Q1", "q2": "Q2", "q3": "Q3", "q4": "Q4"}
         for record in self:
-            if not record.year or not record.quarter:
+            if not record.year or not record.quarter or not record.company_id:
                 continue
             dup = self.search_count([
                 ("year", "=", record.year),
                 ("quarter", "=", record.quarter),
+                ("company_id", "=", record.company_id.id),
                 ("id", "!=", record.id),
             ])
             if dup:
                 q = labels.get(record.quarter, record.quarter)
                 raise ValidationError(
-                    "Year %s already has a budget for %s. "
-                    "Each quarter (Q1–Q4) can only be used once per year."
+                    "Year %s already has a budget for %s for this company. "
+                    "Each quarter (Q1–Q4) can only be used once per year per company."
                     % (record.year, q)
                 )
 
@@ -147,7 +176,7 @@ class IncomeStatementBudget(models.Model):
 
     def _create_default_budget_lines(self):
         self.ensure_one()
-        Line = self.env["income.statement.budget.line"]
+        Line = self.env["income.statement.budget.line"].with_company(self.company_id)
         for sequence, line_type in enumerate(BUDGET_LINE_TYPE_ORDER, start=1):
             Line.create({
                 "budget_id": self.id,
@@ -161,11 +190,19 @@ class IncomeStatementBudgetLine(models.Model):
     _name = "income.statement.budget.line"
     _description = "Income Statement Budget Line"
     _order = "sequence, id"
+    _check_company_auto = True
 
     budget_id = fields.Many2one(
         "income.statement.budget",
         required=True,
         ondelete="cascade",
+        check_company=True,
+    )
+    company_id = fields.Many2one(
+        "res.company",
+        related="budget_id.company_id",
+        store=True,
+        readonly=True,
     )
     sequence = fields.Integer(default=10)
     line_type = fields.Selection(
@@ -215,14 +252,3 @@ class IncomeStatementBudgetLine(models.Model):
                 "Duplicated line types: %s." % ", ".join(dup_names)
             )
 
-    @api.constrains("percentage", "budget_id")
-    def _check_percentage_sum_max(self):
-        for budget in self.mapped("budget_id"):
-            if not budget:
-                continue
-            total = sum((l.percentage or 0) for l in budget.line_ids)
-            if total > 100:
-                raise ValidationError(
-                    "The sum of percentages on all budget lines cannot exceed "
-                    "100%% (current total: %s%%)." % total
-                )

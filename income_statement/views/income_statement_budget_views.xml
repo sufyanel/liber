@@ -6,6 +6,7 @@
         <field name="arch" type="xml">
             <tree string="Budgets">
                 <field name="name"/>
+                <field name="company_id" readonly="1"/>
                 <field name="year" readonly="1" force_save="1"/>
                 <field name="quarter"/>
                 <field name="sales_revenue" required="1"/>
@@ -26,7 +27,8 @@
                 </header>
                 <sheet>
                     <group>
-                        <field name="name" readonly="1"/>
+                        <field name="name"/>
+                        <field name="company_id" readonly="1" options="{'no_create': True}"/>
                         <field name="year" readonly="state == 'confirmed'"/>
                         <field name="quarter" readonly="state == 'confirmed'"/>
                         <field name="sales_revenue" readonly="state == 'confirmed'" required="state == 'draft'"/>

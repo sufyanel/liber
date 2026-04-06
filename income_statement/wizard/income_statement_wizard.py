@@ -245,21 +245,31 @@ class IncomeStatementWizard(models.TransientModel):
 
     def _budget_overlay_current_year(self, current_year, quarterly):
         Budget = self.env["income.statement.budget"].sudo()
+        company_ids = self.company_ids.ids
+        if not company_ids:
+            segment_len = 4 if quarterly else 1
+            empty = [0.0] * segment_len
+            out = {"sales_revenue": list(empty)}
+            for lt in BUDGET_LINE_TYPE_KEYS:
+                out[lt] = list(empty)
+            return out
         budgets = Budget.search([
             ("year", "=", str(current_year)),
             ("state", "=", "confirmed"),
+            ("company_id", "in", company_ids),
         ])
-        by_quarter = {b.quarter: b for b in budgets}
         order = ("q1", "q2", "q3", "q4")
         out = {"sales_revenue": []}
         for lt in BUDGET_LINE_TYPE_KEYS:
             out[lt] = []
         if quarterly:
             for q in order:
-                b = by_quarter.get(q)
-                out["sales_revenue"].append(float(b.sales_revenue or 0.0) if b else 0.0)
+                q_budgets = budgets.filtered(lambda b, qq=q: b.quarter == qq)
+                out["sales_revenue"].append(
+                    sum(float(b.sales_revenue or 0.0) for b in q_budgets)
+                )
                 for lt in BUDGET_LINE_TYPE_KEYS:
-                    amt = self._get_budget_line_amount(b, lt) if b else 0.0
+                    amt = sum(self._get_budget_line_amount(b, lt) for b in q_budgets)
                     if lt == "less_variable_operating_expense":
                         amt = -amt
                     if lt == "taxes":
@@ -299,40 +309,132 @@ class IncomeStatementWizard(models.TransientModel):
             f"Prior YR1 Actual ({current_year - 1})",
             f"Current YR Projected ({current_year})",
         ]
+        companies = self.company_ids.sorted(key=lambda c: c.name)
+        company_names = ", ".join(companies.mapped("name")) if companies else ""
+        mode_label = dict(self._fields["report_mode"].selection).get(self.report_mode, self.report_mode)
+        span_from = date(current_year - 4, 1, 1)
+        span_to = date(current_year, 12, 31)
+        if self.report_mode == "quarterly":
+            period_body = (
+                "Calendar quarters (Q1 Jan–Mar, Q2 Apr–Jun, Q3 Jul–Sep, Q4 Oct–Dec)."
+            )
+        else:
+            period_body = (
+                "One total per calendar year per column."
+            )
+        period_block = (
+            "Report type: %s. Years shown: %s–%s. Column date span: %s to %s. %s"
+            % (
+                mode_label,
+                current_year - 4,
+                current_year,
+                span_from.isoformat(),
+                span_to.isoformat(),
+                period_body,
+            )
+        )
         output = io.BytesIO()
         workbook = xlsxwriter.Workbook(output)
         worksheet = workbook.add_worksheet("Income Statement")
 
-        title_format = workbook.add_format({"bold": True, "font_size": 14, "align": "left"})
+        banner_title_format = workbook.add_format({
+            "bold": True,
+            "font_size": 20,
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "#FFFFFF",
+            "bg_color": "#1F4E79",
+            "border": 1,
+        })
+        banner_sub_format = workbook.add_format({
+            "bold": True,
+            "font_size": 12,
+            "align": "center",
+            "valign": "vcenter",
+            "font_color": "#1F4E79",
+            "bg_color": "#E8F1FF",
+            "border": 1,
+        })
+        meta_format = workbook.add_format({
+            "font_size": 10,
+            "align": "left",
+            "valign": "vcenter",
+            "text_wrap": True,
+            "border": 1,
+            "border_color": "#CED4DA",
+            "bg_color": "#F8F9FA",
+        })
+        generated_format = workbook.add_format({
+            "font_size": 9,
+            "italic": True,
+            "align": "left",
+            "font_color": "#555555",
+        })
+        banner_rule_format = workbook.add_format({
+            "bg_color": "#E67E22",
+        })
         header_format = workbook.add_format({"bold": True, "align": "center", "border": 1})
         label_format = workbook.add_format({"bold": True, "align": "left", "border": 1})
         row_label_format = workbook.add_format({"align": "left", "border": 1})
         empty_cell_format = workbook.add_format({"border": 1})
         value_format = workbook.add_format({"align": "right", "border": 1, "num_format": "#,##0.00;[Red](#,##0.00);0.00"})
 
-        worksheet.set_column("A:A", 38)
+        worksheet.set_column("A:A", 40)
         if self.report_mode == "quarterly":
+            last_col = 20
             worksheet.set_column("B:U", 14)
-            worksheet.merge_range("A1:U1", "INCOME STATEMENT", title_format)
-            worksheet.write(2, 0, "YR", header_format)
+        else:
+            last_col = 5
+            worksheet.set_column("B:F", 22)
+
+        hr = 0
+        worksheet.merge_range(hr, 0, hr, last_col, "INCOME STATEMENT", banner_title_format)
+        worksheet.set_row(hr, 34)
+        hr += 1
+        worksheet.merge_range(hr, 0, hr, last_col, mode_label.upper(), banner_sub_format)
+        worksheet.set_row(hr, 24)
+        hr += 1
+        worksheet.merge_range(hr, 0, hr, last_col, "Companies: %s" % company_names, meta_format)
+        worksheet.set_row(hr, 30 if len(company_names) > 100 else 20)
+        hr += 1
+        worksheet.merge_range(hr, 0, hr, last_col, period_block, meta_format)
+        worksheet.set_row(hr, 48)
+        hr += 1
+        gen_ts = fields.Datetime.context_timestamp(self, fields.Datetime.now())
+        worksheet.merge_range(
+            hr,
+            0,
+            hr,
+            last_col,
+            "Generated: %s" % gen_ts.strftime("%Y-%m-%d %H:%M %Z"),
+            generated_format,
+        )
+        worksheet.set_row(hr, 16)
+        hr += 1
+        worksheet.merge_range(hr, 0, hr, last_col, "", banner_rule_format)
+        worksheet.set_row(hr, 5)
+        hr += 1
+
+        col_header_row = hr
+        if self.report_mode == "quarterly":
+            worksheet.write(col_header_row, 0, "YR", header_format)
             start_col = 1
             for label in year_labels:
                 end_col = start_col + 3
-                worksheet.merge_range(2, start_col, 2, end_col, label, header_format)
-                worksheet.write(3, start_col, "Q1", header_format)
-                worksheet.write(3, start_col + 1, "Q2", header_format)
-                worksheet.write(3, start_col + 2, "Q3", header_format)
-                worksheet.write(3, start_col + 3, "Q4", header_format)
+                worksheet.merge_range(col_header_row, start_col, col_header_row, end_col, label, header_format)
+                qrow = col_header_row + 1
+                worksheet.write(qrow, start_col, "Q1", header_format)
+                worksheet.write(qrow, start_col + 1, "Q2", header_format)
+                worksheet.write(qrow, start_col + 2, "Q3", header_format)
+                worksheet.write(qrow, start_col + 3, "Q4", header_format)
                 start_col += 4
-            data_start_row = 4
+            data_start_row = col_header_row + 2
             max_data_col = 20
         else:
-            worksheet.set_column("B:F", 22)
-            worksheet.merge_range("A1:F1", "INCOME STATEMENT", title_format)
-            worksheet.write(2, 0, "YR", header_format)
+            worksheet.write(col_header_row, 0, "YR", header_format)
             for idx, label in enumerate(year_labels, start=1):
-                worksheet.write(2, idx, label, header_format)
-            data_start_row = 3
+                worksheet.write(col_header_row, idx, label, header_format)
+            data_start_row = col_header_row + 1
             max_data_col = 5
 
         rows = [
