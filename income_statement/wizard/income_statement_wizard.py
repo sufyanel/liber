@@ -5,6 +5,16 @@ from datetime import datetime, date
 import xlsxwriter
 from odoo import fields, models
 
+BUDGET_LINE_TYPE_KEYS = (
+    "cost_purchased_finished_goods",
+    "variable_overhead_landed_costs",
+    "add_back_fixed_overhead",
+    "less_variable_operating_expense",
+    "selling_general_administrative",
+    "interest_expense",
+    "taxes",
+)
+
 
 class IncomeStatementWizard(models.TransientModel):
     _name = "income.statement.wizard"
@@ -121,21 +131,29 @@ class IncomeStatementWizard(models.TransientModel):
             quarterly=False,
         )
 
-    def _get_values_for_period(self, account_codes, current_year, quarterly=True):
+    def _get_taxes_quarter_values(self, current_year):
+        return self._get_values_for_period(
+            {"230150"},
+            current_year,
+            quarterly=True,
+        )
+
+    def _get_taxes_year_values(self, current_year):
+        return self._get_values_for_period(
+            {"230150"},
+            current_year,
+            quarterly=False,
+        )
+
+    def _aggregate_gl_for_accounts(self, target_account_ids, current_year, quarterly=True):
         selected_companies = self.company_ids
-        if not selected_companies:
+        if not selected_companies or not target_account_ids:
             return [0.0] * (20 if quarterly else 5)
 
         report = self.env.ref("account_reports.general_ledger_report").sudo().with_company(
             selected_companies[0]
         ).with_context(
             allowed_company_ids=selected_companies.ids
-        )
-        target_account_ids = set(
-            self.env["account.account"].sudo().search([
-                ("company_id", "in", selected_companies.ids),
-                ("code", "in", list(account_codes)),
-            ]).ids
         )
         company_options = [{"id": company.id, "name": company.name} for company in selected_companies]
         values = []
@@ -182,6 +200,95 @@ class IncomeStatementWizard(models.TransientModel):
         if len(values) < expected:
             values.extend([0.0] * (expected - len(values)))
         return values[:expected]
+
+    def _get_values_for_period(self, account_codes, current_year, quarterly=True):
+        selected_companies = self.company_ids
+        if not selected_companies:
+            return [0.0] * (20 if quarterly else 5)
+        target_account_ids = set(
+            self.env["account.account"].sudo().search([
+                ("company_id", "in", selected_companies.ids),
+                ("code", "in", list(account_codes)),
+            ]).ids
+        )
+        return self._aggregate_gl_for_accounts(target_account_ids, current_year, quarterly)
+
+    def _get_expense_type_account_quarter_values(self, current_year):
+        selected_companies = self.company_ids
+        if not selected_companies:
+            return [0.0] * 20
+        target_account_ids = set(
+            self.env["account.account"].sudo().search([
+                ("company_id", "in", selected_companies.ids),
+                ("account_type", "=", "expense"),
+            ]).ids
+        )
+        return self._aggregate_gl_for_accounts(target_account_ids, current_year, quarterly=True)
+
+    def _get_expense_type_account_year_values(self, current_year):
+        selected_companies = self.company_ids
+        if not selected_companies:
+            return [0.0] * 5
+        target_account_ids = set(
+            self.env["account.account"].sudo().search([
+                ("company_id", "in", selected_companies.ids),
+                ("account_type", "=", "expense"),
+            ]).ids
+        )
+        return self._aggregate_gl_for_accounts(target_account_ids, current_year, quarterly=False)
+
+    def _get_budget_line_amount(self, budget, line_type):
+        if not budget:
+            return 0.0
+        line = budget.line_ids.filtered(lambda l: l.line_type == line_type)[:1]
+        return float(line.amount or 0.0)
+
+    def _budget_overlay_current_year(self, current_year, quarterly):
+        Budget = self.env["income.statement.budget"].sudo()
+        budgets = Budget.search([
+            ("year", "=", str(current_year)),
+            ("state", "=", "confirmed"),
+        ])
+        by_quarter = {b.quarter: b for b in budgets}
+        order = ("q1", "q2", "q3", "q4")
+        out = {"sales_revenue": []}
+        for lt in BUDGET_LINE_TYPE_KEYS:
+            out[lt] = []
+        if quarterly:
+            for q in order:
+                b = by_quarter.get(q)
+                out["sales_revenue"].append(float(b.sales_revenue or 0.0) if b else 0.0)
+                for lt in BUDGET_LINE_TYPE_KEYS:
+                    amt = self._get_budget_line_amount(b, lt) if b else 0.0
+                    if lt == "less_variable_operating_expense":
+                        amt = -amt
+                    if lt == "taxes":
+                        amt = -amt
+                    out[lt].append(amt)
+        else:
+            out["sales_revenue"].append(
+                sum(float(b.sales_revenue or 0.0) for b in budgets)
+            )
+            for lt in BUDGET_LINE_TYPE_KEYS:
+                amt = sum(self._get_budget_line_amount(b, lt) for b in budgets)
+                if lt == "less_variable_operating_expense":
+                    amt = -amt
+                if lt == "taxes":
+                    amt = -amt
+                out[lt].append(amt)
+        return out
+
+    def _apply_budget_segment(self, values_list, segment, quarterly):
+        if quarterly:
+            if len(values_list) < 20 or len(segment) != 4:
+                return values_list
+            for i in range(4):
+                values_list[16 + i] = segment[i]
+        else:
+            if len(values_list) < 5 or len(segment) != 1:
+                return values_list
+            values_list[4] = segment[0]
+        return values_list
 
     def action_download_excel(self):
         current_year = int(self.year)
@@ -246,6 +353,8 @@ class IncomeStatementWizard(models.TransientModel):
             ("NET INCOME", True),
         ]
 
+        row_by_label = {label: data_start_row + i for i, (label, _) in enumerate(rows)}
+
         row_index = data_start_row
         for label, is_bold in rows:
             format_for_label = label_format if is_bold else row_label_format
@@ -254,20 +363,33 @@ class IncomeStatementWizard(models.TransientModel):
                 worksheet.write(row_index, col_idx, "", empty_cell_format)
             row_index += 1
 
+        quarterly = self.report_mode == "quarterly"
+        overlay = self._budget_overlay_current_year(current_year, quarterly)
         sales_revenue_values = (
             self._get_sales_revenue_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_sales_revenue_year_values(current_year)
         )
+        self._apply_budget_segment(sales_revenue_values, overlay["sales_revenue"], quarterly)
         cost_purchased_finished_goods_values = (
             self._get_cost_of_purchased_finished_goods_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_cost_of_purchased_finished_goods_year_values(current_year)
+        )
+        self._apply_budget_segment(
+            cost_purchased_finished_goods_values,
+            overlay["cost_purchased_finished_goods"],
+            quarterly,
         )
         variable_overhead_landed_costs_values = (
             self._get_variable_overhead_landed_costs_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_variable_overhead_landed_costs_year_values(current_year)
+        )
+        self._apply_budget_segment(
+            variable_overhead_landed_costs_values,
+            overlay["variable_overhead_landed_costs"],
+            quarterly,
         )
         less_cost_of_sales_values = [
             (cost_purchased_finished_goods_values[idx] or 0.0) + (variable_overhead_landed_costs_values[idx] or 0.0)
@@ -279,15 +401,27 @@ class IncomeStatementWizard(models.TransientModel):
         ]
         add_back_fixed_overhead_values = (
             self._get_add_back_fixed_overhead_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_add_back_fixed_overhead_year_values(current_year)
         )
-        less_variable_operating_expense_values = (
+        self._apply_budget_segment(
+            add_back_fixed_overhead_values,
+            overlay["add_back_fixed_overhead"],
+            quarterly,
+        )
+        less_variable_operating_expense_raw = (
             self._get_less_variable_operating_expense_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_less_variable_operating_expense_year_values(current_year)
         )
-        less_variable_operating_expense_values = [-(value or 0.0) for value in less_variable_operating_expense_values]
+        self._apply_budget_segment(
+            less_variable_operating_expense_raw,
+            overlay["less_variable_operating_expense"],
+            quarterly,
+        )
+        less_variable_operating_expense_values = [
+            -(value or 0.0) for value in less_variable_operating_expense_raw
+        ]
         contribution_margin_values = [
             (gross_profit_margin_values[idx] or 0.0)
             + (add_back_fixed_overhead_values[idx] or 0.0)
@@ -296,36 +430,66 @@ class IncomeStatementWizard(models.TransientModel):
         ]
         interest_expense_values = (
             self._get_interest_expense_quarter_values(current_year)
-            if self.report_mode == "quarterly"
+            if quarterly
             else self._get_interest_expense_year_values(current_year)
         )
-        sales_revenue_row = data_start_row
+        self._apply_budget_segment(interest_expense_values, overlay["interest_expense"], quarterly)
+        selling_general_administrative_values = (
+            self._get_expense_type_account_quarter_values(current_year)
+            if quarterly
+            else self._get_expense_type_account_year_values(current_year)
+        )
+        self._apply_budget_segment(
+            selling_general_administrative_values,
+            overlay["selling_general_administrative"],
+            quarterly,
+        )
+        operating_profit_values = [
+            (contribution_margin_values[idx] or 0.0) - (selling_general_administrative_values[idx] or 0.0)
+            for idx in range(len(contribution_margin_values))
+        ]
+        profit_before_tax_values = [
+            (operating_profit_values[idx] or 0.0) - (interest_expense_values[idx] or 0.0)
+            for idx in range(len(operating_profit_values))
+        ]
+        taxes_values = (
+            self._get_taxes_quarter_values(current_year)
+            if quarterly
+            else self._get_taxes_year_values(current_year)
+        )
+        self._apply_budget_segment(taxes_values, overlay["taxes"], quarterly)
+        net_income_values = [
+            (profit_before_tax_values[idx] or 0.0) + (taxes_values[idx] or 0.0)
+            for idx in range(len(profit_before_tax_values))
+        ]
         for col_idx, value in enumerate(sales_revenue_values, start=1):
-            worksheet.write(sales_revenue_row, col_idx, value, value_format)
-        less_cost_of_sales_row = data_start_row + 1
+            worksheet.write(row_by_label["SALES REVENUE"], col_idx, value, value_format)
         for col_idx, value in enumerate(less_cost_of_sales_values, start=1):
-            worksheet.write(less_cost_of_sales_row, col_idx, value, value_format)
-        cost_purchased_finished_goods_row = data_start_row + 2
+            worksheet.write(row_by_label["Less Cost of Sales"], col_idx, value, value_format)
         for col_idx, value in enumerate(cost_purchased_finished_goods_values, start=1):
-            worksheet.write(cost_purchased_finished_goods_row, col_idx, value, value_format)
-        variable_overhead_landed_costs_row = data_start_row + 3
+            worksheet.write(row_by_label["Cost of Purchased Finished Goods"], col_idx, value, value_format)
         for col_idx, value in enumerate(variable_overhead_landed_costs_values, start=1):
-            worksheet.write(variable_overhead_landed_costs_row, col_idx, value, value_format)
-        gross_profit_margin_row = data_start_row + 4
+            worksheet.write(row_by_label["Variable Overhead Landed Costs"], col_idx, value, value_format)
         for col_idx, value in enumerate(gross_profit_margin_values, start=1):
-            worksheet.write(gross_profit_margin_row, col_idx, value, value_format)
-        add_back_fixed_overhead_row = data_start_row + 5
+            worksheet.write(row_by_label["GROSS PROFIT MARGIN"], col_idx, value, value_format)
         for col_idx, value in enumerate(add_back_fixed_overhead_values, start=1):
-            worksheet.write(add_back_fixed_overhead_row, col_idx, value, value_format)
-        less_variable_operating_expense_row = data_start_row + 6
+            worksheet.write(row_by_label["Add back Fixed Overhead"], col_idx, value, value_format)
         for col_idx, value in enumerate(less_variable_operating_expense_values, start=1):
-            worksheet.write(less_variable_operating_expense_row, col_idx, value, value_format)
-        contribution_margin_row = data_start_row + 7
+            worksheet.write(row_by_label["Less Variable Operating Expense (xxx)"], col_idx, value, value_format)
         for col_idx, value in enumerate(contribution_margin_values, start=1):
-            worksheet.write(contribution_margin_row, col_idx, value, value_format)
-        interest_expense_row = data_start_row + 11
+            worksheet.write(row_by_label["CONTRIBUTION MARGIN"], col_idx, value, value_format)
+        for col_idx, value in enumerate(selling_general_administrative_values, start=1):
+            worksheet.write(row_by_label["Selling, General & Administrative"], col_idx, value, value_format)
+        for col_idx, value in enumerate(operating_profit_values, start=1):
+            worksheet.write(row_by_label["OPERATING PROFIT"], col_idx, value, value_format)
         for col_idx, value in enumerate(interest_expense_values, start=1):
-            worksheet.write(interest_expense_row, col_idx, value, value_format)
+            worksheet.write(row_by_label["Interest expense (xxx)"], col_idx, value, value_format)
+        for col_idx, value in enumerate(profit_before_tax_values, start=1):
+            worksheet.write(row_by_label["PROFIT BEFORE TAX"], col_idx, value, value_format)
+        for col_idx, value in enumerate(taxes_values, start=1):
+            worksheet.write(row_by_label["Taxes (xxx)"], col_idx, value, value_format)
+        for col_idx, value in enumerate(net_income_values, start=1):
+            worksheet.write(row_by_label["NET INCOME"], col_idx, value, value_format)
 
         workbook.close()
         output.seek(0)

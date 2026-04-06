@@ -7,4 +7,11 @@
         action="action_income_statement_wizard"
         sequence="110"
     />
+    <menuitem
+        id="menu_income_statement_budget"
+        name="Budgets"
+        parent="account.menu_finance_reports"
+        action="action_income_statement_budget"
+        sequence="111"
+    />
 </odoo>
