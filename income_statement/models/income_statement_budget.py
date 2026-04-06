@@ -29,6 +29,8 @@ class IncomeStatementBudget(models.Model):
     year = fields.Selection(
         selection="_get_year_selection",
         string="Year",
+        readonely=True,
+        store=True,
         required=True,
         default=lambda self: str(fields.Date.today().year),
     )
