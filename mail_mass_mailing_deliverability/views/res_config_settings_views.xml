@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_mass_mailing_deliverability" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.mass.mailing.deliverability</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="mass_mailing.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@name='dedicated_server_setting_container']" position="after">
+                <div class="alert alert-warning" role="alert">
+                    <p>For bulk sends, use a transactional or marketing SMTP provider (not a shared mailbox such as Zoho Mail user SMTP). Use the previous setting to pick that outgoing server. At your DNS host, add the SPF, DKIM, and DMARC records your provider publishes for the From domain.</p>
+                </div>
+                <setting string="Outgoing queue batch size" help="Maximum mail.mail records processed each time the Mail: Email Queue Manager scheduled action runs.">
+                    <field name="mail_mail_queue_batch_size"/>
+                </setting>
+                <setting string="SMTP session batch size" help="Upper bound on messages grouped per SMTP configuration batch inside send().">
+                    <field name="mail_session_batch_size"/>
+                </setting>
+                <setting string="Mass mail generation batch size" help="Recipient chunk size when generating mass mailing mail.mail records.">
+                    <field name="mail_compose_batch_size"/>
+                </setting>
+                <setting string="Direct send recipient limit" help="Mass mailings with more recipients than this use the outgoing queue instead of sending immediately in the composer transaction.">
+                    <field name="mail_mail_force_send_limit"/>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+</odoo>
