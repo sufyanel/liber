@@ -1,4 +1,7 @@
+import logging
 from odoo import api, SUPERUSER_ID
+
+_logger = logging.getLogger(__name__)
 
 ACCOUNT_CODE_DEFAULTS = {
     "sales_revenue": [
@@ -23,19 +26,8 @@ ACCOUNT_CODE_DEFAULTS = {
 }
 
 
-def post_init_hook(cr, registry):
-    cr.execute(
-        """
-        UPDATE income_statement_budget
-        SET company_id = (SELECT id FROM res_company ORDER BY id LIMIT 1)
-        WHERE company_id IS NULL
-        """
-    )
+def migrate(cr, version):
     env = api.Environment(cr, SUPERUSER_ID, {})
-    _seed_default_mappings(env)
-
-
-def _seed_default_mappings(env):
     Mapping = env["income.statement.account.mapping"]
     Account = env["account.account"]
     companies = env["res.company"].search([])
@@ -51,9 +43,12 @@ def _seed_default_mappings(env):
                 ("company_id", "=", company.id),
                 ("code", "in", codes),
             ])
-            if accounts:
-                Mapping.create({
-                    "company_id": company.id,
-                    "row_key": row_key,
-                    "account_ids": [(6, 0, accounts.ids)],
-                })
+            _logger.info(
+                "income_statement seed: company=%s row=%s codes=%s matched=%d ids=%s",
+                company.name, row_key, codes, len(accounts), accounts.ids,
+            )
+            Mapping.create({
+                "company_id": company.id,
+                "row_key": row_key,
+                "account_ids": [(6, 0, accounts.ids)],
+            })
