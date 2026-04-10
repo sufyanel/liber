@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_income_statement_account_mapping_tree" model="ir.ui.view">
+        <field name="name">income.statement.account.mapping.tree</field>
+        <field name="model">income.statement.account.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Account Mappings">
+                <field name="company_id" readonly="1"/>
+                <field name="row_key"/>
+                <field name="account_ids" widget="many2many_tags"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_income_statement_account_mapping_form" model="ir.ui.view">
+        <field name="name">income.statement.account.mapping.form</field>
+        <field name="model">income.statement.account.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Account Mapping">
+                <sheet>
+                    <group>
+                        <field name="company_id" options="{'no_create': True}"/>
+                        <field name="row_key"/>
+                    </group>
+                    <separator string="Accounts"/>
+                    <field name="account_ids" widget="many2many_tags"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_income_statement_account_mapping" model="ir.actions.act_window">
+        <field name="name">Account Mappings</field>
+        <field name="res_model">income.statement.account.mapping</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

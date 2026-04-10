@@ -14,4 +14,11 @@
             action="action_income_statement_budget"
             sequence="111"
     />
+    <menuitem
+            id="menu_income_statement_account_mapping"
+            name="Income Statement Accounts"
+            parent="account.account_account_menu"
+            action="action_income_statement_account_mapping"
+            sequence="120"
+    />
 </odoo>
