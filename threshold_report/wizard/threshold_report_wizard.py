@@ -152,8 +152,7 @@ class ThresholdReportWizard(models.TransientModel):
         # Change in A/R (using Trial Balance approach)
         data['change_ar'] = self._get_balance_change_from_trial_balance('asset_receivable')
 
-        # Change in A/P (using Trial Balance approach)
-        data['change_payables'] = self._get_balance_change_from_trial_balance('liability_payable')
+        data['change_payables'] = self._get_payables_threshold_amount('02.1.101')
 
         # Change Net Change in A/R and A/P
         data['change_payables_receivable'] = data['change_ar'] + data['change_payables']
@@ -177,8 +176,56 @@ class ThresholdReportWizard(models.TransientModel):
 
         return data
 
-        # Default depreciation account
-        return ['06.2.102']
+    def _get_payables_threshold_amount(self, account_code='02.1.101'):
+        self.ensure_one()
+        company = self.company_id
+        if not company:
+            return 0.0
+        date_from, date_to = self._get_date_range()
+        Account = self.env['account.account'].sudo()
+        accounts = Account.search([('code', '=', account_code)])
+        if not accounts:
+            return 0.0
+        MoveLine = self.env['account.move.line'].sudo()
+        amls = MoveLine.search([
+            ('account_id', 'in', accounts.ids),
+            ('date', '>=', date_from),
+            ('date', '<=', date_to),
+            ('parent_state', '=', 'posted'),
+        ])
+        bills = amls.mapped('move_id').filtered(
+            lambda m: m.move_type == 'in_invoice'
+            and m.state == 'posted'
+            and m.payment_state in ('not_paid', 'partial')
+        )
+        company_partner = company.partner_id
+        related_partner = company.related_company_id.partner_id if company.related_company_id else False
+        Poline = self.env['purchase.order.line']
+        has_sale_line = 'sale_line_id' in Poline._fields
+        total = 0.0
+        for bill in bills:
+            po_lines = bill.invoice_line_ids.mapped('purchase_line_id').filtered(lambda pl: pl)
+            orders = po_lines.mapped('order_id')
+            if not orders:
+                continue
+            matched = False
+            for po in orders:
+                if po.dest_address_id and po.dest_address_id == company_partner:
+                    matched = True
+                    break
+                if has_sale_line:
+                    for so in po.order_line.mapped('sale_line_id.order_id').filtered(lambda s: s):
+                        if related_partner and so.partner_id == related_partner:
+                            matched = True
+                            break
+                        if not related_partner and so.partner_id == company_partner:
+                            matched = True
+                            break
+                if matched:
+                    break
+            if matched:
+                total += bill.amount_residual
+        return total
 
     def _get_account_balance(self, account_code, date_from=None, date_to=None):
         """Get account balance for specified code and period"""

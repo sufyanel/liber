@@ -8,7 +8,7 @@
         capital investments, and financial security calculations.
     """,
     'author': 'Your Company',
-    'depends': ['account', 'base'],
+    'depends': ['account', 'base', 'purchase', 'sale', 'sale_purchase'],
     'data': [
         'security/ir.model.access.csv',
         'views/threshold_report_wizard_view.xml',

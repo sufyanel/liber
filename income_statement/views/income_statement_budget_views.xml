@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_income_statement_budget_tree" model="ir.ui.view">
+        <field name="name">income.statement.budget.tree</field>
+        <field name="model">income.statement.budget</field>
+        <field name="arch" type="xml">
+            <tree string="Budgets">
+                <field name="name"/>
+                <field name="company_id" readonly="1"/>
+                <field name="year" readonly="1" force_save="1"/>
+                <field name="quarter"/>
+                <field name="sales_revenue" required="1"/>
+                <field name="state" widget="badge" decoration-success="state == 'confirmed'" decoration-info="state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_income_statement_budget_form" model="ir.ui.view">
+        <field name="name">income.statement.budget.form</field>
+        <field name="model">income.statement.budget</field>
+        <field name="arch" type="xml">
+            <form string="Budget">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_draft" string="Set to Draft" type="object" invisible="state != 'confirmed'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="company_id" readonly="1" options="{'no_create': True}"/>
+                        <field name="year" readonly="state == 'confirmed'"/>
+                        <field name="quarter" readonly="state == 'confirmed'"/>
+                        <field name="sales_revenue" readonly="state == 'confirmed'" required="state == 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Budget Lines">
+                            <field name="line_ids" nolabel="1" readonly="state == 'confirmed'">
+                                <tree editable="bottom" create="false">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="line_type"/>
+                                    <field name="percentage" string="Percentage (%)"/>
+                                    <field name="amount" readonly="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_income_statement_budget" model="ir.actions.act_window">
+        <field name="name">Budgets</field>
+        <field name="res_model">income.statement.budget</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>

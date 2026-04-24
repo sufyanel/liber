@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem
+            id="menu_income_statement"
+            name="Income Statement"
+            parent="account.menu_finance_reports"
+            action="action_income_statement_wizard"
+            sequence="110"
+    />
+    <menuitem
+            id="menu_income_statement_budget"
+            name="Budget Allocation"
+            parent="account.menu_finance_reports"
+            action="action_income_statement_budget"
+            sequence="111"
+    />
+    <menuitem
+            id="menu_income_statement_account_mapping"
+            name="Income Statement Accounts"
+            parent="account.account_account_menu"
+            action="action_income_statement_account_mapping"
+            sequence="120"
+    />
+</odoo>
