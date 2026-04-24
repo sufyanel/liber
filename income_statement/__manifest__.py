@@ -10,7 +10,7 @@
         "views/income_statement_account_mapping_views.xml",
         "views/menu_views.xml",
     ],
-    "post_init_hook": "income_statement.hooks.post_init_hook",
+    "post_init_hook": "post_init_hook",
     "installable": True,
     "application": False,
 }
