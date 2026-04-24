@@ -1,5 +1,3 @@
-from odoo import api, SUPERUSER_ID
-
 ACCOUNT_CODE_DEFAULTS = {
     "sales_revenue": [
         "04.1.101", "04.1.102", "04.1.104",
@@ -23,15 +21,14 @@ ACCOUNT_CODE_DEFAULTS = {
 }
 
 
-def post_init_hook(cr, registry):
-    cr.execute(
+def post_init_hook(env):
+    env.cr.execute(
         """
         UPDATE income_statement_budget
         SET company_id = (SELECT id FROM res_company ORDER BY id LIMIT 1)
         WHERE company_id IS NULL
         """
     )
-    env = api.Environment(cr, SUPERUSER_ID, {})
     _seed_default_mappings(env)
 
 
