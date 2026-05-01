@@ -328,6 +328,7 @@ class InvoiceComparisonWizard(models.TransientModel):
 
         years = data['years']
         companies = data['companies']
+        company_header = data.get('company_header')
         current_year = datetime.now().year
 
         # Calculate total columns needed - invoices, growth %, then budgets
