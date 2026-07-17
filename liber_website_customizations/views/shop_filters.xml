@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Ensure base option views are active (website COW copies updated via function). -->
+    <record id="website_sale.products_attributes" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.products_attributes_top" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Left sidebar: Brand only (technical attrs live in the Filters drawer). -->
+    <template id="products_attributes_brand_only"
+              inherit_id="website_sale.products_attributes"
+              name="Liber: Brand filter in sidebar"
+              priority="50">
+        <xpath expr="//form[hasclass('js_attributes')]//t[@t-foreach='attributes']" position="attributes">
+            <attribute name="t-foreach">attributes.filtered(lambda a: a.name == 'Brand')</attribute>
+        </xpath>
+        <!-- Keep tags out of the left rail; they remain available in the offcanvas. -->
+        <xpath expr="//t[@t-if='opt_wsale_filter_tags and opt_wsale_attributes']" position="replace"/>
+    </template>
+
+    <!-- Offcanvas: Brand only on mobile; select attrs as dropdown.
+         Note: form uses t-attf-class (not class), so hasclass() does not match. -->
+    <template id="o_wsale_offcanvas_hybrid_filters"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Hybrid attribute filters in drawer"
+              priority="50">
+        <!-- Hide Brand on large screens (already in left rail). -->
+        <xpath expr="//form[contains(@t-attf-class, 'js_attributes')]//div[contains(@t-attf-class, 'accordion-item')]" position="attributes">
+            <attribute name="t-attf-class">accordion-item border-top-0 {{(_status == 'active') and 'order-1' or 'order-2'}} {{a.name == 'Brand' and 'd-lg-none' or ''}}</attribute>
+        </xpath>
+
+        <!-- Render select attributes as a dropdown instead of a long checkbox list. -->
+        <xpath expr="//form[contains(@t-attf-class, 'js_attributes')]//div[@t-elif=&quot;a.display_type in ('radio', 'pills', 'select')&quot;]" position="replace">
+            <div t-elif="a.display_type == 'select'" class="pt-1 pb-3">
+                <select class="form-select css_attribute_select mb-2" name="attrib">
+                    <option value="" selected="true">-</option>
+                    <t t-foreach="a.value_ids" t-as="v">
+                        <option t-att-value="'%s-%s' % (a.id, v.id)"
+                                t-esc="v.name"
+                                t-att-selected="v.id in attrib_set"/>
+                    </t>
+                </select>
+            </div>
+            <div t-elif="a.display_type in ('radio', 'pills', 'multi')"
+                 class="list-group list-group-flush o_liber_attr_values">
+                <div t-foreach="a.value_ids" t-as="v" class="list-group-item border-0 ps-0 pb-0">
+                    <div class="form-check mb-1">
+                        <input type="checkbox"
+                               name="attrib"
+                               class="form-check-input"
+                               t-att-id="'%s-%s' % (a.id, v.id)"
+                               t-att-value="'%s-%s' % (a.id, v.id)"
+                               t-att-checked="'checked' if v.id in attrib_set else None"/>
+                        <label class="form-check-label fw-normal"
+                               t-att-for="'%s-%s' % (a.id, v.id)"
+                               t-field="v.name"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Runs on install and every module upgrade (post_init alone is install-only). -->
+    <function model="website" name="_liber_setup_shop_attribute_filters"/>
+
+</odoo>
