@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="liber_homepage" name="Liber Holdings Homepage">
+        <t t-call="website.layout">
+            <t t-call="liber_theme_holdings.liber_homepage_body"/>
+        </t>
+    </template>
+
+    <template id="liber_homepage_body" name="Liber Homepage Body">
+        <div id="wrap" class="o_liber_homepage">
+            <section class="o_liber_hero">
+                <div class="o_liber_hero_bg" aria-hidden="true"/>
+                <div class="container">
+                    <div class="o_liber_hero_inner">
+                        <div class="o_liber_brand_mark">Liber</div>
+                        <h1>Industrial spare parts, found fast</h1>
+                        <p class="o_liber_hero_lead">Bearings, seals, springs, and power transmission for plants that cannot wait.</p>
+                        <div class="o_liber_hero_ctas">
+                            <a href="/shop" class="btn btn-primary btn_cta">Shop parts</a>
+                            <a href="/quote" class="btn btn-outline-light">Request quote</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="o_liber_section">
+                <div class="container">
+                    <h2 class="o_liber_section_title">Shop by category</h2>
+                    <p class="o_liber_section_lead">Browse the parts families maintenance teams use most.</p>
+                    <div class="row g-3">
+                        <t t-set="cats" t-value="request.website._get_liber_mega_categories()"/>
+                        <t t-foreach="cats" t-as="cat">
+                            <div class="col-6 col-md-4 col-lg-3">
+                                <a class="o_liber_cat_card" t-att-href="'/shop/category/%s' % slug(cat)">
+                                    <span t-esc="cat.name"/>
+                                </a>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+            </section>
+
+            <section class="o_liber_trust">
+                <div class="container">
+                    <div class="row g-4 text-center">
+                        <div class="col-6 col-lg-3">
+                            <strong>MRO ready</strong>
+                            <span class="d-block">Parts selected for industrial uptime</span>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <strong>Brand depth</strong>
+                            <span class="d-block">SKF, Timken, and more trusted lines</span>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <strong>Cart or quote</strong>
+                            <span class="d-block">Buy in stock, or request a quote</span>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <strong>US support</strong>
+                            <span class="d-block">+1 832-791-2535</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="o_liber_section o_liber_howto_resources">
+                <div class="container">
+                    <h2 class="o_liber_section_title">How to buy</h2>
+                    <p class="o_liber_section_lead">Two clear paths — no guessing. Resources when you need them.</p>
+                    <div class="row g-3 align-items-stretch">
+                        <div class="col-md-4">
+                            <div class="o_liber_path_card h-100">
+                                <h3>Add to cart</h3>
+                                <p>Use when the part is orderable and available. Checkout online with your usual payment flow.</p>
+                                <div class="o_liber_path_card_cta">
+                                    <a href="/shop" class="btn btn-primary">Browse the catalog</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="o_liber_path_card h-100">
+                                <h3>Request a quote</h3>
+                                <p>Use for special, high-value, or out-of-stock items. Our team confirms availability and pricing.</p>
+                                <div class="o_liber_path_card_cta">
+                                    <a href="/quote" class="btn btn-outline-liber">Request quote</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="o_liber_path_card h-100">
+                                <h3>Resources</h3>
+                                <p>News and catalogs for buyers and maintenance leads.</p>
+                                <div class="o_liber_path_card_cta o_liber_howto_ctas">
+                                    <a href="/news" class="btn btn-outline-liber">News</a>
+                                    <a href="/contactus" class="btn btn-primary">Talk to Liber</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </template>
+
+    <template id="homepage_liber" inherit_id="website.homepage" name="Liber Homepage Override" priority="99">
+        <xpath expr="//div[@id='wrap']" position="replace">
+            <t t-call="liber_theme_holdings.liber_homepage_body"/>
+        </xpath>
+    </template>
+
+</odoo>

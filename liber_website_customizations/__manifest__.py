@@ -4,7 +4,7 @@
     "description": "This module will help to show custom snippets for website.",
     "category": "Website/Liber Website Customizations",
     "license": "LGPL-3",
-    "version": "17.0.1.1",
+    "version": "17.0.1.4",
     "author": "Axiom World",
     "sequence": -1,
     "website_url": "https://axiomworld.net",

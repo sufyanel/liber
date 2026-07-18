@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="product_liber_ctas" inherit_id="website_sale.product" name="Liber Product CTAs" priority="50">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="inside">
+            <t t-set="show_quote" t-value="product._liber_show_request_quote()"/>
+            <t t-set="show_sign_in" t-value="product._liber_show_sign_in_to_buy()"/>
+            <a t-if="show_sign_in"
+               t-att-href="product._liber_signin_buy_url()"
+               class="btn btn-primary o_liber_signin_buy mb-2 me-2">
+                Sign in to buy
+            </a>
+            <a t-if="show_quote"
+               t-att-href="'/quote?product_id=%s' % product.id"
+               class="btn btn-outline-liber o_liber_quote_btn mb-2">
+                Request quote
+            </a>
+            <a href="tel:+18327912535" class="btn btn-link text-muted mb-2">+1 832-791-2535</a>
+        </xpath>
+        <!-- Hide native ATC for guests / quote-only / zero-price; guests get Sign in to buy above -->
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="t-attf-class">{{'d-none' if (combination_info['prevent_zero_price_sale'] or product._liber_has_quote_tag() or not product._liber_user_can_shop()) else 'd-inline-flex'}} align-items-center mb-2 me-auto</attribute>
+        </xpath>
+    </template>
+
+    <template id="product_liber_jsonld" inherit_id="website_sale.product" name="Liber Product JSON-LD" priority="60">
+        <xpath expr="//div[@id='wrap']" position="before">
+            <script type="application/ld+json" t-out="product._liber_product_json_ld(website)"/>
+        </xpath>
+    </template>
+
+</odoo>

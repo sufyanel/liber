@@ -29,28 +29,6 @@
   }
 }
 
-// Shop hybrid filters: Brand under Categories matches category list density
-#products_grid_before {
-  .products_attributes_filters {
-    .js_attributes {
-      margin-top: 0.25rem;
-
-      .accordion-item {
-        margin-bottom: 0.75rem;
-      }
-
-      .o_products_attributes_title {
-        font-size: 0.875rem;
-        margin-bottom: 0.5rem;
-      }
-
-      .form-check {
-        margin-bottom: 0.35rem;
-      }
-    }
-  }
-}
-
 // Scroll long technical attribute lists in the Filters drawer
 #o_wsale_offcanvas {
   .o_liber_attr_values {
