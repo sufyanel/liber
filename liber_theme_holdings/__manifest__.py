@@ -8,7 +8,7 @@
     """,
     "category": "Theme/Ecommerce",
     "license": "LGPL-3",
-    "version": "17.0.1.23",
+    "version": "17.0.1.24",
     "author": "Axiom World",
     "website": "https://www.liberholdings.com",
     "depends": [

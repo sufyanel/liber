@@ -268,6 +268,61 @@ html[data-liber-theme] header .btn-outline-liber {
   vertical-align: middle;
 }
 
+html[data-liber-theme] header .o_liber_cart_link {
+  min-height: 2.25rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--liber-mist);
+  border-radius: var(--liber-radius);
+  background: var(--liber-white);
+  color: var(--liber-graphite) !important;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: border-color 0.2s var(--liber-ease),
+    color 0.2s var(--liber-ease),
+    background-color 0.2s var(--liber-ease);
+}
+
+html[data-liber-theme] header .o_liber_cart_link:hover {
+  border-color: var(--liber-signal);
+  background: rgba(184, 50, 42, 0.04);
+  color: var(--liber-signal) !important;
+}
+
+html[data-liber-theme] header .o_liber_cart_icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+html[data-liber-theme] header .o_liber_cart_icon .fa {
+  width: auto;
+  height: auto;
+  line-height: 1;
+  font-size: 0.95rem;
+}
+
+html[data-liber-theme] header .o_liber_header_cart .my_cart_quantity {
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0.15rem 0.3rem;
+  background: var(--liber-signal) !important;
+  color: var(--liber-white) !important;
+  font-size: 0.62rem;
+  line-height: 0.85rem;
+  box-shadow: 0 0 0 2px var(--liber-white);
+}
+
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  html[data-liber-theme] header .o_liber_cart_text {
+    display: none;
+  }
+}
+
 html[data-liber-theme] header a[href="/web/login"],
 html[data-liber-theme] header .o_navlink_account {
   display: inline-flex;

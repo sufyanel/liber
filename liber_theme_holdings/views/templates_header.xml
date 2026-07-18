@@ -12,4 +12,25 @@
         </xpath>
     </template>
 
+    <!-- Persistent desktop cart: after utility links, before sign-in / CTAs. -->
+    <template id="header_cart_liber"
+              inherit_id="website.template_header_default"
+              name="Liber Desktop Header Cart"
+              priority="60">
+        <xpath expr="//ul[hasclass('navbar-nav')]/t[@t-call='portal.placeholder_user_sign_in']"
+               position="before">
+            <t t-call="website_sale.header_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_text" t-value="True"/>
+                <t t-set="_item_class" t-value="'o_liber_header_cart'"/>
+                <t t-set="_link_class"
+                   t-value="'btn o_liber_cart_link position-relative d-flex align-items-center gap-2'"/>
+                <t t-set="_icon_wrap_class" t-value="'o_liber_cart_icon position-relative'"/>
+                <t t-set="_badge_class"
+                   t-value="'position-absolute top-0 start-100 translate-middle rounded-pill'"/>
+                <t t-set="_text_class" t-value="'o_liber_cart_text'"/>
+            </t>
+        </xpath>
+    </template>
+
 </odoo>
