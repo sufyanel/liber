@@ -1,46 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- Ensure base option views are active (website COW copies updated via function). -->
+    <!-- Drawer-only shop filters: no left category/attribute rail -->
+    <record id="website_sale.products_categories" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
     <record id="website_sale.products_attributes" model="ir.ui.view">
-        <field name="active" eval="True"/>
+        <field name="active" eval="False"/>
     </record>
     <record id="website_sale.products_attributes_top" model="ir.ui.view">
         <field name="active" eval="True"/>
     </record>
+    <record id="website_sale.filter_products_price" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.filter_products_tags" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.products_categories_top" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
 
-    <!-- Left sidebar: Brand only (technical attrs live in the Filters drawer). -->
-    <template id="products_attributes_brand_only"
-              inherit_id="website_sale.products_attributes"
-              name="Liber: Brand filter in sidebar"
-              priority="50">
-        <xpath expr="//form[hasclass('js_attributes')]//t[@t-foreach='attributes']" position="attributes">
-            <attribute name="t-foreach">attributes.filtered(lambda a: a.name == 'Brand')</attribute>
+    <!--
+        Stock only puts Categories in the drawer when left products_categories is on
+        (and hides them on lg+). Liber drawer-only mode: show Categories whenever
+        attributes-top (drawer) is active, on all breakpoints.
+    -->
+    <!-- Left drawer on mobile; desktop converts this panel into an in-flow left rail -->
+    <template id="o_wsale_offcanvas_liber_defaults"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Filters drawer defaults">
+        <xpath expr="//aside[@id='o_wsale_offcanvas']" position="attributes">
+            <attribute name="class" remove="offcanvas-end" add="offcanvas-start o_liber_filters_drawer" separator=" "/>
+            <attribute name="data-bs-scroll">true</attribute>
+            <attribute name="data-bs-backdrop">false</attribute>
         </xpath>
-        <!-- Keep tags out of the left rail; they remain available in the offcanvas. -->
-        <xpath expr="//t[@t-if='opt_wsale_filter_tags and opt_wsale_attributes']" position="replace"/>
     </template>
 
-    <!-- Offcanvas: Brand only on mobile; select attrs as dropdown.
-         Note: form uses t-attf-class (not class), so hasclass() does not match. -->
+    <template id="o_wsale_offcanvas_drawer_categories"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Categories in Filters drawer">
+        <xpath expr="//div[@t-if='opt_wsale_categories'][hasclass('accordion-item')]" position="attributes">
+            <attribute name="t-if">opt_wsale_attributes_top</attribute>
+            <attribute name="class" remove="d-lg-none" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Select attrs as dropdown + scrollable checkbox lists.
+        Same xmlid as the old hybrid inherit so module upgrade updates in place
+        (and drops the Brand d-lg-none left-rail hack).
+    -->
     <template id="o_wsale_offcanvas_hybrid_filters"
               inherit_id="website_sale.o_wsale_offcanvas"
-              name="Liber: Hybrid attribute filters in drawer"
+              name="Liber: Attribute filters in drawer"
               priority="50">
-        <!-- Hide Brand on large screens (already in left rail). -->
-        <xpath expr="//form[contains(@t-attf-class, 'js_attributes')]//div[contains(@t-attf-class, 'accordion-item')]" position="attributes">
-            <attribute name="t-attf-class">accordion-item border-top-0 {{(_status == 'active') and 'order-1' or 'order-2'}} {{a.name == 'Brand' and 'd-lg-none' or ''}}</attribute>
-        </xpath>
-
-        <!-- Render select attributes as a dropdown instead of a long checkbox list. -->
         <xpath expr="//form[contains(@t-attf-class, 'js_attributes')]//div[@t-elif=&quot;a.display_type in ('radio', 'pills', 'select')&quot;]" position="replace">
-            <div t-elif="a.display_type == 'select'" class="pt-1 pb-3">
-                <select class="form-select css_attribute_select mb-2" name="attrib">
-                    <option value="" selected="true">-</option>
+            <div t-elif="a.display_type == 'select'" class="pt-1 pb-2">
+                <select class="form-select" name="attrib">
+                    <option value="" t-att-selected="not any(v.id in attrib_set for v in a.value_ids)">Any</option>
                     <t t-foreach="a.value_ids" t-as="v">
                         <option t-att-value="'%s-%s' % (a.id, v.id)"
-                                t-esc="v.name"
-                                t-att-selected="v.id in attrib_set"/>
+                                t-att-selected="v.id in attrib_set"
+                                t-out="v.name"/>
                     </t>
                 </select>
             </div>

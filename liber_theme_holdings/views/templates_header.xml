@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Dual header CTAs: Request Quote (primary) + Contact -->
+    <template id="header_call_to_action_liber"
+              inherit_id="website.header_call_to_action"
+              name="Liber Header CTAs"
+              priority="50">
+        <xpath expr="//a[hasclass('btn_cta')]" position="replace">
+            <a href="/quote" class="oe_unremovable btn btn-primary btn_cta me-1">Request Quote</a>
+            <a href="/contactus" class="oe_unremovable btn btn-outline-liber btn_cta">Contact</a>
+        </xpath>
+    </template>
+
+</odoo>

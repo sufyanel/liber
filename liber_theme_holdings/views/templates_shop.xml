@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="website_sale.products_description" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+
+    <!-- Keep stock icon add-to-cart OFF; Liber uses text CTAs -->
+    <record id="website_sale.products_add_to_cart" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+
+    <template id="products_shop_meta" inherit_id="website_sale.products" name="Liber Shop Meta" priority="40">
+        <xpath expr="//t[@t-set='additional_title']" position="replace">
+            <t t-set="additional_title">Industrial Spare Parts Shop</t>
+            <t t-set="meta_description">Shop bearings, seals, die springs, gearboxes, and industrial spare parts from Liber Holdings. Filter by brand and specs — cart or request a quote.</t>
+        </xpath>
+    </template>
+
+    <!-- Rebuild card chrome: column layout + single price/CTA footer -->
+    <template id="products_item_liber" inherit_id="website_sale.products_item" name="Liber Product Card" priority="50">
+        <xpath expr="//form[hasclass('oe_product_cart')]" position="attributes">
+            <attribute name="class">oe_product_cart o_liber_product_card h-100 d-flex flex-column</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('oe_product_image')]" position="attributes">
+            <attribute name="class">oe_product_image o_liber_product_image position-relative flex-grow-0 overflow-hidden</attribute>
+        </xpath>
+
+        <xpath expr="//div[hasclass('o_wsale_product_sub')]" position="replace">
+            <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
+            <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
+            <t t-set="show_cart" t-value="product._liber_show_add_to_cart()"/>
+            <t t-set="show_quote" t-value="product._liber_show_request_quote()"/>
+            <div class="o_liber_card_footer mt-auto">
+                <input t-if="product_variant_id" name="product_id" t-att-value="product_variant_id" type="hidden"/>
+                <div class="o_liber_card_price product_price" itemprop="offers" itemscope="itemscope" itemtype="http://schema.org/Offer">
+                    <t t-if="'base_price' in template_price_vals and (template_price_vals['base_price'] &gt; template_price_vals['price_reduce']) and (template_price_vals['price_reduce'] or not website.prevent_zero_price_sale)">
+                        <del class="text-muted me-1 small">
+                            <t t-esc="template_price_vals['base_price']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                        </del>
+                    </t>
+                    <span class="o_liber_price" t-if="template_price_vals['price_reduce'] or not website.prevent_zero_price_sale"
+                          t-esc="template_price_vals['price_reduce']"
+                          t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    <span class="o_liber_price" t-else="" t-field="website.prevent_zero_price_sale_text"/>
+                    <span itemprop="price" style="display:none;" t-esc="template_price_vals['price_reduce']"/>
+                    <span itemprop="priceCurrency" style="display:none;" t-esc="website.currency_id.name"/>
+                </div>
+                <div class="o_liber_card_actions">
+                    <div t-if="show_cart and product_variant_id" class="o_wsale_product_btn">
+                        <a href="#"
+                           role="button"
+                           class="btn btn-primary btn-sm a-submit">
+                            Add to cart
+                        </a>
+                    </div>
+                    <a t-if="show_quote"
+                       t-att-href="'/quote?product_id=%s' % product.id"
+                       class="btn btn-outline-liber btn-sm">
+                        Request quote
+                    </a>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="products_categories_liber" inherit_id="website_sale.products_categories_list" name="Liber Categories Title" priority="50">
+        <xpath expr="//h6" position="replace">
+            <h6 class="mb-2"><b>Categories</b></h6>
+        </xpath>
+    </template>
+
+    <!-- Category filmstrip: icon-over-label tiles instead of cramped horizontal pills -->
+    <template id="filmstrip_categories_liber"
+              inherit_id="website_sale.filmstrip_categories"
+              name="Liber Category Filmstrip"
+              priority="50">
+        <xpath expr="//div[hasclass('o_wsale_filmstip_container')]" position="attributes">
+            <attribute name="class" add="o_liber_filmstrip" separator=" "/>
+        </xpath>
+        <xpath expr="//ul[hasclass('o_wsale_filmstip')]" position="replace">
+            <ul class="o_wsale_filmstip o_liber_filmstrip_list d-flex align-items-stretch mb-0 list-unstyled overflow-visible">
+                <t t-foreach="entries" t-as="c" t-if="c.image_128" t-set="atLeastOneImage" t-value="True"/>
+                <li t-foreach="entries" t-as="c"
+                    t-attf-class="o_liber_film_item {{'is-active' if category and c.id == category.id else ''}}"
+                    t-att-data-link-href="keep('/shop/category/' + slug(c), category=0)">
+                    <div class="o_liber_cat_chip"
+                         t-att-aria-current="category and c.id == category.id and 'page' or None">
+                        <span t-if="c.image_128"
+                              class="o_liber_cat_chip_media"
+                              t-attf-style="background-image:url('data:image/png;base64,#{c.image_128}')"
+                              t-att-aria-label="c.name"/>
+                        <span t-else="" class="o_liber_cat_chip_media o_liber_cat_chip_placeholder"
+                              t-esc="(c.name or '?')[:1]"/>
+                        <span class="o_liber_cat_chip_label" t-field="c.name"/>
+                    </div>
+                </li>
+            </ul>
+        </xpath>
+    </template>
+
+</odoo>

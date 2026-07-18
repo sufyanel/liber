@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Explicit frontend asset registration (avoids stale / missing manifest bundles) -->
+    <record id="liber_theme_frontend_css" model="ir.asset">
+        <field name="name">Liber Holdings Theme CSS</field>
+        <field name="bundle">web.assets_frontend</field>
+        <field name="path">liber_theme_holdings/static/src/css/theme.css</field>
+        <field name="sequence">100</field>
+    </record>
+    <record id="liber_theme_frontend_js" model="ir.asset">
+        <field name="name">Liber Holdings Theme JS</field>
+        <field name="bundle">web.assets_frontend</field>
+        <field name="path">liber_theme_holdings/static/src/js/theme.js</field>
+        <field name="sequence">110</field>
+    </record>
+</odoo>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Domain is production-only; noupdate so local clears are not overwritten. -->
+    <data noupdate="1">
+        <record id="website.default_website" model="website">
+            <field name="domain">https://www.liberholdings.com</field>
+        </record>
+    </data>
+
+    <record id="redirect_contact_to_contactus" model="website.rewrite">
+        <field name="name">Contact to Contact Us</field>
+        <field name="url_from">/contact</field>
+        <field name="url_to">/contactus</field>
+        <field name="redirect_type">301</field>
+        <field name="website_id" ref="website.default_website"/>
+    </record>
+
+    <function model="website" name="_liber_theme_setup"/>
+</odoo>
