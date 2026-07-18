@@ -707,6 +707,13 @@ html[data-liber-theme] #products_grid .o_wsale_product_grid_wrapper {
   white-space: nowrap;
 }
 
+html[data-liber-theme] .o_liber_signin_buy {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 /* Hide any leftover stock btn slot / duplicate chrome */
 .o_liber_product_card .o_wsale_product_sub {
   display: none !important;

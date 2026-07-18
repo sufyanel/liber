@@ -31,6 +31,7 @@
             <t t-set="template_price_vals" t-value="get_product_prices(product)"/>
             <t t-set="product_variant_id" t-value="product._get_first_possible_variant_id()"/>
             <t t-set="show_cart" t-value="product._liber_show_add_to_cart()"/>
+            <t t-set="show_sign_in" t-value="product._liber_show_sign_in_to_buy()"/>
             <t t-set="show_quote" t-value="product._liber_show_request_quote()"/>
             <div class="o_liber_card_footer mt-auto">
                 <input t-if="product_variant_id" name="product_id" t-att-value="product_variant_id" type="hidden"/>
@@ -55,6 +56,11 @@
                             Add to cart
                         </a>
                     </div>
+                    <a t-if="show_sign_in"
+                       t-att-href="product._liber_signin_buy_url()"
+                       class="btn btn-primary btn-sm o_liber_signin_buy">
+                        Sign in to buy
+                    </a>
                     <a t-if="show_quote"
                        t-att-href="'/quote?product_id=%s' % product.id"
                        class="btn btn-outline-liber btn-sm">

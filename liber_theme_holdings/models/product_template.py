@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
+from urllib.parse import quote
 
 from odoo import models
+from odoo.http import request
 
 
 class ProductTemplate(models.Model):
@@ -11,7 +13,15 @@ class ProductTemplate(models.Model):
         self.ensure_one()
         return any(tag.name == "Request Quote" for tag in self.product_tag_ids)
 
-    def _liber_show_add_to_cart(self):
+    def _liber_user_can_shop(self):
+        """Any authenticated (non-public) user may purchase."""
+        user = self.env.user
+        if request and getattr(request, "env", None):
+            user = request.env.user
+        return bool(user) and not user._is_public()
+
+    def _liber_product_is_cartable(self):
+        """Product-level cart eligibility, independent of authentication."""
         self.ensure_one()
         if self._liber_has_quote_tag():
             return False
@@ -21,6 +31,21 @@ class ProductTemplate(models.Model):
         if website.prevent_zero_price_sale and not self.list_price:
             return False
         return True
+
+    def _liber_show_add_to_cart(self):
+        self.ensure_one()
+        return self._liber_user_can_shop() and self._liber_product_is_cartable()
+
+    def _liber_show_sign_in_to_buy(self):
+        """Anonymous CTA when the product would otherwise be purchasable."""
+        self.ensure_one()
+        return (not self._liber_user_can_shop()) and self._liber_product_is_cartable()
+
+    def _liber_signin_buy_url(self):
+        """Login URL that returns the shopper to this product after auth."""
+        self.ensure_one()
+        redirect = self.website_url or "/shop"
+        return "/web/login?redirect=%s" % quote(redirect, safe="")
 
     def _liber_show_request_quote(self):
         self.ensure_one()
