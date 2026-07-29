@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Drawer-only shop filters: no left category/attribute rail -->
+    <record id="website_sale.products_categories" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="website_sale.products_attributes" model="ir.ui.view">
+        <field name="active" eval="False"/>
+    </record>
+    <record id="website_sale.products_attributes_top" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.filter_products_price" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.filter_products_tags" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+    <record id="website_sale.products_categories_top" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+
+    <!--
+        Stock only puts Categories in the drawer when left products_categories is on
+        (and hides them on lg+). Liber drawer-only mode: show Categories whenever
+        attributes-top (drawer) is active, on all breakpoints.
+    -->
+    <!-- Left drawer on mobile; desktop converts this panel into an in-flow left rail -->
+    <template id="o_wsale_offcanvas_liber_defaults"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Filters drawer defaults">
+        <xpath expr="//aside[@id='o_wsale_offcanvas']" position="attributes">
+            <attribute name="class" remove="offcanvas-end" add="offcanvas-start o_liber_filters_drawer" separator=" "/>
+            <attribute name="data-bs-scroll">true</attribute>
+            <attribute name="data-bs-backdrop">false</attribute>
+        </xpath>
+    </template>
+
+    <template id="o_wsale_offcanvas_drawer_categories"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Categories in Filters drawer">
+        <xpath expr="//div[@t-if='opt_wsale_categories'][hasclass('accordion-item')]" position="attributes">
+            <attribute name="t-if">opt_wsale_attributes_top</attribute>
+            <attribute name="class" remove="d-lg-none" separator=" "/>
+        </xpath>
+    </template>
+
+    <!--
+        Select attrs as dropdown + scrollable checkbox lists.
+        Same xmlid as the old hybrid inherit so module upgrade updates in place
+        (and drops the Brand d-lg-none left-rail hack).
+    -->
+    <template id="o_wsale_offcanvas_hybrid_filters"
+              inherit_id="website_sale.o_wsale_offcanvas"
+              name="Liber: Attribute filters in drawer"
+              priority="50">
+        <xpath expr="//form[contains(@t-attf-class, 'js_attributes')]//div[@t-elif=&quot;a.display_type in ('radio', 'pills', 'select')&quot;]" position="replace">
+            <div t-elif="a.display_type == 'select'" class="pt-1 pb-2">
+                <select class="form-select" name="attrib">
+                    <option value="" t-att-selected="not any(v.id in attrib_set for v in a.value_ids)">Any</option>
+                    <t t-foreach="a.value_ids" t-as="v">
+                        <option t-att-value="'%s-%s' % (a.id, v.id)"
+                                t-att-selected="v.id in attrib_set"
+                                t-out="v.name"/>
+                    </t>
+                </select>
+            </div>
+            <div t-elif="a.display_type in ('radio', 'pills', 'multi')"
+                 class="list-group list-group-flush o_liber_attr_values">
+                <div t-foreach="a.value_ids" t-as="v" class="list-group-item border-0 ps-0 pb-0">
+                    <div class="form-check mb-1">
+                        <input type="checkbox"
+                               name="attrib"
+                               class="form-check-input"
+                               t-att-id="'%s-%s' % (a.id, v.id)"
+                               t-att-value="'%s-%s' % (a.id, v.id)"
+                               t-att-checked="'checked' if v.id in attrib_set else None"/>
+                        <label class="form-check-label fw-normal"
+                               t-att-for="'%s-%s' % (a.id, v.id)"
+                               t-field="v.name"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Runs on install and every module upgrade (post_init alone is install-only). -->
+    <function model="website" name="_liber_setup_shop_attribute_filters"/>
+
+</odoo>

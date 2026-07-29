@@ -7,11 +7,11 @@
             <form string="Threshold Report">
                 <group>
                     <group string="Company &amp; Period">
-                        <field name="company_id" domain="[('required_threshold', '=', True)]"/>
-                        <field name="duration" required="1"/>
-                        <field name="year" invisible="duration == False" required="duration != False"/>
-                        <field name="quarter" invisible="duration != 'quarter'" required="duration == 'quarter'"/>
-                        <field name="month" invisible="duration != 'month'" required="duration == 'month'"/>
+                        <field name="company_ids" widget="many2many_tags" domain="[('required_threshold', '=', True)]" required="1"/>
+                        <field name="purchase_company_ids" widget="many2many_tags" domain="[('required_threshold', '=', True)]" required="1"/>
+                        <field name="start_date" required="1"/>
+                        <field name="end_date" required="1"/>
+                        <field name="purchase_percentage"/>
                     </group>
                     <group string="Manual Values">
                         <field name="capital_investments"/>

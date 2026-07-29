@@ -28,3 +28,11 @@
     }
   }
 }
+
+// Scroll long technical attribute lists in the Filters drawer
+#o_wsale_offcanvas {
+  .o_liber_attr_values {
+    max-height: 14rem;
+    overflow-y: auto;
+  }
+}

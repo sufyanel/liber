@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="quote_page" name="Request Quote">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Request a Quote</t>
+            <div id="wrap" class="o_liber_quote_page">
+                <div class="container">
+                    <h1 class="o_liber_display mb-2">Request a quote</h1>
+                    <p class="text-muted mb-4" style="max-width: 42ch;">
+                        Tell us the part you need. Liber will confirm availability and pricing — ideal for special, high-value, or hard-to-find SKUs.
+                    </p>
+                    <div class="o_liber_quote_card">
+                        <t t-set="product" t-value="request.env['product.template'].browse(int(request.params.get('product_id') or 0)).exists()"/>
+                        <p t-if="product" class="mb-3">
+                            <strong>Product:</strong>
+                            <t t-esc="product.display_name"/>
+                            <t t-if="product.default_code"> (<t t-esc="product.default_code"/>)</t>
+                        </p>
+                        <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                            <div class="container p-0">
+                                <form id="liber_quote_form" action="/website/form/" method="post" enctype="multipart/form-data"
+                                      class="o_mark_required" data-mark="*" data-model_name="crm.lead"
+                                      data-success-mode="redirect" data-success-page="/contactus-thank-you">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <div class="s_website_form_rows row s_col_no_resize s_col_no_bgcolor">
+                                        <div class="mb-3 col-12 s_website_form_field" data-type="char" data-name="Field">
+                                            <label class="s_website_form_label" for="quote_contact_name">
+                                                <span class="s_website_form_label_content">Your name</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <input id="quote_contact_name" type="text" class="form-control s_website_form_input"
+                                                   name="contact_name" required="required"/>
+                                        </div>
+                                        <div class="mb-3 col-12 s_website_form_field" data-type="email" data-name="Field">
+                                            <label class="s_website_form_label" for="quote_email">
+                                                <span class="s_website_form_label_content">Email</span>
+                                                <span class="s_website_form_mark"> *</span>
+                                            </label>
+                                            <input id="quote_email" type="email" class="form-control s_website_form_input"
+                                                   name="email_from" required="required"/>
+                                        </div>
+                                        <div class="mb-3 col-12 s_website_form_field" data-type="tel" data-name="Field">
+                                            <label class="s_website_form_label" for="quote_phone">
+                                                <span class="s_website_form_label_content">Phone</span>
+                                            </label>
+                                            <input id="quote_phone" type="tel" class="form-control s_website_form_input" name="phone"/>
+                                        </div>
+                                        <div class="mb-3 col-12 s_website_form_field" data-type="char" data-name="Field">
+                                            <label class="s_website_form_label" for="quote_part">
+                                                <span class="s_website_form_label_content">Part / SKU</span>
+                                            </label>
+                                            <input id="quote_part" type="text" class="form-control s_website_form_input" name="name"
+                                                   t-att-value="product.display_name if product else ''"/>
+                                        </div>
+                                        <div class="mb-3 col-12 s_website_form_field" data-type="text" data-name="Field">
+                                            <label class="s_website_form_label" for="quote_desc">
+                                                <span class="s_website_form_label_content">Details</span>
+                                            </label>
+                                            <textarea id="quote_desc" class="form-control s_website_form_input" name="description" rows="4"
+                                                      placeholder="Quantity, specs, plant location, needed-by date…"/>
+                                        </div>
+                                        <div class="mb-0 py-2 col-12 s_website_form_submit">
+                                            <button type="submit" class="btn btn-primary btn_cta s_website_form_send">Submit quote request</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <record id="quote_page_record" model="website.page">
+        <field name="name">Request Quote</field>
+        <field name="website_published" eval="True"/>
+        <field name="url">/quote</field>
+        <field name="view_id" ref="quote_page"/>
+        <field name="website_id" ref="website.default_website"/>
+    </record>
+
+</odoo>
