@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         Make the five snippets appear in the "Add block" panel.
+         We append them inside the existing 'snippet_structure' group, which
+         has been a stable anchor in the snippets panel across v16–v18.
+         (See README → Version compatibility for the v19 note.)
+         ================================================================== -->
+    <template id="liber_snippets_register" inherit_id="website.snippets"
+              name="Liber: register Variant 003 snippets">
+        <xpath expr="//snippets[@id='snippet_structure']" position="inside">
+            <t t-snippet="axiom_liber_theme.s_liber_trust_badges"
+               t-thumbnail="/axiom_liber_theme/static/src/img/snippets_thumbs/trust_badges.svg"/>
+            <t t-snippet="axiom_liber_theme.s_liber_cta"
+               t-thumbnail="/axiom_liber_theme/static/src/img/snippets_thumbs/cta.svg"/>
+            <t t-snippet="axiom_liber_theme.s_liber_spec_table"
+               t-thumbnail="/axiom_liber_theme/static/src/img/snippets_thumbs/spec_table.svg"/>
+            <t t-snippet="axiom_liber_theme.s_liber_cross_reference"
+               t-thumbnail="/axiom_liber_theme/static/src/img/snippets_thumbs/cross_reference.svg"/>
+            <t t-snippet="axiom_liber_theme.s_liber_author_bio"
+               t-thumbnail="/axiom_liber_theme/static/src/img/snippets_thumbs/author_bio.svg"/>
+        </xpath>
+    </template>
+</odoo>

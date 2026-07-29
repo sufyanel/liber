@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         VARIANT 003 SNIPPET PALETTE
+         Self-contained building blocks. They use Bootstrap utilities and the
+         website's active colour-combination classes (o_cc1 / o_cc2 …) so they
+         inherit whichever brand palette the current site has selected.
+         All visible text is editable in the Website Builder.
+         ================================================================== -->
+
+    <!-- 1. TRUST BADGES -->
+    <template id="s_liber_trust_badges" name="Trust Badges">
+        <section class="s_liber_trust_badges o_cc o_cc2 pt24 pb24" data-name="Trust Badges">
+            <div class="container">
+                <div class="row g-4 justify-content-center text-center o_liber_badges_row">
+                    <div class="col-6 col-md-3">
+                        <div class="o_liber_badge">
+                            <div class="o_liber_badge_icon"><i class="fa fa-certificate" role="img" aria-label="Certification"/></div>
+                            <div class="o_liber_badge_title">ISO 9001</div>
+                            <div class="o_liber_badge_sub">Quality Certified</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="o_liber_badge">
+                            <div class="o_liber_badge_icon"><i class="fa fa-shield" role="img" aria-label="Standard"/></div>
+                            <div class="o_liber_badge_title">ASME / OSHA</div>
+                            <div class="o_liber_badge_sub">Standards Compliant</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="o_liber_badge">
+                            <div class="o_liber_badge_icon"><i class="fa fa-star" role="img" aria-label="Heritage"/></div>
+                            <div class="o_liber_badge_title">Since 1946</div>
+                            <div class="o_liber_badge_sub">Trusted Heritage</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="o_liber_badge">
+                            <div class="o_liber_badge_icon"><i class="fa fa-flag" role="img" aria-label="Ownership"/></div>
+                            <div class="o_liber_badge_title">Veteran-Owned</div>
+                            <div class="o_liber_badge_sub">U.S. Business</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- 2. CONVERSION CTA (3 Ps) -->
+    <template id="s_liber_cta" name="Conversion CTA">
+        <section class="s_liber_cta o_cc o_cc2 pt40 pb40" data-name="Conversion CTA">
+            <div class="container">
+                <div class="row align-items-center o_liber_cta_row">
+                    <div class="col-lg-8">
+                        <!-- Promise -->
+                        <h2 class="o_liber_cta_title mb-2">Get the right part at the right time.</h2>
+                        <!-- Proof -->
+                        <p class="o_liber_cta_sub mb-0">Same-day response on quotes. Delivered per your Bill of Materials, labeled and ready to install.</p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                        <!-- Prominence -->
+                        <a href="/contactus" class="btn btn-primary btn-lg o_liber_cta_btn">Request a Quote</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- 3. SPEC TABLE -->
+    <template id="s_liber_spec_table" name="Spec Table">
+        <section class="s_liber_spec_table pt24 pb24" data-name="Spec Table">
+            <div class="container">
+                <h3 class="o_liber_spec_heading mb-3">Technical Specifications</h3>
+                <div class="table-responsive">
+                    <table class="table o_liber_spec">
+                        <tbody>
+                            <tr><th scope="row">Manufacturer Part Number (MPN)</th><td>Enter value…</td></tr>
+                            <tr><th scope="row">Material / Grade</th><td>Enter value…</td></tr>
+                            <tr><th scope="row">Dimensions</th><td>Enter value…</td></tr>
+                            <tr><th scope="row">Load Class</th><td>Enter value…</td></tr>
+                            <tr><th scope="row">Finish / Coating</th><td>Enter value…</td></tr>
+                            <tr><th scope="row">Standard</th><td>Enter value…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- 4. CROSS-BRAND COMPATIBILITY -->
+    <template id="s_liber_cross_reference" name="Cross-Brand Compatibility">
+        <section class="s_liber_cross_reference o_cc o_cc1 pt24 pb24" data-name="Cross-Brand Compatibility">
+            <div class="container">
+                <h3 class="o_liber_xref_heading mb-2">Cross-Brand Compatibility</h3>
+                <p class="o_liber_xref_sub text-muted mb-3">Find the equivalent part across manufacturers. We match by dimension and specification, not just brand name.</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered o_liber_xref">
+                        <thead>
+                            <tr>
+                                <th scope="col">Our Part</th>
+                                <th scope="col">Danly</th>
+                                <th scope="col">Raymond</th>
+                                <th scope="col">Marathon</th>
+                                <th scope="col">Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td></tr>
+                            <tr><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td></tr>
+                            <tr><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td><td>Enter value…</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- 5. AUTHOR BIO (E-E-A-T) -->
+    <template id="s_liber_author_bio" name="Author Bio">
+        <section class="s_liber_author_bio pt24 pb24" data-name="Author Bio">
+            <div class="container">
+                <div class="o_liber_author card">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto">
+                            <img src="/web/image/website/1/logo" class="o_liber_author_img" alt="Author photo"/>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-3">
+                                <div class="o_liber_author_name">Author Name</div>
+                                <div class="o_liber_author_role text-muted">Title · 20+ years in mold &amp; die tooling</div>
+                                <p class="o_liber_author_desc mb-0">Short expertise statement — certifications, specialties, and why this author is a credible voice on the topic.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+</odoo>

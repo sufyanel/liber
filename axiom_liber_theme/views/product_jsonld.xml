@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         SECTION 9 (P0): Product rich-result schema.
+         Appends a schema.org Product JSON-LD <script> to the shop product
+         page. We inherit website_sale.product (a stable external id) and use
+         xpath "." position="inside", which appends to the END of the template
+         regardless of its internal structure — so this survives the template
+         layout changes between Odoo versions. The 'product' variable is in
+         scope on this template in every supported version.
+         ================================================================== -->
+    <template id="liber_product_jsonld" inherit_id="website_sale.product"
+              name="Liber: Product JSON-LD (SEO rich results)">
+        <xpath expr="." position="inside">
+            <script type="application/ld+json"
+                    t-if="product"
+                    t-out="product.sudo()._liber_product_jsonld()"/>
+        </xpath>
+    </template>
+</odoo>
