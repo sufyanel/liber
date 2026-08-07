@@ -197,7 +197,7 @@ class IncomeStatementBudget(models.Model):
                 "budget_id": self.id,
                 "sequence": sequence * 10,
                 "line_type": line_type,
-                "percentage": 0,
+                "percentage": 0.0,
             })
 
 
@@ -233,9 +233,10 @@ class IncomeStatementBudgetLine(models.Model):
         ],
         required=True,
     )
-    percentage = fields.Integer(
+    percentage = fields.Float(
         string="Percentage",
-        default=0,
+        default=0.0,
+        digits=(16, 2),
     )
     amount = fields.Float(
         string="Calculated Amount",
@@ -248,7 +249,7 @@ class IncomeStatementBudgetLine(models.Model):
     def _compute_amount(self):
         for line in self:
             revenue = line.budget_id.sales_revenue or 0.0
-            pct = line.percentage or 0
+            pct = line.percentage or 0.0
             line.amount = revenue * pct / 100.0
 
     def _selection_line_type(self):
@@ -269,7 +270,7 @@ class IncomeStatementBudgetLine(models.Model):
             lbl = sel.get(line.line_type, line.line_type)
             line.budget_id.message_post(
                 body="Budget line added: %s — %s%% — calculated amount %s"
-                % (lbl, line.percentage or 0, self._format_money(line.amount)),
+                % (lbl, line.percentage or 0.0, self._format_money(line.amount)),
                 subtype_xmlid="mail.mt_note",
             )
         return lines
@@ -332,7 +333,7 @@ class IncomeStatementBudgetLine(models.Model):
                         body="Budget line removed: %s (was %s%%, calculated amount %s)"
                         % (
                             lbl,
-                            line.percentage or 0,
+                            line.percentage or 0.0,
                             line._format_money(line.amount),
                         ),
                         subtype_xmlid="mail.mt_note",
