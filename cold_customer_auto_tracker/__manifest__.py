@@ -1,5 +1,6 @@
 {
-    'name': 'Cold Customer Auto Tracker',
+    "license": "LGPL-3",
+    "name": 'Cold Customer Auto Tracker',
     'version': '17.0.1.0.0',
     'category': 'Sales',
     'summary': 'Automatically track cold customers based on invoice activity',

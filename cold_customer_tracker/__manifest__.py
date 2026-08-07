@@ -1,5 +1,6 @@
 {
-    'name': 'Cold Customer Tracker',
+    "license": "LGPL-3",
+    "name": 'Cold Customer Tracker',
     'version': '17.0.1.0.0',
     'category': 'Sales',
     'summary': 'Track customers with no invoices in date range',
