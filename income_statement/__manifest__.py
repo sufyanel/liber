@@ -1,6 +1,7 @@
 {
     "name": "Income Statement",
-    "version": "17.0.1.0.8",
+    "version": "17.0.1.0.9",
+    "license": "LGPL-3",
     "depends": ["base", "account", "mail"],
     "data": [
         "security/ir.model.access.csv",
