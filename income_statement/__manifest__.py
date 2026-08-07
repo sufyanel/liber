@@ -1,6 +1,6 @@
 {
     "name": "Income Statement",
-    "version": "17.0.1.0.7",
+    "version": "17.0.1.0.8",
     "depends": ["base", "account", "mail"],
     "data": [
         "security/ir.model.access.csv",

@@ -33,7 +33,6 @@ class IncomeStatementAccountMapping(models.Model):
         "mapping_id",
         "account_id",
         string="Accounts",
-        check_company=True,
     )
 
     _sql_constraints = [
