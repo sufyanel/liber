@@ -1,5 +1,6 @@
 {
-    'name': 'Threshold Report',
+    "license": "LGPL-3",
+    "name": 'Threshold Report',
     'version': '17.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Financial Security Threshold Report',

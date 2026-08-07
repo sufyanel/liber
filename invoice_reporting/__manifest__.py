@@ -1,5 +1,6 @@
 {
-    'name': 'Invoice Reporting',
+    "license": "LGPL-3",
+    "name": 'Invoice Reporting',
     'version': '17.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Invoice comparison reports',
