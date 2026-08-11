@@ -1,0 +1,61 @@
+// =============================================
+// Blog Layout — Card Grid & Post Detail
+// =============================================
+// All colors use CSS custom properties for per-brand switching.
+// Selectors here are scoped to the ids/classes actually rendered by
+// views/blog_list_template.xml and views/blog_post_template.xml (Bootstrap
+// row/col/card grid + card-img-top), not invented class names — verify
+// against those templates before adding a selector here.
+
+// --- Blog post detail cover ---
+// #title is website_blog's blog_post_complete wrapper (unique id, safe to
+// scope by); .o_record_cover_image is the CSS background-image div rendered
+// by website.record_cover — it's a t-call'd sub-template, so it can't be
+// reached via xpath inheritance, only styled directly here.
+#title .o_record_cover_image {
+    max-height: 400px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+}
+
+// --- Blog card meta row (author + tags), see blog_list_template.xml ---
+.o_wblog_post_meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--brand-text-muted, #6b7280);
+
+    .o_author {
+        font-weight: 600;
+        color: var(--brand-primary, #1A1A24);
+    }
+
+    .badge {
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+        padding: 0.3em 0.6em;
+        background: var(--brand-secondary, #D5CABD);
+        color: var(--brand-primary, #1A1A24);
+    }
+}
+
+// --- Breadcrumbs (Bootstrap's native .breadcrumb, see blog_post_template.xml) ---
+.breadcrumb {
+    font-size: 0.85rem;
+    color: var(--brand-text-muted, #6b7280);
+
+    a {
+        color: var(--brand-primary, #1A1A24);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

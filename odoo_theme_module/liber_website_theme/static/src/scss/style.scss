@@ -1,0 +1,176 @@
+// =============================================
+// Liber Website Theme — Entry Point
+// =============================================
+// Imports per-brand CSS custom properties and all component partials.
+// The actual Odoo variables live in primary_variables.scss
+// (web._assets_primary_variables) and
+// bootstrap_overridden.scss (web._assets_frontend_helpers).
+// This bundle is loaded via web.assets_frontend.
+
+// =============================================
+// MULTI-BRAND CSS CUSTOM PROPERTIES
+// =============================================
+// Liber Holdings runs multiple subsidiary websites in a single Odoo database.
+// Each subsidiary has its own brand system with distinct colors and typography.
+// Odoo adds .o_website_N to <body> for each website_id, enabling per-brand
+// CSS custom property overrides without separate theme modules.
+//
+// Website IDs (liber-main-7071597):
+//   .o_website_3 = Tooling Components (toolingcomponent.com)
+//   .o_website_4 = RBC Industrial (rbc-industrial.com)
+
+// =============================================
+// DEFAULT FALLBACK (used when no .o_website_N matches)
+// =============================================
+:root {
+    --brand-primary: #1A1A24;
+    --brand-secondary: #D5CABD;
+    --brand-accent: #E65F2B;
+    --brand-bg: #F8F9FA;
+    --brand-text: #1A1A24;
+    --brand-text-secondary: #374151;
+    --brand-text-muted: #6B7280;
+    --brand-border: #D5CABD;
+    --brand-card-bg: #FFFFFF;
+    --brand-nav-bg: #1A1A24;
+    --brand-nav-text: #D5CABD;
+    --brand-footer-bg: #1A1A24;
+    --brand-shadow-card: 0 1px 3px rgba(26, 26, 36, 0.12);
+    --brand-shadow-elevated: 0 4px 12px rgba(26, 26, 36, 0.18);
+    --font-heading: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+}
+
+// =============================================
+// TOOLING COMPONENTS — .o_website_3
+// Theme: "Forged & Molded"
+// 60-30-10: Dark Gunmetal / Industrial Sand / Molten Amber
+// Headings: Barlow Condensed (all caps, bold, tracked wide)
+// =============================================
+.o_website_3 {
+    --brand-primary: #1A1A24;
+    --brand-secondary: #D5CABD;
+    --brand-accent: #E65F2B;
+    --brand-bg: #F8F9FA;
+    --brand-text: #1A1A24;
+    --brand-text-secondary: #4B5563;
+    --brand-text-muted: #6B7280;
+    --brand-border: #D5CABD;
+    --brand-card-bg: #FFFFFF;
+    --brand-nav-bg: #1A1A24;
+    --brand-nav-text: #D5CABD;
+    --brand-footer-bg: #1A1A24;
+    --brand-shadow-card: 0 1px 4px rgba(26, 26, 36, 0.12);
+    --brand-shadow-elevated: 0 4px 16px rgba(26, 26, 36, 0.18);
+    --font-heading: 'Barlow Condensed', 'Helvetica Neue', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    // TC-specific: all-caps headings with wide tracking
+    h1, h2 {
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        font-weight: 700;
+    }
+
+    // TC-specific: hard borders on cards
+    .card {
+        border-width: 1px;
+    }
+
+    // TC-specific: status badges
+    .badge-status-ready {
+        background: #E8F5E9;
+        color: #2E7D32;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 2px 8px;
+        border-radius: 2px;
+    }
+
+    .badge-status-low {
+        background: #FFF3E0;
+        color: #E65F2B;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        padding: 2px 8px;
+        border-radius: 2px;
+    }
+}
+
+// =============================================
+// RBC INDUSTRIAL — .o_website_4
+// Theme: "Mission Critical Industrial"
+// Colors: Gear Brown / Rotational Gold
+// Headings: Montserrat (bold, authoritative)
+// =============================================
+.o_website_4 {
+    --brand-primary: #4A352C;
+    --brand-secondary: #FED37E;
+    --brand-accent: #FED37E;
+    --brand-bg: #E9E8E8;
+    --brand-text: #181818;
+    --brand-text-secondary: #736C69;
+    --brand-text-muted: #B2ADAC;
+    --brand-border: #B2ADAC;
+    --brand-card-bg: #FFFFFF;
+    --brand-nav-bg: #181818;
+    --brand-nav-text: #FED37E;
+    --brand-footer-bg: #181818;
+    --brand-shadow-card: 0 2px 8px rgba(24, 24, 24, 0.12);
+    --brand-shadow-elevated: 0 8px 24px rgba(24, 24, 24, 0.18);
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+
+    // RBC-specific: bold Montserrat headings
+    h1 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+
+    h2, h3 {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+    }
+
+    // RBC-specific: emergency notification bar at page top
+    .emergency-bar {
+        background: #4A352C;
+        color: #FED37E;
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-align: center;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #C4A063;
+    }
+
+    // RBC-specific: gold CTA buttons
+    .btn-primary {
+        background: #FED37E;
+        border-color: #FED37E;
+        color: #181818;
+        font-weight: 700;
+
+        &:hover {
+            background: #C4A063;
+            border-color: #C4A063;
+        }
+    }
+
+    // RBC-specific: SDVOSB / HUB certification badges
+    .badge-certification {
+        background: #4A352C;
+        color: #FED37E;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 4px 10px;
+        border-radius: 2px;
+    }
+}

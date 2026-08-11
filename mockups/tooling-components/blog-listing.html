@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tooling Components — Blog Mockup (Forged &amp; Molded)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== Brand Tokens — Tooling Components "Forged & Molded" ===== */
+  :root {
+    --brand-primary: #1A1A24;
+    --brand-secondary: #D5CABD;
+    --brand-accent: #E65F2B;
+    --brand-bg: #F8F9FA;
+    --brand-text: #1A1A24;
+    --brand-text-secondary: #4B5563;
+    --brand-text-muted: #6B7280;
+    --brand-border: #D5CABD;
+    --brand-card-bg: #FFFFFF;
+    --brand-nav-bg: #1A1A24;
+    --brand-nav-text: #D5CABD;
+    --brand-footer-bg: #1A1A24;
+    --font-heading: 'Barlow Condensed', 'Helvetica Neue', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --shadow-card: 0 1px 4px rgba(26,26,36,0.12);
+    --shadow-elevated: 0 4px 16px rgba(26,26,36,0.18);
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--brand-text);
+    background: var(--brand-bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 700;
+  }
+  h1 { font-size: 2.5rem; line-height: 1.1; }
+  h2 { font-size: 1.75rem; line-height: 1.2; }
+  h3 { font-size: 1.25rem; line-height: 1.3; }
+  a { color: var(--brand-primary); text-decoration: none; }
+  a:hover { color: var(--brand-accent); }
+  .container { max-width: 1320px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ===== Navigation ===== */
+  .navbar {
+    background: var(--brand-nav-bg);
+    border-bottom: 1px solid var(--brand-border);
+    padding: 1rem 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .navbar .container { display: flex; align-items: center; justify-content: space-between; }
+  .navbar-brand { font-family: var(--font-heading); font-size: 1.35rem; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; letter-spacing: 0.05em; }
+  .navbar-nav { display: flex; gap: 1.5rem; list-style: none; }
+  .navbar-nav a { color: var(--brand-nav-text); font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .navbar-nav a:hover { color: var(--brand-accent); }
+
+  /* ===== Breadcrumbs ===== */
+  .breadcrumbs {
+    padding: 1.5rem 0 0.5rem; font-size: 0.8rem; color: var(--brand-text-muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .breadcrumbs a { color: var(--brand-primary); }
+  .breadcrumbs .sep { margin: 0 0.5rem; color: var(--brand-border); }
+  .breadcrumbs .current { color: var(--brand-text); font-weight: 600; }
+
+  /* ===== Blog Header ===== */
+  .blog-header { text-align: left; padding: 2rem 0 2.5rem; }
+  .blog-header h1 { margin-bottom: 0.5rem; font-size: 3rem; }
+  .blog-header .lead { font-family: var(--font-body); color: var(--brand-text-secondary); max-width: 640px; font-size: 1.05rem; line-height: 1.6; text-transform: none; letter-spacing: 0; }
+
+  /* ===== Blog Card Grid ===== */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding-bottom: 3rem;
+  }
+  .blog-card {
+    background: var(--brand-card-bg);
+    border: 1px solid var(--brand-border);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex; flex-direction: column;
+  }
+  .blog-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+  }
+  .blog-card-image {
+    position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden;
+    background: var(--brand-secondary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .blog-card-image .img-placeholder {
+    font-size: 0.85rem; color: var(--brand-primary); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .blog-card-body { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+  .blog-card-tags { margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .blog-card-tag {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 2px 6px; border-radius: 2px;
+    background: var(--brand-bg); color: var(--brand-text-secondary);
+  }
+  .blog-card-title { font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700; line-height: 1.25; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.02em; }
+  .blog-card-title a { color: var(--brand-text); }
+  .blog-card-title a:hover { color: var(--brand-accent); }
+  .blog-card-excerpt { color: var(--brand-text-secondary); font-size: 0.85rem; line-height: 1.6; flex: 1; margin-bottom: 0.75rem; }
+  .blog-card-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 0.75rem; border-top: 1px solid var(--brand-border);
+    font-size: 0.75rem; color: var(--brand-text-muted);
+  }
+  .blog-card-meta .author { font-weight: 600; color: var(--brand-primary); }
+
+  /* ===== Status Badges (TC signature) ===== */
+  .badge-ready { background: #E8F5E9; color: #2E7D32; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; }
+  .badge-low { background: #FFF3E0; color: #E65F2B; font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 2px; }
+
+  /* ===== Footer ===== */
+  .site-footer {
+    background: var(--brand-footer-bg); color: var(--brand-text-muted);
+    padding: 2.5rem 0; font-size: 0.85rem;
+  }
+  .site-footer a { color: var(--brand-secondary); }
+  .site-footer a:hover { color: var(--brand-accent); }
+  .site-footer h4 { color: var(--brand-secondary); font-family: var(--font-heading); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+  .site-footer .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; }
+
+  @media (max-width: 900px) {
+    .blog-grid { grid-template-columns: repeat(2, 1fr); }
+    .site-footer .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .blog-grid { grid-template-columns: 1fr; }
+    .navbar-nav { display: none; }
+    .blog-header h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body class="o_website_3">
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="container">
+    <a href="#" class="navbar-brand">Tooling Components</a>
+    <ul class="navbar-nav">
+      <li><a href="#">Products</a></li>
+      <li><a href="#">Industries</a></li>
+      <li><a href="#">Line Card</a></li>
+      <li><a href="#">Blog</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Breadcrumbs -->
+<div class="container">
+  <div class="breadcrumbs">
+    <a href="#">Home</a><span class="sep">›</span>
+    <span class="current">Technical Resources</span>
+  </div>
+</div>
+
+<!-- Blog Header -->
+<div class="container">
+  <div class="blog-header">
+    <h1>Technical Resources</h1>
+    <p class="lead">Precision engineering insights, application notes, and technical guides from Tooling Components' veteran-led engineering team. Written for mold makers, die designers, and plant engineers.</p>
+  </div>
+</div>
+
+<!-- Blog Card Grid -->
+<div class="container">
+  <div class="blog-grid">
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Ejector Pin Assembly</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Injection Molding</span>
+          <span class="blog-card-tag">Ejector Pins</span>
+          <span class="badge-ready">In Stock</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Ejector Pin Material Selection: H13 vs. M2 Tool Steel</a></h3>
+        <p class="blog-card-excerpt">Technical comparison of hardened through-steel ejector pins — thermal performance, wear resistance, and cost trade-offs for high-cycle injection molding.</p>
+        <div class="blog-card-meta">
+          <span class="author">Mike Chen, PE</span>
+          <span>Jun 15, 2026 · 8 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Leader Pin Alignment</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Mold Bases</span>
+          <span class="blog-card-tag">Alignment</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Leader Pin &amp; Bushing Alignment: Tolerancing for High-Tonnage Molds</a></h3>
+        <p class="blog-card-excerpt">How to specify leader pin tolerances for presses exceeding 500 tons. Covers H13 tool steel selection, bushing clearance, and deformation prevention.</p>
+        <div class="blog-card-meta">
+          <span class="author">Sarah Okonkwo</span>
+          <span>Jun 8, 2026 · 12 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Die Spring Selection</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Springs</span>
+          <span class="blog-card-tag">Die Springs</span>
+          <span class="badge-low">Low Stock</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Die Spring Lifecycle: Predicting Compression Fatigue in High-Cycle Stamping</a></h3>
+        <p class="blog-card-excerpt">Chrome silicon alloy die springs rated for millions of cycles. How to estimate service life and when to replace before failure.</p>
+        <div class="blog-card-meta">
+          <span class="author">Dale Betz</span>
+          <span>Jun 1, 2026 · 6 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Locating Ring Specs</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Injection Molding</span>
+          <span class="blog-card-tag">Locating Rings</span>
+          <span class="badge-ready">In Stock</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Locating Ring Standards: ISO vs. JIS vs. DIN — What Fits Your Machine?</a></h3>
+        <p class="blog-card-excerpt">Universal and brand-specific locating ring diameters for perfect nozzle-to-sprue alignment. ISO 9001 certified, available in all standard sizes.</p>
+        <div class="blog-card-meta">
+          <span class="author">Mike Chen, PE</span>
+          <span>May 22, 2026 · 10 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Support Pillars</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Mold Bases</span>
+          <span class="blog-card-tag">Structural</span>
+          <span class="badge-ready">In Stock</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Support Pillar Spacing: Deflection Analysis for Large Mold Bases</a></h3>
+        <p class="blog-card-excerpt">Maximum deflection resistance for mold bases. Custom heights for non-standard assemblies. Load capacity up to 500kN per pillar.</p>
+        <div class="blog-card-meta">
+          <span class="author">Sarah Okonkwo</span>
+          <span>May 15, 2026 · 8 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Sidelock CAD</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Accessories</span>
+          <span class="blog-card-tag">Sidelocks</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Sidelock Selection Guide: Spring-Loaded vs. Positive Locking</a></h3>
+        <p class="blog-card-excerpt">When to specify spring-loaded sidelocks vs. positive locking mechanisms. Includes CAD file download links for all standard configurations.</p>
+        <div class="blog-card-meta">
+          <span class="author">Dale Betz</span>
+          <span>May 8, 2026 · 5 min</span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>Tooling Components LLC</h4>
+        <p>Precision components for molds and dies. Veteran-owned. Engineered for zero-failure reliability in mission-critical manufacturing.</p>
+        <p style="margin-top:0.75rem;">8349 West High St., Union City, PA 16438<br>Phone: 814-438-7657</p>
+      </div>
+      <div>
+        <h4>Products</h4>
+        <p><a href="#">Ejector Pins</a></p>
+        <p><a href="#">Leader Pins &amp; Bushings</a></p>
+        <p><a href="#">Support Pillars</a></p>
+        <p><a href="#">Die Springs</a></p>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <p><a href="#">Technical Blog</a></p>
+        <p><a href="#">CAD Downloads</a></p>
+        <p><a href="#">Line Card (PDF)</a></p>
+        <p><a href="#">Request Quote</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

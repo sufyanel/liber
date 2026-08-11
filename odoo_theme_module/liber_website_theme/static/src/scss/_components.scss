@@ -1,0 +1,123 @@
+// =============================================
+// Component Styles — Cards, Buttons, Navigation
+// =============================================
+// All colors use CSS custom properties for per-brand switching.
+
+// --- Cards ---
+.card {
+    border: 1px solid var(--brand-border, #D5CABD);
+    border-radius: 6px;
+    box-shadow: var(--brand-shadow-card, 0 1px 3px rgba(0, 0, 0, 0.08));
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+        box-shadow: var(--brand-shadow-elevated, 0 4px 12px rgba(0, 0, 0, 0.12));
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .card-title {
+        font-weight: 600;
+        color: var(--brand-text, #1A1A24);
+    }
+
+    .card-text {
+        color: var(--brand-text-secondary, #6b7280);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+}
+
+// --- Trust Badges ---
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background: var(--brand-bg, #F8F9FA);
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--brand-text, #1A1A24);
+
+    img {
+        height: 24px;
+        width: auto;
+    }
+}
+
+// --- Buttons (overrides complementing $btn-* variables) ---
+.btn {
+    transition: all 0.2s ease;
+
+    &.btn-primary {
+        background: var(--brand-accent, #E65F2B);
+        border-color: var(--brand-accent, #E65F2B);
+        color: #ffffff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+
+        &:hover {
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            transform: translateY(-1px);
+        }
+    }
+
+    &.btn-outline-primary {
+        border-color: var(--brand-accent, #E65F2B);
+        color: var(--brand-accent, #E65F2B);
+
+        &:hover {
+            background: var(--brand-accent, #E65F2B);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+    }
+}
+
+// --- Section Spacing ---
+section {
+    padding: 3rem 0;
+}
+
+// --- Navigation ---
+.navbar {
+    padding: 0.75rem 0;
+    background: var(--brand-nav-bg, #1A1A24);
+    border-bottom: 1px solid var(--brand-border, #D5CABD);
+
+    .nav-link {
+        font-weight: 500;
+        color: var(--brand-nav-text, #D5CABD);
+        padding: 0.5rem 1rem;
+        transition: color 0.15s;
+
+        &:hover {
+            color: var(--brand-accent, #E65F2B);
+        }
+    }
+}
+
+// --- Footer ---
+footer {
+    background: var(--brand-footer-bg, #1A1A24);
+    color: var(--brand-text-muted, #9ca3af);
+    padding: 2.5rem 0;
+    font-size: 0.9rem;
+
+    a {
+        color: var(--brand-secondary, #D5CABD);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--brand-accent, #E65F2B);
+        }
+    }
+
+    h5, h6 {
+        color: var(--brand-secondary, #ffffff);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+}

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 20mm 15mm; }
+  body { font-family: 'DejaVu Sans', sans-serif; font-size: 9pt; line-height: 1.45; color: #222; }
+  h2 { font-size: 13pt; color: #1a3c5e; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+  h3 { font-size: 10pt; color: #333; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 7.5pt; }
+  td { padding: 3px 6px; border: 1px solid #ccc; vertical-align: top; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 10px 0; }
+  p { margin: 4px 0; }
+  li { margin: 2px 0; }
+  pre { font-size: 7pt; background: #f5f5f5; padding: 8px; }
+  .cover { text-align: center; padding-top: 120px; }
+  .cover h1 { font-size: 22pt; color: #1a3c5e; border: none; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <h1>Liber Holdings Website Redesign</h1>
+  <p style="font-size:13pt;color:#555;">Research Sources & Design Decisions</p>
+  <p style="font-size:9pt;color:#888;margin-top:30px;">July 20, 2026 | Version 1.0<br>Prepared for Dale Betz, Liber Holdings LLC</p>
+</div>
+<div style="page-break-before: always;"></div>
+<p># Liber Holdings Website Redesign</p>
+<h2>Research Sources & Design Decisions</h2>
+
+<p>Document Version: 1.0</p>
+<p>Date: July 20, 2026</p>
+<p>Prepared for: Dale Betz, Liber Holdings LLC</p>
+<p>Subsidiaries Covered: Tooling Components, RBC Industrial</p>
+<p>Project: Odoo v17 Custom Theme Module — Website Redesign</p>
+
+<hr>
+
+<h2>Table of Contents</h2>
+
+<p>1. Executive Summary</p>
+<p>2. Research Sources</p>
+<li>2.1 Windmill Strategy</li>
+<li>2.2 SRH Agency</li>
+<li>2.3 Grafit Agency</li>
+<li>2.4 ThunderClap</li>
+<li>2.5 Odoo v17 Official Documentation</li>
+<li>2.6 Cybrosys Odoo Theme Guide</li>
+<li>2.7 Brand Guidelines (Vault)</li>
+<p>3. Design Principles Derived from Research</p>
+<p>4. Design Variants & How Each Maps to Sources</p>
+<li>4.1 Industrial Editorial (Variant 001)</li>
+<li>4.2 Utilitarian Dense (Variant 002)</li>
+<li>4.3 Utilitarian Shop (Variant 003)</li>
+<p>5. SEO & Conversion Impact Analysis</p>
+<p>6. Technical Architecture Decisions</p>
+<p>7. Brand Palette Comparison</p>
+<p>8. Recommended Path Forward</p>
+
+<hr>
+
+<h2>1. Executive Summary</h2>
+
+<h3>The Problem</h3>
+
+<p>> "I don't like how the blogs and new pages look and don't want to keep editing them."</p>
+
+<p>Odoo's default blog and page templates are generic — they work for all industries but excel at none. The fix is not more manual editing (a treadmill). The fix is a custom theme module deployed via Odoo.sh that globally overrides the default templates, SCSS variables, and snippet architecture. Build it once, deploy across all sites.</p>
+
+<h3>The Process</h3>
+
+<p>1. Research phase: 7+ sources collected into NotebookLM for synthesis</p>
+<p>2. Design phase: 3 distinct design variants created, each optimized for a different B2B use case</p>
+<p>3. Brand alignment: Each variant assessed against existing brand guidelines for Tooling Components and RBC Industrial</p>
+<p>4. Technical build: Odoo v17 custom theme module scaffolded and pushed to GitHub</p>
+
+<h3>Key Finding</h3>
+
+<p>None of the three design variants fully matches either brand's published guidelines. The next step is to select a variant direction and apply correct brand colors.</p>
+
+<hr>
+
+<h2>2. Research Sources</h2>
+
+<h3>2.1 Windmill Strategy</h3>
+<p>Source: "Top 9 B2B Web Design Trends, Best Practices & Examples in 2026"</p>
+<p>URL: https://www.windmillstrategy.com/top-9-b2b-web-design-trends/</p>
+
+<strong>Key Findings:</strong>
+
+<table>
+<tr><td>Finding</td><td>Application to Designs</td></tr>
+<tr><td>---------</td><td>----------------------</td></tr>
+<tr><td>High-quality product imagery builds trust; stock photography erodes it</td><td>All three variants feature custom photo placeholders, no stock imagery</td></tr>
+<tr><td>Content-oriented design — dynamic layouts that adapt to each page's needs, not rigid templates</td><td>Variant 001 uses flexible card grid; Variant 002 uses sortable/spreadsheet layout</td></tr>
+<tr><td>"Scrollytelling" — using vertical space to tell a narrative through scrolling</td><td>Implemented in blog post detail templates across all variants</td></tr>
+<tr><td>Sticky menus improve UX for technical B2B audiences</td><td>Variant 001 has sticky nav; Variant 002 has sticky sidebar</td></tr>
+<tr><td>Card-based grids improve scannability for procurement professionals</td><td>Variant 001 primary layout pattern</td></tr>
+<tr><td>B2B visitors perceive website quality as equal to product quality</td><td>Drives the entire design philosophy — clean, professional, technical</td></tr>
+</table>
+
+<strong>Excerpt:</strong>
+<p>> "In the technical B2B world, when you're selling custom products & services, visitors to your website will perceive the quality of their experience with your website as equal to the quality they can expect from your offerings. A modern, intuitive website communicates quality, credibility, and leadership in your industry."</p>
+
+<hr>
+
+<h3>2.2 SRH Agency</h3>
+<p>Source: "Top Industrial Website Design Trends & Best Practices 2026"</p>
+<p>URL: https://srhwebagency.com/industrial-website-design-in-2026/</p>
+
+<strong>Key Findings:</strong>
+
+<table>
+<tr><td>Finding</td><td>Application to Designs</td></tr>
+<tr><td>---------</td><td>----------------------</td></tr>
+<tr><td>B2B buyer journey has 3 distinct stages — Awareness, Consideration, Decision — each needs different layout</td><td>Blog list for Awareness (educational content), post detail for Consideration (technical depth), CTAs for Decision</td></tr>
+<tr><td>Mobile-first approach — plant managers and field engineers use tablets/phones on-site</td><td>All variants use responsive 3-col → 2-col → 1-col breakpoints</td></tr>
+<tr><td>Simple navigation — don't bury technical specs</td><td>Variant 002 optimized for this: search and filter visible at all times</td></tr>
+<tr><td>Case studies are primary conversion drivers at Decision stage</td><td>Trust badges and author credibility blocks included in all variants</td></tr>
+<tr><td>Industrial buyers research anonymously — ~75% of buying journey happens before first contact</td><td>Clean, self-serve layouts that don't gate technical content</td></tr>
+</table>
+
+<strong>Excerpt:</strong>
+<p>> "Your website acts as a 24/7 sales tool. It qualifies leads by providing the necessary technical data upfront, and it disqualifies those who aren't a good fit, saving your sales team valuable time."</p>
+
+<hr>
+
+<h3>2.3 Grafit Agency</h3>
+<p>Source: "Best Practices for Building a High-Performing B2B Website in 2026"</p>
+<p>URL: https://www.grafit.agency/blog/best-practices-for-building-a-high-performing-b2b-website-in-2026</p>
+
+<strong>Key Findings:</strong>
+
+<table>
+<tr><td>Finding</td><td>Application to Designs</td></tr>
+<tr><td>---------</td><td>----------------------</td></tr>
+<tr><td>Component-based design systems scale; reusability is key</td><td>Theme module uses reusable SCSS components, snippets, and templates</td></tr>
+<tr><td>**176% conversion boost** documented from strategic redesign (Callstack case study)</td><td>Direct incentive — proper design + content strategy pays off measurably</td></tr>
+<tr><td>**300% traffic increase** documented after redesign (Gentrace case study)</td><td>Design drives engagement which drives organic growth</td></tr>
+<tr><td>SEO & AEO (Answer Engine Optimization) are converging</td><td>Breadcrumb schema, structured data, clean HTML hierarchy</td></tr>
+<tr><td>CRO must be built into the design, not bolted on later</td><td>CTAs positioned using 3Ps pattern (Prominence, Promise, Proof)</td></tr>
+</table>
+
+<hr>
+
+<h3>2.4 ThunderClap</h3>
+<p>Source: "#10 Best B2B Website Designs of 2026 That Increase Conversions"</p>
+<p>URL: https://www.thethunderclap.com/blog/best-b2b-website-designs-increase-conversions</p>
+
+<strong>Key Findings — The C.O.N.V.E.R.T. Framework:</strong>
+
+<table>
+<tr><td>Principle</td><td>Meaning</td><td>Applied In</td></tr>
+<tr><td>-----------</td><td>---------</td><td>-----------</td></tr>
+<tr><td>**C — Clarity in Value Proposition**</td><td>User must understand who you are and what you offer in <3 seconds</td><td>Hero section with clear positioning</td></tr>
+<tr><td>**O — Outcome-Focused Layout**</td><td>Layout should guide toward a measurable outcome (quote, demo, contact)</td><td>CTAs at natural breakpoints in content</td></tr>
+<tr><td>**N — Navigation Simplicity**</td><td>Reduce cognitive load; don't make users think</td><td>Clean top nav, breadcrumbs, sticky elements</td></tr>
+<tr><td>**V — Value Visibility**</td><td>Key differentiators must be immediately scannable</td><td>Tag badges, author credentials, trust signals</td></tr>
+<tr><td>**E — Experience Consistency**</td><td>Same design language across all pages and devices</td><td>Centralized SCSS variables, reusable components</td></tr>
+<tr><td>**R — Real Social Proof**</td><td>Case studies, testimonials, certifications integrated throughout all pages</td><td>Author bio block, certification badges</td></tr>
+<tr><td>**T — Testing-Driven Optimization**</td><td>Iterate based on data, not assumptions</td><td>Design is structured for A/B testing (component-based)</td></tr>
+</table>
+
+<strong>Excerpt:</strong>
+<p>> "Your website doesn't have to suck. Clarity over cleverness. Outcome-focused messaging, not feature lists."</p>
+
+<hr>
+
+<h3>2.5 Odoo v17 Official Documentation</h3>
+<p>Source: Odoo v17 Themes & Website Customization</p>
+<p>URL: https://www.odoo.com/documentation/17.0/developer/howtos/websitethemes/theming.html</p>
+
+<strong>Key Technical Findings:</strong>
+
+<table>
+<tr><td>Finding</td><td>Decision</td></tr>
+<tr><td>---------</td><td>---------</td></tr>
+<tr><td>Odoo v17 has two separate SCSS bundles: `_assets_primary_variables` and `_assets_frontend_helpers`</td><td>Keep SCSS in correct bundles; never mix Bootstrap vars into primary_variables</td></tr>
+<tr><td>Template inheritance uses `<template inherit_id="...">` with XPath</td><td>Blog list overrides `website_blog.blog_post_short`; blog post overrides `website_blog.blog_post_complete`</td></tr>
+<tr><td>Custom snippets register via `t-snippet` in the builder panel</td><td>Snippets for blog cards, trust badges, content sections</td></tr>
+<tr><td>Website theme module structure requires specific directory layout</td><td>Scaffolded exactly per Odoo conventions</td></tr>
+<tr><td>Manifest declares assets per-website-bundle</td><td>`primary_variables.scss` → `web._assets_primary_variables`; `bootstrap_overridden.scss` → `web._assets_frontend_helpers`</td></tr>
+</table>
+
+<hr>
+
+<h3>2.6 Cybrosys Odoo Theme Guide</h3>
+<p>Source: "How to Create a Theme Module in Odoo 17"</p>
+<p>URL: https://www.cybrosys.com/blog/how-to-create-a-theme-module-in-odoo-17</p>
+
+<strong>Key Technical Findings:</strong>
+
+<table>
+<tr><td>Finding</td><td>Decision</td></tr>
+<tr><td>---------</td><td>---------</td></tr>
+<tr><td>Module directory structure includes `static/src/scss/`, `views/`, `data/`</td><td>Scaffolded exactly</td></tr>
+<tr><td>SCSS variables override Odoo's 5-color palette</td><td>`primary_variables.scss` with `$o-color-palettes`</td></tr>
+<tr><td>Custom CSS must be declared in `__manifest__.py` under `assets`</td><td>All SCSS files registered correctly</td></tr>
+<tr><td>Theme icon in `static/description/icon.png`</td><td>64x64 placeholder created</td></tr>
+</table>
+
+<hr>
+
+<h3>2.7 Brand Guidelines (Vault)</h3>
+
+<p>Two brand guideline documents found in the vault:</p>
+
+<p>#### Tooling Components</p>
+<p>File: `/vault/Notes/Markdown/brandguidelinestoolingcomponents.md`</p>
+
+<table>
+<tr><td>Token</td><td>Value</td><td>Usage</td></tr>
+<tr><td>-------</td><td>-------</td><td>-------</td></tr>
+<tr><td>Dark Gunmetal</td><td>`#1A1A24`</td><td>Primary (60%) — navbars, primary text, structural layouts</td></tr>
+<tr><td>Industrial Sand</td><td>`#D5CABD`</td><td>Secondary (30%) — subheadings, container backgrounds</td></tr>
+<tr><td>Molten Amber</td><td>`#E65F2B`</td><td>Accent (10%) — buttons, alerts, CTAs, active states</td></tr>
+<tr><td>Alabaster</td><td>`#F8F9FA`</td><td>Background — clean backdrop</td></tr>
+<tr><td>**Heading font**</td><td>Barlow Condensed</td><td>All caps, bold, tracked wide (+50 to +100)</td></tr>
+<tr><td>**Body font**</td><td>Inter / Roboto</td><td>Highly readable, balanced line-height 1.5x</td></tr>
+</table>
+
+<p>#### RBC Industrial</p>
+<p>File: `/vault/00Inbox/Brand Guidelines - RBC Industrial.md`</p>
+
+<table>
+<tr><td>Token</td><td>Value</td><td>Usage</td></tr>
+<tr><td>-------</td><td>-------</td><td>-------</td></tr>
+<tr><td>Industrial Gear Brown</td><td>`#4a352c`</td><td>Structural headers, secondary typography, logo icons</td></tr>
+<tr><td>Rotational Gold/Amber</td><td>`#fed37e`</td><td>Core accents, logo highlights, high-visibility branding</td></tr>
+<tr><td>Light Gray</td><td>`#e9e8e8`</td><td>Backgrounds</td></tr>
+<tr><td>Gold Medium</td><td>`#c4a063`</td><td>Tertiary accents</td></tr>
+<tr><td>Near-Black</td><td>`#181818`</td><td>Text</td></tr>
+<tr><td>**Heading font**</td><td>Montserrat (bold sans-serif)</td><td>High-impact readability</td></tr>
+<tr><td>**Body font**</td><td>Inter / Arial</td><td>—</td></tr>
+</table>
+
+<hr>
+
+<h2>3. Design Principles Derived from Research</h2>
+
+<p>The seven research sources converge on four core principles:</p>
+
+<h3>Principle 1: Clarity Over Cleverness</h3>
+<p>Source: Windmill Strategy, ThunderClap</p>
+
+<p>What it means: Bold headlines, clean layout, immediate value proposition. B2B buyers make decisions on trust + clarity, not flash.</p>
+
+<strong>Applied in design:</strong>
+<li>No decorative flourishes that don't serve a purpose</li>
+<li>Clear typographic hierarchy (H1 → H2 → body)</li>
+<li>Minimal use of color — color is reserved for meaning</li>
+
+<h3>Principle 2: Grid-Based Information Architecture</h3>
+<p>Source: Windmill Strategy, SRH Agency</p>
+
+<p>What it means: Cards and grids enable scannable layouts. Engineers and procurement professionals need to compare specs fast.</p>
+
+<strong>Applied in design:</strong>
+<li>Variant 001: 3-column card grid</li>
+<li>Variant 002: Table/spreadsheet with sortable columns</li>
+<li>Variant 003: Dark-mode product grid with data overlays</li>
+<li>All variants responsive: 3-col → 2-col → 1-col</li>
+
+<h3>Principle 3: Content-Oriented Design</h3>
+<p>Source: Windmill Strategy, Grafit</p>
+
+<p>What it means: Layout adapts to content, not vice versa. Blog posts and product pages should tell a story, not fill a template.</p>
+
+<strong>Applied in design:</strong>
+<li>Centered 720px reading column for blog posts</li>
+<li>Breadcrumb trail for navigation context</li>
+<li>Author bio with credentials for trust</li>
+<li>Inline CTAs positioned naturally within content flow</li>
+
+<h3>Principle 4: Trust Signals Everywhere</h3>
+<p>Source: SRH Agency, ThunderClap</p>
+
+<p>What it means: Industrial buyers need to de-risk their decision at every touchpoint. Certifications, specs, case studies, and author expertise must be integrated throughout, not hidden on a separate page.</p>
+
+<strong>Applied in design:</strong>
+<li>Certification badges in navigation and footer</li>
+<li>Author expertise displayed on every blog post</li>
+<li>Case study links inline within content</li>
+<li>Breadcrumb schema markup for SEO</li>
+
+<hr>
+
+<h2>4. Design Variants & How Each Maps to Sources</h2>
+
+<h3>4.1 Industrial Editorial (Variant 001)</h3>
+
+<p>Design stance: Spacious, editorial, trust-building. Adapts premium publishing aesthetics for industrial B2B.</p>
+
+<p>File: `sketches/001-industrial-editorial/`</p>
+
+<strong>Color palette:</strong>
+<li>Primary: `#1a3c5e` (deep industrial blue)</li>
+<li>Accent: `#e8751a` (orange)</li>
+<li>Background: `#f8f9fb`</li>
+<li>Font: Inter (300–800 weight range)</li>
+
+<strong>Research mapping:</strong>
+
+<table>
+<tr><td>Design Element</td><td>Source(s)</td><td>Why</td></tr>
+<tr><td>---------------</td><td>-----------</td><td>-----</td></tr>
+<tr><td>3-column card grid</td><td>Windmill Strategy, ThunderClap</td><td>Card-based grids improve scannability for B2B procurement</td></tr>
+<tr><td>Featured hero section</td><td>Windmill Strategy ("scrollytelling")</td><td>Visual hierarchy draws attention to most important content</td></tr>
+<tr><td>Sticky navigation</td><td>Windmill Strategy</td><td>B2B users expect persistent navigation for reference</td></tr>
+<tr><td>Breadcrumb trail with schema</td><td>SRH Agency, ThunderClap</td><td>Supports SEO rich snippets and user orientation</td></tr>
+<tr><td>Author bio with credentials</td><td>SRH Agency</td><td>Engineers buying from engineers — credentials build trust</td></tr>
+<tr><td>Tags color-coded by type</td><td>ThunderClap "Value Visibility"</td><td>Secondary navigation path — users browse by topic</td></tr>
+<tr><td>Hover-lift card effect</td><td>Windmill Strategy</td><td>Subtle animation adds engagement without performance cost</td></tr>
+</table>
+
+<p>Best for: Blog-first sites where content authority is the primary conversion driver. Example: RBC Industrial Knowledge blog — technical guides and case studies.</p>
+
+<p>Trade-off: Fewer articles above the fold — prioritizes readability over density.</p>
+
+<hr>
+
+<h3>4.2 Utilitarian Dense (Variant 002)</h3>
+
+<p>Design stance: Tool-like, information-dense, spreadsheet-efficient. Borrows from McMaster-Carr's legendary UX pattern for industrial professionals who want to find, compare, and act fast.</p>
+
+<p>File: `sketches/002-utilitarian-dense/`</p>
+
+<strong>Color palette:</strong>
+<li>Primary: `#0f172a` (near-black)</li>
+<li>Accent: `#2563eb` (blue)</li>
+<li>Background: `#ffffff`</li>
+<li>Font: Inter (400–700)</li>
+<li>Radius: 4px (minimal)</li>
+<li>Shadow: none (flat design)</li>
+
+<strong>Research mapping:</strong>
+
+<table>
+<tr><td>Design Element</td><td>Source(s)</td><td>Why</td></tr>
+<tr><td>---------------</td><td>-----------</td><td>-----</td></tr>
+<tr><td>Table/spreadsheet layout</td><td>SRH Agency, Windmill Strategy</td><td>Engineers and procurement prefer scannable tabular data</td></tr>
+<tr><td>Search always visible</td><td>SRH Agency "Navigation Simplicity"</td><td>Industrial buyers know what they want — help them find it fast</td></tr>
+<tr><td>Sort controls on columns</td><td>ThunderClap "Value Visibility"</td><td>Users compare specs; sorting enables direct comparison</td></tr>
+<tr><td>Minimal styling, max density</td><td>Grafit "component-based design"</td><td>Every pixel serves a purpose — no decorative waste</td></tr>
+<tr><td>Flat design, no shadows</td><td>Windmill Strategy "Clarity"</td><td>Reduces visual noise; information is the UI</td></tr>
+<tr><td>Row highlighting on hover</td><td>ThunderClap "Experience Consistency"</td><td>Clear active state feedback</td></tr>
+<tr><td>Compact typography (0.85rem base)</td><td>SRH Agency "mobile-first"</td><td>More data visible without scrolling</td></tr>
+</table>
+
+<p>Best for: Product-heavy or catalog-heavy sites where engineers need to find specs fast. Example: Tooling Components product knowledge base.</p>
+
+<p>Trade-off: Lower visual appeal — not designed to sell emotionally, designed to serve efficiently.</p>
+
+<p>McMaster-Carr inspiration: McMaster-Carr's legendary industrial UX has been studied by the Nielsen Norman Group as a benchmark for industrial ecommerce. Their approach — dense data tables, prominent search, minimal decoration, maximum functionality — directly influenced this variant.</p>
+
+<hr>
+
+<h3>4.3 Utilitarian Shop (Variant 003)</h3>
+
+<p>Design stance: Industrial-grade data table for precision tooling. Dark-mode-first with luminous gold accents.</p>
+
+<p>File: `sketches/003-utilitarian-shop/`</p>
+
+<strong>Color palette:</strong>
+<li>Surface: `#131313` (near-black)</li>
+<li>Surface-container-low: `#1c1b1b`</li>
+<li>Primary: `#fed37e` (gold)</li>
+<li>Gear-brown: `#4a352c`</li>
+<li>Font: Montserrat (headings) + Inter (body)</li>
+<li>Radius: 4px (machined corners, no pill shapes)</li>
+
+<strong>Research mapping:</strong>
+
+<table>
+<tr><td>Design Element</td><td>Source(s)</td><td>Why</td></tr>
+<tr><td>---------------</td><td>-----------</td><td>-----</td></tr>
+<tr><td>Dark mode interface</td><td>ThunderClap "Experience Consistency"</td><td>Reduces eye strain for technical users during long sessions</td></tr>
+<tr><td>Luminous gold accents</td><td>RBC Industrial brand guidelines</td><td>Brand-compliant (#fed37e Rotational Gold)</td></tr>
+<tr><td>LED status indicators</td><td>Windmill Strategy "animation with purpose"</td><td>Status at a glance — green/amber/red for stock levels</td></tr>
+<tr><td>Tonal layers instead of shadows</td><td>Grafit "component-based"</td><td>Depth through material layering, not drop shadows</td></tr>
+<tr><td>Label-caps on headers</td><td>SRH Agency "technical clarity"</td><td>Stenciled engineering aesthetic reinforces precision</td></tr>
+<tr><td>Data-mono for part numbers</td><td>ThunderClap "Value Visibility"</td><td>Monospaced numerals align for tabular comparison</td></tr>
+<tr><td>Sticky sidebar navigation</td><td>Windmill Strategy</td><td>"Control-rack layout" — navigation always accessible</td></tr>
+<tr><td>Grid background pattern</td><td>RBC Industrial brand guidelines</td><td>32px overlay squares at #ffffff05 — brand spec</td></tr>
+</table>
+
+<p>Best for: Product catalog / ecommerce for any subsidiary. Premium industrial aesthetic that feels like a precision tool.</p>
+
+<p>Trade-off: Dark mode can feel heavy for content-heavy pages. User feedback: "too dark" — difficult for extended reading.</p>
+
+<p>Note: This is the only variant that partially aligns with published brand guidelines. The gold `#fed37e` and brown `#4a352c` match RBC Industrial's Rotational Gold and Gear Brown exactly.</p>
+
+<hr>
+
+<h2>5. SEO & Conversion Impact Analysis</h2>
+
+<h3>SEO Impact</h3>
+
+<table>
+<tr><td>Design Feature</td><td>SEO Effect</td><td>Confidence</td></tr>
+<tr><td>---------------</td><td>-----------</td><td>-----------</td></tr>
+<tr><td>Semantic HTML (`<article>`, `<h1>`–`<h6>` hierarchy)</td><td>Google parses structured cards better than flat lists</td><td>**High**</td></tr>
+<tr><td>Breadcrumb JSON-LD schema</td><td>Qualifies for rich snippets in SERP</td><td>**Medium**</td></tr>
+<tr><td>Mobile-first responsive design</td><td>Google mobile-first index — required ranking factor</td><td>**Required**</td></tr>
+<tr><td>Clean SCSS (no render-blocking bloat)</td><td>Core Web Vitals — Google ranking factor</td><td>**Medium**</td></tr>
+<tr><td>Proper heading hierarchy on every page</td><td>Foundation of technical SEO</td><td>**High**</td></tr>
+<tr><td>Fast load times (no jQuery bloat, minimal JS)</td><td>Largest Contentful Paint (LCP) improvement</td><td>**Medium**</td></tr>
+<tr><td>**Gap: keyword-targeted content**</td><td>Design cannot rank blank pages</td><td>**Critical**</td></tr>
+</table>
+
+<p>The design enables SEO, but it does not create it. Ranking improvements require:</p>
+<li>Regular publishing of keyword-targeted blog content (case studies, guides, technical specs)</li>
+<li>Internal linking structure between blog posts and product pages</li>
+<li>Meta title/description optimization per page</li>
+<li>XML sitemap submission</li>
+
+<h3>Conversion Impact</h3>
+
+<table>
+<tr><td>Design Feature</td><td>Conversion Effect</td><td>Confidence</td></tr>
+<tr><td>---------------</td><td>-----------------</td><td>-----------</td></tr>
+<tr><td>Clean scannable cards</td><td>Reduces cognitive load — visitors find what they need faster</td><td>**Medium**</td></tr>
+<tr><td>Author bio with credentials</td><td>Builds trust — B2B buyers need to de-risk decisions</td><td>**Medium**</td></tr>
+<tr><td>Breadcrumb navigation</td><td>Reduces bounce rate — users explore deeper</td><td>**Low**</td></tr>
+<tr><td>Category tags and metadata</td><td>Helps self-qualification — right visitors find relevant content</td><td>**Medium**</td></tr>
+<tr><td>Inline CTAs (value-driven, 3Ps pattern)</td><td>Direct conversion lever</td><td>**High**</td></tr>
+<tr><td>Trust badges (certifications, author expertise)</td><td>Social proof throughout the buying journey</td><td>**Medium**</td></tr>
+<tr><td>**Gap: case studies and testimonials**</td><td>Most effective conversion driver; design can position them but content needed</td><td>**Critical**</td></tr>
+</table>
+
+<h3>Industry Benchmarks</h3>
+
+<table>
+<tr><td>Metric</td><td>Pre-Redesign (Typical)</td><td>Post-Redesign (Case Study Avg)</td></tr>
+<tr><td>--------</td><td>----------------------</td><td>-------------------------------</td></tr>
+<tr><td>Bounce rate (blog)</td><td>65–80%</td><td>40–55%</td></tr>
+<tr><td>Time on page (blog)</td><td>30–60s</td><td>90–180s</td></tr>
+<tr><td>Pageviews per session</td><td>1.5–2.0</td><td>2.5–4.0</td></tr>
+<tr><td>Conversion rate (B2B blog → inquiry)</td><td><1%</td><td>2–5%</td></tr>
+</table>
+
+<p>Source: Grafit case studies (Callstack: +176% conversion, Gentrace: +300% traffic)</p>
+
+<p>Bottom line: The design removes every excuse a visitor has to leave. The content gives them a reason to stay. Neither alone is sufficient — they work together.</p>
+
+<hr>
+
+<h2>6. Technical Architecture Decisions</h2>
+
+<h3>Theme Module Structure</h3>
+
+<pre><code>
+liber_website_theme/
+├── __init__.py
+├── __manifest__.py
+├── static/
+│   └── src/
+│       ├── scss/
+│       │   ├── primary_variables.scss     # Odoo color palette & typography
+│       │   ├── bootstrap_overridden.scss  # Bootstrap spacing, containers, buttons
+│       │   ├── _blog.scss                 # Blog card grid, post layout
+│       │   ├── _typography.scss           # Font hierarchy, readability
+│       │   ├── _components.scss           # Cards, badges, CTAs, nav
+│       │   └── style.scss                 # Entry point
+│       └── js/
+│           └── theme.js                   # Hover effects, scroll progress
+├── views/
+│   ├── blog_list_template.xml             # Card grid override
+│   ├── blog_post_template.xml             # Centered reading column
+│   └── snippets.xml                       # Custom builder snippets
+└── README.md
+</code></pre>
+
+<h3>SCSS Bundle Architecture</h3>
+
+<table>
+<tr><td>Bundle</td><td>File</td><td>Purpose</td></tr>
+<tr><td>--------</td><td>------</td><td>---------</td></tr>
+<tr><td>`web._assets_primary_variables`</td><td>`primary_variables.scss`</td><td>Odoo color palette, theme fonts, heading sizes</td></tr>
+<tr><td>`web._assets_frontend_helpers`</td><td>`bootstrap_overridden.scss`</td><td>Bootstrap variables ($font-size-base, $spacer, etc.)</td></tr>
+<tr><td>`web.assets_frontend`</td><td>All other SCSS files</td><td>Component-level styles</td></tr>
+</table>
+
+<p>Critical rule: Never mix Bootstrap variables in `primaryvariables.scss` — it breaks the Website Builder's customization UI.</p>
+
+<h3>Multi-Site Strategy</h3>
+
+<p>Odoo has multiple websites (TC websiteid=3, RBC websiteid=4). A single theme module serves all sites via:</p>
+<li>Option A (recommended): Conditional SCSS variables per website_id — same template structure, different colors per site</li>
+<li>Option B: One coherent design system that works across brands</li>
+<li>Option C: Child themes per subsidiary</li>
+
+<hr>
+
+<h2>7. Brand Palette Comparison</h2>
+
+<table>
+<tr><td>Brand</td><td>Primary (60%)</td><td>Secondary (30%)</td><td>Accent (10%)</td><td>Background</td><td>Heading Font</td><td>Body Font</td></tr>
+<tr><td>-------</td><td>--------------</td><td>----------------</td><td>-------------</td><td>------------</td><td>-------------</td><td>-----------</td></tr>
+<tr><td>**Tooling Components**</td><td>`#1A1A24` (Dark Gunmetal)</td><td>`#D5CABD` (Industrial Sand)</td><td>`#E65F2B` (Molten Amber)</td><td>`#F8F9FA` (Alabaster)</td><td>Barlow Condensed (all caps, tracked +50)</td><td>Inter / Roboto</td></tr>
+<tr><td>**RBC Industrial**</td><td>`#4a352c` (Gear Brown)</td><td>`#fed37e` (Rotational Gold)</td><td>`#c4a063` (Gold Medium)</td><td>`#e9e8e8` (Light Gray)</td><td>Montserrat (bold)</td><td>Inter / Arial</td></tr>
+<tr><td>**Variant 001** (Editorial)</td><td>`#1a3c5e` (Navy Blue) ❌</td><td>`#6c757d` (Gray) ❌</td><td>`#e8751a` (Orange) ❌</td><td>`#f8f9fb` ✅</td><td>Inter ❌</td><td>Inter ✅</td></tr>
+<tr><td>**Variant 002** (Dense)</td><td>`#0f172a` (Near-black) ❌</td><td>`#2563eb` (Blue) ❌</td><td>— ❌</td><td>`#ffffff` ❌</td><td>Inter ❌</td><td>Inter ✅</td></tr>
+<tr><td>**Variant 003** (Shop)</td><td>`#131313` (Dark) ❌</td><td>`#fed37e` (Gold) ✅</td><td>`#4a352c` (Brown) ✅</td><td>`#1c1b1b` ❌</td><td>Montserrat + Inter ✅</td><td>Inter ✅</td></tr>
+</table>
+
+<strong>✅ = Matches brand | ❌ = Does not match</strong>
+
+<p>Finding: Variant 003 partially matches RBC Industrial (gold `#fed37e`, gear brown `#4a352c`). No existing variant matches Tooling Components brand exactly.</p>
+
+<hr>
+
+<h2>8. Recommended Path Forward</h2>
+
+<h3>Immediate Actions</h3>
+
+<p>1. Select design direction for each subsidiary:</p>
+<li>Which variant(s) feel right for RBC Industrial Knowledge blog?</li>
+<li>Which variant(s) for Tooling Components product pages?</li>
+
+<p>2. Apply correct brand colors:</p>
+<li>Rebuild SCSS `primary_variables.scss` with the 60-30-10 rule per brand</li>
+<li>Use correct heading font per brand (Barlow Condensed for TC, Montserrat for RBC)</li>
+
+<p>3. Deploy to staging:</p>
+<li>Push updated code to `dalebetz/liber-odoo-customizations` on GitHub</li>
+<li>Connect repo to Odoo.sh staging branch</li>
+<li>Build staging instance and verify theme activation</li>
+
+<h3>Strategic Recommendations</h3>
+
+<table>
+<tr><td>Priority</td><td>Action</td><td>Impact</td><td>Effort</td></tr>
+<tr><td>----------</td><td>--------</td><td>--------</td><td>--------</td></tr>
+<tr><td>1</td><td>**Publish case study content** (10 waiting in inbox)</td><td>Direct SEO + conversion gain</td><td>2–3 hours</td></tr>
+<tr><td>2</td><td>**Rebuild SCSS with brand colors**</td><td>Brand consistency across all sites</td><td>1–2 hours</td></tr>
+<tr><td>3</td><td>**Deploy to staging**</td><td>Visual verification of theme</td><td>30 minutes</td></tr>
+<tr><td>4</td><td>**Expand theme beyond blogs** (homepage, products, nav, footer)</td><td>Full brand experience</td><td>4–8 hours</td></tr>
+</table>
+
+<hr>
+
+<p>Document generated from:</p>
+<li>NotebookLM "Web Design and Odoo.sh v17" (7 sources)</li>
+<li>Brand Guidelines — Tooling Components (vault)</li>
+<li>Brand Guidelines — RBC Industrial (vault)</li>
+<li>Odoo-Website-Design-Implementation-Plan.md (July 10, 2026)</li>
+<li>Three design sketches (001, 002, 003)</li>
+
+
+</body>
+</html>

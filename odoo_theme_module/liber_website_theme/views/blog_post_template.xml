@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================
+         Blog Post Detail Override
+         Inherits website_blog.blog_post_complete to add:
+         - Centered reading column (max 720px)
+         - Breadcrumb trail
+         - Consistent cover image sizing
+         - Author bio card
+         - Contextual CTA (next post)
+         ================================================ -->
+    <template id="custom_blog_post"
+              inherit_id="website_blog.blog_post_complete"
+              name="Custom Blog Post Detail">
+
+        <!-- Add breadcrumbs before the cover ('title' is the cover's wrapping div) -->
+        <xpath expr="//div[@id='title']" position="before">
+            <div class="container mt-4">
+                <nav aria-label="Breadcrumb">
+                    <ol class="breadcrumb small" itemscope="itemscope" itemtype="https://schema.org/BreadcrumbList">
+                        <li class="breadcrumb-item" itemprop="itemListElement" itemscope="itemscope" itemtype="https://schema.org/ListItem">
+                            <a t-attf-href="/blog/#{slug(blog)}" itemprop="item">
+                                <span itemprop="name"><t t-esc="blog.name" /></span>
+                            </a>
+                            <meta itemprop="position" content="1" />
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page" itemprop="itemListElement" itemscope="itemscope" itemtype="https://schema.org/ListItem">
+                            <span itemprop="name"><t t-esc="blog_post.name" /></span>
+                            <meta itemprop="position" content="2" />
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </xpath>
+
+        <!-- Constrain the content column width -->
+        <xpath expr="//div[@id='o_wblog_post_content']" position="attributes">
+            <attribute name="class" add="container pb-5" separator=" "/>
+        </xpath>
+
+        <!-- Cover height is capped via CSS in _blog.scss (#title .o_record_cover_image):
+             that markup comes from a t-call'd sub-template (website.record_cover),
+             so it isn't part of this view's own tree and can't be xpath'd into. -->
+
+        <!-- Add author bio + next-post CTA after post content -->
+        <xpath expr="//div[@id='o_wblog_post_content']" position="after">
+            <div class="container pb-4" style="max-width:720px;">
+                <!-- Author bio card -->
+                <div class="card border-0 bg-light p-4 mb-4" t-if="blog_post.author_id">
+                    <div class="d-flex align-items-center gap-3">
+                        <img t-att-src="image_url(blog_post.author_id, 'avatar', 'fill_80x80')"
+                             class="rounded-circle"
+                             width="60" height="60"
+                             alt="blog_post.author_id.name" />
+                        <div>
+                            <strong class="d-block"><t t-esc="blog_post.author_id.name" /></strong>
+                            <span class="text-muted small">
+                                <t t-esc="blog_post.author_id.email or ''" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Next post CTA -->
+                <t t-if="next_post">
+                    <h3 class="h5 fw-bold mb-3">Read Next</h3>
+                    <div class="card border-0 shadow-sm">
+                        <a t-attf-href="/blog/#{slug(next_post.blog_id)}/#{slug(next_post)}"
+                           class="text-decoration-none d-flex align-items-center">
+                            <img t-att-src="image_url(next_post, 'cover', 'fill_400x250')"
+                                 class="rounded-start"
+                                 alt="next_post.name"
+                                 style="width:160px;height:100px;object-fit:cover;" />
+                            <div class="card-body">
+                                <h4 class="h6 card-title text-dark mb-0">
+                                    <t t-esc="next_post.name" />
+                                </h4>
+                            </div>
+                        </a>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================
+         Blog List Page Override
+         Inherits website_blog.blog_post_short to produce
+         a card-based grid layout.
+         ================================================ -->
+    <template id="custom_blog_list"
+              inherit_id="website_blog.blog_post_short"
+              name="Custom Blog List — Card Grid">
+
+        <!-- Replace the entire list container with a grid -->
+        <xpath expr="//div[@id='o_wblog_posts_loop_container']" position="replace">
+            <div class="container py-5">
+                <!-- Blog header -->
+                <div class="row justify-content-center mb-5" t-if="blog">
+                    <div class="col-lg-8 text-center">
+                        <h1 class="display-4 fw-bold">
+                            <t t-esc="blog.name" />
+                        </h1>
+                        <p class="lead text-muted" t-if="blog.subtitle">
+                            <t t-esc="blog.subtitle" />
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card grid -->
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
+                     t-foreach="posts" t-as="post">
+                    <div class="col">
+                        <article class="card h-100 shadow-sm border-0">
+                            <!-- Cover image -->
+                            <a t-attf-href="/blog/#{slug(post.blog_id)}/#{slug(post)}"
+                               class="text-decoration-none overflow-hidden">
+                                <img t-att-src="image_url(post, 'cover', 'fill_600x400')"
+                                     class="card-img-top"
+                                     alt="post.name"
+                                     width="600" height="400"
+                                     style="height:200px;aspect-ratio:3/2;object-fit:cover;" />
+                            </a>
+
+                            <div class="card-body d-flex flex-column">
+                                <!-- Tags -->
+                                <div class="mb-2">
+                                    <t t-foreach="post.tag_ids" t-as="tag">
+                                        <span class="badge bg-secondary me-1">
+                                            <t t-esc="tag.name" />
+                                        </span>
+                                    </t>
+                                </div>
+
+                                <!-- Title -->
+                                <h3 class="card-title h5">
+                                    <a t-attf-href="/blog/#{slug(post.blog_id)}/#{slug(post)}"
+                                       class="text-dark stretched-link text-decoration-none">
+                                        <t t-esc="post.name" />
+                                    </a>
+                                </h3>
+
+                                <!-- Teaser -->
+                                <p class="card-text text-muted small flex-grow-1"
+                                   t-if="post.teaser">
+                                    <t t-esc="post.teaser" />
+                                </p>
+
+                                <!-- Author + Date -->
+                                <div class="o_wblog_post_meta d-flex justify-content-between align-items-center small mt-auto pt-2 border-top">
+                                    <span t-if="post.author_id" class="o_author">
+                                        <t t-esc="post.author_id.name" />
+                                    </span>
+                                    <span><t t-esc="post.published_date" /></span>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <t t-call="website.pager">
+                    <t t-set="classname" t-valuef="justify-content-center"/>
+                    <t t-set="extraLinkClass" t-valuef="post_link"/>
+                </t>
+            </div>
+        </xpath>
+    </template>
+</odoo>
