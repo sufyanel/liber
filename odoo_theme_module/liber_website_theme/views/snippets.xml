@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================================================
+         Custom Snippets for Website Builder
+         ================================================ -->
+
+    <!-- ==== Trust Badge Snippet ==== -->
+    <template id="trust_badge_snippet" name="Trust Badge">
+        <section class="container oe_structure pb0 pt0">
+            <div class="row justify-content-center align-items-center g-3 py-3">
+                <div class="col-auto">
+                    <div class="trust-badge">
+                        <i class="fa fa-certificate text-primary me-1"></i>
+                        <span>ISO 9001:2015 Certified</span>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="trust-badge">
+                        <i class="fa fa-truck text-primary me-1"></i>
+                        <span>Nationwide Shipping</span>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <div class="trust-badge">
+                        <i class="fa fa-shield text-primary me-1"></i>
+                        <span>Quality Guaranteed</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- ==== Content Section with CTA ==== -->
+    <template id="content_cta_snippet" name="Content Section + CTA">
+        <section class="container oe_structure">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="h3 fw-bold">Need a Custom Solution?</h2>
+                    <p class="text-muted mb-0">Our engineering team can design and manufacture custom components to your exact specifications.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="/contactus" class="btn btn-primary btn-lg">Contact Our Team</a>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- ==== Blog Card Snippet ==== -->
+    <template id="blog_card_snippet" name="Blog Card">
+        <section class="container oe_structure">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <img class="card-img-top" src="/web/image/liber_website_theme/static/src/snippets/blog_card_placeholder.png"
+                             style="height:200px;object-fit:cover;" alt="Blog card image"/>
+                        <div class="card-body">
+                            <h5 class="card-title">Article Title</h5>
+                            <p class="card-text text-muted small">Brief description of the article content and key takeaways.</p>
+                            <a href="#" class="btn btn-outline-primary btn-sm">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- ==== Register snippets in Website Builder ==== -->
+    <template id="register_snippets"
+              inherit_id="website.snippets"
+              name="Register Liber Theme Snippets">
+        <xpath expr="//div[@id='snippet_structure']/div[hasclass('o_panel_body')]"
+               position="inside">
+            <t t-snippet="liber_website_theme.trust_badge_snippet"
+               t-thumbnail="/liber_website_theme/static/wbuilder/trust_badge_thumb.png"/>
+            <t t-snippet="liber_website_theme.content_cta_snippet"
+               t-thumbnail="/liber_website_theme/static/wbuilder/content_cta_thumb.png"/>
+            <t t-snippet="liber_website_theme.blog_card_snippet"
+               t-thumbnail="/liber_website_theme/static/wbuilder/blog_card_thumb.png"/>
+        </xpath>
+    </template>
+</odoo>

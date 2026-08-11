@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bordignon Springs — Now Stocked at Tooling Components | Liber Holdings</title>
+    <style>
+        :root {
+            --primary: #1a3c6e;
+            --primary-light: #2a5a9e;
+            --accent: #c0392b;
+            --accent-hover: #e74c3c;
+            --dark: #1a1a2e;
+            --gray-100: #f8f9fa;
+            --gray-200: #e9ecef;
+            --gray-300: #dee2e6;
+            --gray-600: #6c757d;
+            --gray-800: #343a40;
+            --white: #ffffff;
+            --green: #27ae60;
+            --orange: #e67e22;
+            --gold: #f39c12;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--gray-800);
+            line-height: 1.6;
+            background: var(--white);
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #0f1a2e 0%, #1a3c6e 50%, #2a5a9e 100%);
+            color: var(--white);
+            padding: 80px 0 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(192,57,43,0.15) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--white);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+        .hero h1 span { color: #e74c3c; }
+        .hero p {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 700px;
+            margin-bottom: 32px;
+        }
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255,255,255,0.15);
+        }
+        .hero-stat h3 { font-size: 32px; font-weight: 800; color: #e74c3c; }
+        .hero-stat p { font-size: 14px; opacity: 0.8; margin-bottom: 0; }
+        .btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .btn-primary { background: var(--accent); color: var(--white); }
+        .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 2px solid var(--white); color: var(--white); }
+        .btn-outline:hover { background: var(--white); color: var(--primary); }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+
+        /* STOCKING ALERT */
+        .stocking-alert {
+            background: linear-gradient(135deg, #1a472a, #27ae60);
+            color: var(--white);
+            padding: 24px 0;
+            text-align: center;
+        }
+        .stocking-alert h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        .stocking-alert p {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+        .stocking-alert strong { color: #f1c40f; }
+
+        /* SECTION */
+        section { padding: 60px 0; }
+        .section-title {
+            font-size: 36px;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .section-subtitle {
+            font-size: 18px;
+            color: var(--gray-600);
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 48px;
+        }
+
+        /* PRODUCT FAMILIES - OVAL SERIES */
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        .product-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 32px 24px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .product-card:hover {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transform: translateY(-4px);
+        }
+        .product-card .load-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--white);
+        }
+        .load-green { background: var(--green); }
+        .load-blue { background: #2980b9; }
+        .load-orange { background: var(--orange); }
+        .load-red { background: var(--accent); }
+        .load-black { background: #1a1a2e; }
+        .load-gold { background: #8e44ad; }
+
+        .product-card h3 { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+        .product-card .series-name { font-size: 14px; color: var(--gray-600); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+        .product-card .load-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+        .product-card .deflection { font-size: 14px; color: var(--gray-600); margin-bottom: 16px; }
+        .product-card .specs { text-align: left; font-size: 13px; color: var(--gray-600); line-height: 2; }
+        .product-card .specs span { color: var(--gray-800); font-weight: 600; }
+
+        /* TABLE COMPARISON */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .comparison-table th {
+            background: var(--primary);
+            color: var(--white);
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+        }
+        .comparison-table th:first-child { width: 35%; }
+        .comparison-table th:not(:first-child) { text-align: center; width: 32.5%; }
+        .comparison-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+        .comparison-table td:not(:first-child) { text-align: center; }
+        .comparison-table tr:nth-child(even) { background: var(--gray-100); }
+        .comparison-table .winner { color: var(--green); font-weight: 700; }
+        .comparison-table .loser { color: var(--gray-600); }
+
+        /* SIZING TABLE */
+        .sizing-section { background: var(--gray-100); }
+        .sizing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
+        .sizing-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .sizing-card-header {
+            padding: 20px 24px;
+            color: var(--white);
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .sizing-card-body { padding: 20px 24px; }
+        .sizing-card-body table { width: 100%; font-size: 13px; border-collapse: collapse; }
+        .sizing-card-body th {
+            text-align: left;
+            padding: 6px 8px;
+            border-bottom: 2px solid var(--gray-200);
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--gray-600);
+        }
+        .sizing-card-body td {
+            padding: 6px 8px;
+            border-bottom: 1px solid var(--gray-100);
+            font-size: 13px;
+        }
+        .sizing-card-body td:last-child { text-align: right; font-weight: 600; }
+
+        .sizing-card-body .compact-table { font-size: 12px; }
+        .sizing-card-body .compact-table td { padding: 4px 6px; }
+        .sizing-card-body .compact-table th { padding: 4px 6px; }
+
+        /* TECH BOXES */
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .tech-card {
+            background: var(--white);
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        .tech-card .num { font-size: 36px; font-weight: 800; color: var(--accent); }
+        .tech-card p { font-size: 14px; color: var(--gray-600); margin-top: 4px; }
+
+        /* ABOUT */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: start;
+        }
+        .about-grid ul { list-style: none; padding: 0; }
+        .about-grid ul li {
+            padding: 8px 0;
+            padding-left: 28px;
+            position: relative;
+            font-size: 16px;
+        }
+        .about-grid ul li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: 700;
+        }
+
+        /* CTA */
+        .cta {
+            background: linear-gradient(135deg, #0f1a2e, #1a3c6e);
+            color: var(--white);
+            text-align: center;
+            padding: 80px 0;
+        }
+        .cta h2 { font-size: 36px; margin-bottom: 16px; }
+        .cta p { font-size: 18px; opacity: 0.9; margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .cta .contact { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; margin-top: 32px; }
+        .cta .contact-item { font-size: 16px; }
+        .cta .contact-item strong { display: block; font-size: 20px; margin-bottom: 4px; color: #e74c3c; }
+
+        .sizing-scroll { max-height: 360px; overflow-y: auto; }
+        .sizing-scroll::-webkit-scrollbar { width: 6px; }
+        .sizing-scroll::-webkit-scrollbar-track { background: var(--gray-100); }
+        .sizing-scroll::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+        /* WHY SECTION */
+        .why-bordignon { background: var(--gray-100); }
+        .reason-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .reason-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 28px;
+            border-left: 4px solid var(--accent);
+        }
+        .reason-card h4 { font-size: 18px; margin-bottom: 8px; }
+        .reason-card p { font-size: 14px; color: var(--gray-600); line-height: 1.7; }
+
+        .product-cta-link {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 8px 20px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .product-cta-link:hover { background: var(--primary-light); }
+
+        .action-row { text-align: center; margin-top: 40px; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .about-grid { grid-template-columns: 1fr; }
+            .comparison-table { font-size: 13px; }
+            .comparison-table th, .comparison-table td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badge">New Brand — Now Available</div>
+        <h1>Bordignon <span>Springs</span></h1>
+        <p>Italian-engineered die springs, now stocked in the US at Tooling Components. The Oval Series and Black Series deliver performance that surpasses the industry standard — including Raymond.</p>
+        <div class="hero-actions">
+            <a href="#oval-series" class="btn btn-primary">Browse Oval Series</a>
+            <a href="#black-series" class="btn btn-outline">Explore Black Series</a>
+        </div>
+        <div class="hero-stats">
+            <div class="hero-stat"><h3>1958</h3><p>Founded in Italy</p></div>
+            <div class="hero-stat"><h3>65+</h3><p>Years of Innovation</p></div>
+            <div class="hero-stat"><h3>30+</h3><p>Countries Served</p></div>
+            <div class="hero-stat"><h3>2010</h3><p>Black Series Launched</p></div>
+        </div>
+    </div>
+</section>
+
+<!-- STOCKING ALERT -->
+<section class="stocking-alert">
+    <div class="container">
+        <h2>📦 Now Stocked at <strong>Tooling Components</strong></h2>
+        <p>Available at <strong>Erie, PA</strong> and <strong>New Jersey</strong> locations — ready for immediate pickup or delivery. Call to check stock on specific SKUs.</p>
+    </div>
+</section>
+
+<!-- OVAL SERIES -->
+<section id="oval-series">
+    <div class="container">
+        <h2 class="section-title">Die Springs — Oval Series</h2>
+        <p class="section-subtitle">Rectangular wire springs with an oval cross-section. Designed for higher load capacity in the same housing diameter compared to round-wire alternatives. Available in four load classes to match your application.</p>
+
+        <div class="product-grid">
+            <div class="product-card">
+                <div class="load-icon load-green">USB</div>
+                <h3>USB</h3>
+                <div class="series-name">Oval Series</div>
+                <div class="load-name">Medium Load</div>
+                <div class="deflection">XLL 25% &nbsp;|&nbsp; Max 40%</div>
+                <div class="specs">
+                    Housing Ø: <span>9.53 – 50.8 mm</span><br>
+                    Free Length: <span>25.4 – 304.8 mm</span><br>
+                    Rate: <span>1.1 – 175.1 N/mm</span><br>
+                    Max Load: <span>up to 4,448 N</span><br>
+                    Wire: <span>1.85×1.10 – 11.45×5.20 mm</span>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="load-icon load-blue">USR</div>
+                <h3>USR</h3>
+                <div class="series-name">Oval Series</div>
+                <div class="load-name">Medium Strong Load</div>
+                <div class="deflection">XLL 20% &nbsp;|&nbsp; Max 30%</div>
+                <div class="specs">
+                    Housing Ø: <span>9.53 – 50.8 mm</span><br>
+                    Free Length: <span>25.4 – 304.8 mm</span><br>
+                    Rate: <span>1.4 – 207.4 N/mm</span><br>
+                    Max Load: <span>up to 3,950 N</span><br>
+                    Wire: <span>1.90×1.15 – 11.00×5.75 mm</span>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="load-icon load-orange">USG</div>
+                <h3>USG</h3>
+                <div class="series-name">Oval Series</div>
+                <div class="load-name">Heavy Load</div>
+                <div class="deflection">XLL 15% &nbsp;|&nbsp; Max 25%</div>
+                <div class="specs">
+                    Housing Ø: <span>9.53 – 50.8 mm</span><br>
+                    Free Length: <span>25.4 – 304.8 mm</span><br>
+                    Rate: <span>1.9 – 439.9 N/mm</span><br>
+                    Max Load: <span>up to 6,984 N</span><br>
+                    Wire: <span>1.80×1.40 – 11.80×7.30 mm</span>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="load-icon load-red">USV</div>
+                <h3>USV</h3>
+                <div class="series-name">Oval Series</div>
+                <div class="load-name">Extra Strong Load</div>
+                <div class="deflection">XLL 15% &nbsp;|&nbsp; Max 20%</div>
+                <div class="specs">
+                    Housing Ø: <span>9.53 – 50.8 mm</span><br>
+                    Free Length: <span>25.4 – 304.8 mm</span><br>
+                    Rate: <span>2.6 – 719.8 N/mm</span><br>
+                    Max Load: <span>up to 9,141 N</span><br>
+                    Wire: <span>2.00×1.50 – 11.70×9.35 mm</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <a href="https://bordignonsprings.com/en/mold-springs/usb-series/" class="btn btn-primary" target="_blank">Full USB Catalog →</a>
+            <a href="https://bordignonsprings.com/en/mold-springs/usr-series/" class="btn btn-primary" target="_blank">Full USR Catalog →</a>
+            <a href="https://bordignonsprings.com/en/mold-springs/usg-series/" class="btn btn-primary" target="_blank">Full USG Catalog →</a>
+            <a href="https://bordignonsprings.com/en/mold-springs/usv-series/" class="btn btn-primary" target="_blank">Full USV Catalog →</a>
+        </div>
+    </div>
+</section>
+
+<!-- BLACK SERIES -->
+<section id="black-series" style="background: var(--gray-100);">
+    <div class="container">
+        <h2 class="section-title">Black Series — Exceptional Load</h2>
+        <p class="section-subtitle">The highest-performing die spring on the market. Unmatched size-to-power ratio — more force in a smaller envelope than any competitor, including Raymond. Introduced 2010 as a Bordignon exclusive.</p>
+
+        <div class="product-grid">
+            <div class="product-card">
+                <div class="load-icon load-black">BK</div>
+                <h3>BK</h3>
+                <div class="series-name">Black Series — Single</div>
+                <div class="load-name">Exceptional Load</div>
+                <div class="specs">
+                    Housing Ø: <span>10 – 50 mm</span><br>
+                    Free Length: <span>20 – 200 mm</span><br>
+                    Rate: <span>200 – 5,710 N/mm</span><br>
+                    Max Load: <span>up to 35,000 N</span><br>
+                    Max Stroke: <span>2.2 – 30.0 mm</span><br>
+                    Box Qty: <span>2 – 50 pcs</span>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="load-icon load-gold">BK-D</div>
+                <h3>BK-D</h3>
+                <div class="series-name">Black Series — Double</div>
+                <div class="load-name">Exceptional Double Load</div>
+                <div class="specs">
+                    Housing Ø: <span>32 – 50 mm</span><br>
+                    Free Length: <span>35 – 125 mm</span><br>
+                    Rate: <span>1,480 – 6,880 N/mm</span><br>
+                    Max Load: <span>up to 45,000 N</span><br>
+                    Larger inner Ø:<br><span style="font-size:12px;">Accommodates larger guide pins</span><br>
+                    Box Qty: <span>2 – 16 pcs</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <a href="https://bordignonsprings.com/en/mold-springs/bk-series/" class="btn btn-primary" target="_blank">Full BK Catalog →</a>
+            <a href="https://bordignonsprings.com/en/mold-springs/bk-d-series/" class="btn btn-outline" style="border-color:var(--primary);color:var(--primary);" target="_blank">Full BK-D Catalog →</a>
+        </div>
+    </div>
+</section>
+
+<!-- BORDIGNON vs RAYMOND -->
+<section>
+    <div class="container">
+        <h2 class="section-title">Bordignon vs. Raymond</h2>
+        <p class="section-subtitle">Why your customers are switching to Bordignon for die springs.</p>
+
+        <div style="overflow-x:auto;">
+            <table class="comparison-table">
+                <thead>
+                    <tr><th>Factor</th><th>Bordignon Springs</th><th>Raymond</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Black Series</strong> — Highest Size-to-Power Ratio</td>
+                        <td class="winner">Yes — exclusive, no competitor equivalent</td>
+                        <td class="loser">No equivalent available</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Oval Series</strong> — Rectangular Wire Design</td>
+                        <td class="winner">4 load classes: USB, USR, USG, USV</td>
+                        <td class="loser">Limited round-wire selection</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Max Load Capacity</strong></td>
+                        <td class="winner">Up to 45,000 N (BK-D series)</td>
+                        <td class="loser">Comparable sizes carry less load</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Manufacturing</strong></td>
+                        <td class="winner">100% Made in Italy — full traceability</td>
+                        <td class="loser">Global production, mixed origins</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ISO Certifications</strong></td>
+                        <td class="winner">ISO 9001 (1995) + ISO 14001 (2007)<br>First in Italy to certify</td>
+                        <td class="loser">ISO 9001 only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Laser Marking</strong></td>
+                        <td class="winner">Every spring laser-marked for full traceability</td>
+                        <td class="loser">Ink stamping (wears off)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Proprietary Lines</strong></td>
+                        <td class="winner">Black Series, 5S, 1L, BO — exclusive technology</td>
+                        <td class="loser">Standard ISO/DIN lines only</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Industry 4.0</strong></td>
+                        <td class="winner">Industry 4.0 certified factory</td>
+                        <td class="loser">Standard production</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Custom Capability</strong></td>
+                        <td class="winner">Wire 0.10 – 15 mm, full custom design</td>
+                        <td class="loser">Limited custom range</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Stock in USA</strong></td>
+                        <td class="winner">Tooling Components — Erie, PA & NJ — <strong>now</strong></td>
+                        <td class="loser">Widely distributed, but standard catalogue</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- WHY BORDIGNON -->
+<section class="why-bordignon">
+    <div class="container">
+        <h2 class="section-title">Why Customers Choose Bordignon</h2>
+        <p class="section-subtitle">Proven advantages that translate to real savings and better tooling performance.</p>
+        <div class="reason-grid">
+            <div class="reason-card">
+                <h4>⚡ Highest Power Density</h4>
+                <p>The Black Series delivers exceptional force in the smallest possible envelope. More clamping force per mm of housing diameter than any Raymond equivalent — lets you design smaller, lighter tooling.</p>
+            </div>
+            <div class="reason-card">
+                <h4>🔧 Four Load Classes in One Footprint</h4>
+                <p>Oval Series gives you USB → USV (Medium → Extra Strong) all in the same housing diameters. Select the right load without redesigning your die set.</p>
+            </div>
+            <div class="reason-card">
+                <h4>🏭 100% Made in Italy</h4>
+                <p>Every spring is manufactured start-to-finish at Bordignon's 5,000 m² factory in Rossano Veneto, Italy. Full material traceability, no subcontracted production.</p>
+            </div>
+            <div class="reason-card">
+                <h4>🔍 Laser-Marked Traceability</h4>
+                <p>Every spring is laser-marked with its specifications — never wears off like ink stamping. Full quality chain visibility from factory floor to your press.</p>
+            </div>
+            <div class="reason-card">
+                <h4>📦 Local Stock — No Wait</h4>
+                <p>Now stocked at Tooling Components in Erie, PA and New Jersey. No transatlantic shipping delays — same-day or next-day availability for standard Oval Series and Black Series SKUs.</p>
+            </div>
+            <div class="reason-card">
+                <h4>🏆 Proven Since 1958</h4>
+                <p>65+ years of spring innovation. Invented the 5S series (1990), launched the Black Series (2010), first in Italy certified ISO 9001 (1995) and ISO 14001 (2007). Industry 4.0 since day one.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section>
+    <div class="container">
+        <div class="about-grid">
+            <div>
+                <h2 class="section-title" style="text-align:left;">About Bordignon</h2>
+                <p style="font-size:18px;color:var(--gray-600);margin-bottom:24px;">The Italian springmaker that invented the Black Series and changed die spring performance standards worldwide.</p>
+                <ul>
+                    <li><strong>65+ years</strong> of spring manufacturing expertise</li>
+                    <li><strong>5,000 m²</strong> factory — 100% in-house production</li>
+                    <li><strong>Industry 4.0</strong> certified manufacturer</li>
+                    <li><strong>ISO 9001</strong> since 1995, <strong>ISO 14001</strong> since 2007</li>
+                    <li>Worldwide distribution to <strong>30+ countries</strong></li>
+                    <li>Largest stock of <strong>standardized springs in Europe</strong></li>
+                    <li>Wire diameter range: <strong>0.10 mm – 15 mm</strong></li>
+                    <li>Proprietary lines: <strong>Black Series, 5S, 1L, BO</strong></li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="font-size:24px;font-weight:700;margin-bottom:16px;">Company Milestones</h3>
+                <div style="border-left:3px solid var(--accent);padding-left:20px;">
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">1958</strong><br>Settimo Bordignon founds the company in Rosà, Italy</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">1974</strong><br>Moves to Rossano Veneto — 1,000 m² factory</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">1986</strong><br>Die spring production begins</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">1990</strong><br>Invents the 5S series — higher load than standards</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">1995</strong><br>First ISO 9001 certification in Italian spring industry</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">2002</strong><br>Expands to 5,000 m² factory</div>
+                    <div style="margin-bottom:16px;"><strong style="color:var(--accent);">2010</strong><br>Launches Black Series — highest size-to-power ratio</div>
+                    <div style="margin-bottom:0;"><strong style="color:var(--accent);">Today</strong><br>Industry 4.0 leader, 30+ countries, US stock at Tooling Components</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <h2>Stocked & Ready for Your Next Job</h2>
+        <p>Bordignon Oval Series and Black Series die springs are now available at Tooling Components in Erie, PA and New Jersey. Contact us to check stock, request a quote, or place an order.</p>
+        <div class="hero-actions" style="justify-content:center;">
+            <a href="tel:+18144544841" class="btn btn-primary">Call (814) 454-4841</a>
+            <a href="mailto:info@liberholdings.com" class="btn btn-outline">Email Liber Holdings</a>
+            <a href="https://liber.odoo.com/contactus" class="btn btn-outline">Request a Quote</a>
+        </div>
+        <div class="contact">
+            <div class="contact-item">
+                <strong>Erie, PA</strong>
+                Tooling Components<br>1028 Raspberry St, Erie, PA 16501
+            </div>
+            <div class="contact-item">
+                <strong>New Jersey</strong>
+                Tooling Components<br>(by Bordignon) NJ Location
+            </div>
+            <div class="contact-item">
+                <strong>Liber Holdings</strong>
+                Distributor Inquiries<br>info@liberholdings.com
+            </div>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

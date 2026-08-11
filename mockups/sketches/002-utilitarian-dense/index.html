@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utilitarian Dense — Blog Redesign Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #111;
+    background: #fff;
+    line-height: 1.5;
+  }
+
+  /* ===== Tokens ===== */
+  :root {
+    --color-primary: #0f172a;
+    --color-accent: #2563eb;
+    --color-bg: #ffffff;
+    --color-surface: #ffffff;
+    --color-text: #0f172a;
+    --color-muted: #64748b;
+    --color-border: #e2e8f0;
+    --color-light: #f1f5f9;
+    --radius: 4px;
+    --shadow: none;
+  }
+
+  /* ===== Top Bar ===== */
+  .top-bar {
+    background: var(--color-primary);
+    color: white;
+    padding: 6px 24px;
+    font-size: 0.75rem;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+
+  /* ===== Nav ===== */
+  .nav {
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+  }
+  .nav-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-mark {
+    width: 24px;
+    height: 24px;
+    background: var(--color-accent);
+    border-radius: 3px;
+  }
+  .nav-links { display: flex; gap: 24px; align-items: center; }
+  .nav-links a {
+    text-decoration: none;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--color-text); }
+  .nav-links a.active { color: var(--color-text); font-weight: 600; }
+  .btn-outline {
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 6px 16px;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.15s;
+  }
+  .btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+
+  /* ===== Page Header ===== */
+  .page-header {
+    border-bottom: 1px solid var(--color-border);
+    padding: 20px 24px;
+  }
+  .page-header-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .page-header p {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-top: 2px;
+  }
+  .search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 6px 12px;
+    width: 280px;
+  }
+  .search-box input {
+    border: none;
+    outline: none;
+    font-size: 0.85rem;
+    width: 100%;
+    font-family: inherit;
+    color: var(--color-text);
+  }
+  .search-box input::placeholder { color: #94a3b8; }
+
+  /* ===== Breadcrumbs ===== */
+  .breadcrumbs {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 12px 24px 0;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+  .breadcrumbs a { color: var(--color-muted); text-decoration: none; }
+  .breadcrumbs a:hover { color: var(--color-accent); }
+  .breadcrumbs span { margin: 0 4px; color: #cbd5e1; }
+
+  /* ===== Layout ===== */
+  .page-layout {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 32px;
+  }
+
+  /* ===== Sidebar ===== */
+  .sidebar {
+    position: sticky;
+    top: 72px;
+    align-self: start;
+  }
+  .sidebar-section { margin-bottom: 24px; }
+  .sidebar-section h4 {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+    margin-bottom: 8px;
+  }
+  .sidebar ul { list-style: none; }
+  .sidebar li { margin-bottom: 2px; }
+  .sidebar a {
+    display: block;
+    padding: 4px 8px;
+    color: var(--color-muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    border-radius: 3px;
+    transition: all 0.1s;
+  }
+  .sidebar a:hover { background: var(--color-light); color: var(--color-text); }
+  .sidebar a.active { background: var(--color-light); color: var(--color-primary); font-weight: 600; }
+
+  /* ===== Table View ===== */
+  .table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .table-controls .count {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+  .table-controls .sort {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .table-controls .sort select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    font-family: inherit;
+    background: white;
+  }
+
+  .post-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .post-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-muted);
+    padding: 8px 12px;
+    border-bottom: 2px solid var(--color-border);
+  }
+  .post-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.85rem;
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  .post-table tr:hover td { background: #f8fafc; }
+
+  .post-title {
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .post-title:hover { color: var(--color-accent); }
+  .post-excerpt {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    margin-top: 2px;
+  }
+  .post-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-muted);
+  }
+  .post-tag.guide { border-color: #bfdbfe; color: #1d4ed8; }
+  .post-tag.case-study { border-color: #fed7aa; color: #c2410c; }
+  .post-tag.news { border-color: #cbd5e1; color: #475569; }
+
+  .post-meta {
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  .post-meta .author { font-weight: 500; color: var(--color-text); }
+
+  /* ===== Featured Row ===== */
+  .featured-row {
+    background: #f8fafc;
+    border-left: 3px solid var(--color-accent);
+    margin-bottom: 16px;
+    padding: 16px;
+    border-radius: var(--radius);
+  }
+  .featured-row .label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-accent);
+    margin-bottom: 4px;
+  }
+  .featured-row h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .featured-row h2 a {
+    text-decoration: none;
+    color: var(--color-text);
+  }
+  .featured-row h2 a:hover { color: var(--color-accent); }
+  .featured-row p {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+    margin-bottom: 8px;
+  }
+
+  /* ===== CTA Bar ===== */
+  .cta-bar {
+    background: var(--color-light);
+    border: 1px solid var(--color-border);
+    padding: 20px 24px;
+    border-radius: var(--radius);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+  }
+  .cta-bar h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .cta-bar p {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    margin-top: 2px;
+  }
+  .cta-btn {
+    background: var(--color-accent);
+    color: white;
+    padding: 10px 24px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .cta-btn:hover { background: #1d4ed8; }
+
+  /* ===== Footer ===== */
+  .footer {
+    border-top: 1px solid var(--color-border);
+    padding: 32px 24px;
+    margin-top: 48px;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+  }
+  .footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+  }
+  .footer a { color: var(--color-muted); text-decoration: none; }
+  .footer a:hover { color: var(--color-text); }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .page-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; display: none; }
+    .page-header-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .search-box { width: 100%; }
+    .post-table thead { display: none; }
+    .post-table td { display: block; padding: 8px 12px; }
+    .post-table tr { display: block; margin-bottom: 12px; border-bottom: 1px solid var(--color-border); padding-bottom: 12px; }
+    .nav-links a:not(.active):not(:first-child) { display: none; }
+    .cta-bar { flex-direction: column; gap: 12px; text-align: center; }
+    .footer-inner { flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Top Bar ===== -->
+<div class="top-bar">ISO 9001:2015 &bull; AS9100D Certified &bull; Serving Aerospace, Defense & Medical</div>
+
+<!-- ===== Nav ===== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="logo"><span class="logo-mark"></span> RBC Industrial</a>
+    <div class="nav-links">
+      <a href="#">Products</a>
+      <a href="#">Industries</a>
+      <a href="#" class="active">Knowledge</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <a href="#" class="btn-outline">Quote</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== Breadcrumbs ===== -->
+<div class="breadcrumbs">
+  <a href="#">Home</a><span>/</span>
+  <a href="#">Knowledge</a><span>/</span>
+  <span>All Posts</span>
+</div>
+
+<!-- ===== Page Header ===== -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <h1>Knowledge Base</h1>
+      <p>Technical resources, case studies, and industry intelligence for industrial professionals</p>
+    </div>
+    <div class="search-box">
+      <input type="text" placeholder="Search articles, topics, or part numbers..." value="search">
+    </div>
+  </div>
+</div>
+
+<!-- ===== Main Layout ===== -->
+<div class="page-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <h4>Filter</h4>
+      <ul>
+        <li><a href="#" class="active">All Posts</a></li>
+        <li><a href="#">Technical Guides</a></li>
+        <li><a href="#">Case Studies</a></li>
+        <li><a href="#">Industry News</a></li>
+        <li><a href="#">White Papers</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <h4>Topics</h4>
+      <ul>
+        <li><a href="#">CNC & Machining</a></li>
+        <li><a href="#">Tooling & Workholding</a></li>
+        <li><a href="#">Quality & Metrology</a></li>
+        <li><a href="#">Materials</a></li>
+        <li><a href="#">Automation</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <h4>Archive</h4>
+      <ul>
+        <li><a href="#">Jul 2026 (12)</a></li>
+        <li><a href="#">Jun 2026 (18)</a></li>
+        <li><a href="#">May 2026 (14)</a></li>
+        <li><a href="#">Apr 2026 (16)</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main>
+
+    <!-- Featured -->
+    <div class="featured-row">
+      <div class="label">Featured</div>
+      <h2><a href="#">5-Axis CNC Tooling: A Practical Guide for Precision Manufacturers</a></h2>
+      <p>From cutting parameters to workholding strategies, this guide covers everything you need to optimize 5-axis machining for high-tolerance applications.</p>
+      <div class="post-meta">By <span class="author">James Dawes</span> · Jul 8, 2026 · 15 min read</div>
+    </div>
+
+    <!-- Table Controls -->
+    <div class="table-controls">
+      <span class="count">Showing 12 of 48 articles</span>
+      <div class="sort">
+        <label>Sort:</label>
+        <select>
+          <option>Newest</option>
+          <option>Most Read</option>
+          <option>Title A-Z</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <table class="post-table">
+      <thead>
+        <tr>
+          <th style="width:40%">Article</th>
+          <th style="width:12%">Type</th>
+          <th style="width:10%">Author</th>
+          <th style="width:12%">Date</th>
+          <th style="width:8%">Read</th>
+          <th style="width:8%">CTA</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <a href="#" class="post-title">Carbide Insert Selection for High-Temperature Alloys</a>
+            <div class="post-excerpt">Inconel, Hastelloy — coating and geometry recommendations</div>
+          </td>
+          <td><span class="post-tag guide">Guide</span></td>
+          <td class="post-meta">Mike Renner</td>
+          <td class="post-meta">Jul 6, 2026</td>
+          <td class="post-meta">12 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" class="post-title">Aerospace Bracket Machining: 40% Cycle Time Reduction</a>
+            <div class="post-excerpt">Case study: 15-5PH stainless, redesigned tooling approach</div>
+          </td>
+          <td><span class="post-tag case-study">Case Study</span></td>
+          <td class="post-meta">James Dawes</td>
+          <td class="post-meta">Jul 3, 2026</td>
+          <td class="post-meta">8 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" class="post-title">AS9100D Rev E: Key Changes for Your Supply Chain</a>
+            <div class="post-excerpt">Risk management, product safety, counterfeit prevention</div>
+          </td>
+          <td><span class="post-tag news">Industry</span></td>
+          <td class="post-meta">Anne Kim</td>
+          <td class="post-meta">Jun 28, 2026</td>
+          <td class="post-meta">10 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" class="post-title">Surface Finish Parameters: Ra vs Rz Explained</a>
+            <div class="post-excerpt">When each parameter matters for quality control</div>
+          </td>
+          <td><span class="post-tag guide">Guide</span></td>
+          <td class="post-meta">Mike Renner</td>
+          <td class="post-meta">Jun 25, 2026</td>
+          <td class="post-meta">7 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" class="post-title">Collaborative Robot Deburring: ROI Case Study</a>
+            <div class="post-excerpt">Mid-size job shop cobot implementation with actual ROI data</div>
+          </td>
+          <td><span class="post-tag case-study">Case Study</span></td>
+          <td class="post-meta">James Dawes</td>
+          <td class="post-meta">Jun 22, 2026</td>
+          <td class="post-meta">14 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+        <tr>
+          <td>
+            <a href="#" class="post-title">2026 Raw Material Outlook: Steel, Aluminum, Alloys</a>
+            <div class="post-excerpt">Pricing trends and strategic purchasing recommendations</div>
+          </td>
+          <td><span class="post-tag news">Industry</span></td>
+          <td class="post-meta">Anne Kim</td>
+          <td class="post-meta">Jun 18, 2026</td>
+          <td class="post-meta">9 min</td>
+          <td><a href="#" style="color:var(--color-accent);font-size:0.75rem;font-weight:600;text-decoration:none;">→</a></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div style="display:flex;justify-content:center;gap:4px;margin-top:24px;">
+      <span style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius);font-size:0.8rem;font-weight:600;background:var(--color-primary);color:white;">1</span>
+      <a href="#" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius);font-size:0.8rem;color:var(--color-muted);text-decoration:none;">2</a>
+      <a href="#" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius);font-size:0.8rem;color:var(--color-muted);text-decoration:none;">3</a>
+      <a href="#" style="padding:6px 12px;border:1px solid var(--color-border);border-radius:var(--radius);font-size:0.8rem;color:var(--color-muted);text-decoration:none;">4</a>
+      <span style="padding:6px 12px;font-size:0.8rem;color:var(--color-muted);">...</span>
+    </div>
+
+    <!-- CTA Bar -->
+    <div class="cta-bar">
+      <div>
+        <h3>Need a specific solution for your application?</h3>
+        <p>Our engineers can recommend the right tooling based on your material, tolerances, and production volume.</p>
+      </div>
+      <a href="#" class="cta-btn">Request Engineering Review</a>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div>© 2026 RBC Industrial — A Liber Holdings Company</div>
+    <div>
+      <a href="#" style="margin-right:16px;">Privacy</a>
+      <a href="#" style="margin-right:16px;">Terms</a>
+      <a href="#">ISO/AS9100D</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
