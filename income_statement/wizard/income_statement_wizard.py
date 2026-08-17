@@ -91,15 +91,14 @@ class IncomeStatementWizard(models.TransientModel):
             ("4", "4 Years"),
             ("5", "5 Years"),
         ],
-        string="Expense %age For",
+        string="Sales % For",
         required=True,
         default="5",
         help=(
             "Number of most-recent years (out of the 5 years pulled into the "
-            "report) for which the Expense %age column should be shown. "
-            "The current year is always included; the Expense %age columns "
+            "report) for which the Sales % column should be shown. "
+            "The current year is always included; the Sales % columns "
             "for older years beyond this count are hidden in the sheet."
-            "count are left blank in that column."
         ),
     )
 
@@ -327,7 +326,7 @@ class IncomeStatementWizard(models.TransientModel):
             period_body = "One total per calendar year per column."
         period_block = (
             "Report type: %s. Years shown: %d-%d. Column date span: %s to %s. %s "
-            "Each 'Expense %%age' column shows that line as a percentage of "
+            "Each 'Sales %%' column shows that line as a percentage of "
             "Sales Revenue for the same period."
             % (
                 mode_label,
@@ -363,12 +362,21 @@ class IncomeStatementWizard(models.TransientModel):
         lbl_fmt = workbook.add_format({"bold": True, "align": "left", "border": 1})
         row_lbl_fmt = workbook.add_format({"align": "left", "border": 1})
         empty_fmt = workbook.add_format({"border": 1})
+        empty_bold_fmt = workbook.add_format({"bold": True, "border": 1})
         val_fmt = workbook.add_format({
             "align": "right", "border": 1,
             "num_format": "#,##0.00;[Red](#,##0.00);0.00",
         })
+        val_bold_fmt = workbook.add_format({
+            "bold": True, "align": "right", "border": 1,
+            "num_format": "#,##0.00;[Red](#,##0.00);0.00",
+        })
         pct_fmt = workbook.add_format({
             "align": "right", "border": 1,
+            "num_format": "0.00%;[Red](0.00%);0.00%",
+        })
+        pct_bold_fmt = workbook.add_format({
+            "bold": True, "align": "right", "border": 1,
             "num_format": "0.00%;[Red](0.00%);0.00%",
         })
         sub_hdr_fmt = workbook.add_format({
@@ -377,8 +385,8 @@ class IncomeStatementWizard(models.TransientModel):
         })
 
         # Every actual/budget period gets an "Amount" column immediately
-        # followed by an "Expense %age" column, so each period now occupies 2
-        # worksheet columns instead of 1. The Expense %age column for actual
+        # followed by a "Sales %" column, so each period now occupies 2
+        # worksheet columns instead of 1. The Sales % column for actual
         # years outside expense_pct_years is hidden outright (not just left
         # blank) - the budget column always represents the current year, so
         # its %age column is never hidden.
@@ -439,7 +447,7 @@ class IncomeStatementWizard(models.TransientModel):
                     qcol = col + qi * 2
                     worksheet.merge_range(qrow, qcol, qrow, qcol + 1, ql, hdr_fmt)
                     worksheet.write(subrow, qcol, "Amount", sub_hdr_fmt)
-                    worksheet.write(subrow, qcol + 1, "Expense %age", sub_hdr_fmt)
+                    worksheet.write(subrow, qcol + 1, "Sales %", sub_hdr_fmt)
                 col += 8
             data_start = col_hdr_row + 3
         else:
@@ -451,7 +459,7 @@ class IncomeStatementWizard(models.TransientModel):
                     col_hdr_row, col, col_hdr_row, col + 1, label, hdr_fmt
                 )
                 worksheet.write(subrow, col, "Amount", sub_hdr_fmt)
-                worksheet.write(subrow, col + 1, "Expense %age", sub_hdr_fmt)
+                worksheet.write(subrow, col + 1, "Sales %", sub_hdr_fmt)
                 col += 2
             data_start = subrow + 1
 
@@ -460,38 +468,42 @@ class IncomeStatementWizard(models.TransientModel):
 
         for i, (label, key, bold) in enumerate(ROW_SPEC):
             row = data_start + i
-            worksheet.write(row, 0, label, lbl_fmt if bold else row_lbl_fmt)
+            row_label_fmt = lbl_fmt if bold else row_lbl_fmt
+            row_empty_fmt = empty_bold_fmt if bold else empty_fmt
+            row_val_fmt = val_bold_fmt if bold else val_fmt
+            row_pct_fmt = pct_bold_fmt if bold else pct_fmt
+
+            worksheet.write(row, 0, label, row_label_fmt)
             for c in range(1, last_col + 1):
-                worksheet.write(row, c, "", empty_fmt)
+                worksheet.write(row, c, "", row_empty_fmt)
 
             actual_vals = actuals.get(key, [0.0] * n_actual)
             budget_vals = budget_base.get(key, [0.0] * n_budget)
             sign = -1 if key in NEGATE_DISPLAY else 1
-            # Only the granular expense/overhead detail lines get a "% of
-            # Sales" figure; totals and subtotals (SALES REVENUE, GROSS
-            # PROFIT MARGIN, etc.) are left blank in that column.
-            show_pct = not bold
+            show_pct = (key != "sales_revenue")
 
             for ci, val in enumerate(actual_vals):
                 col = 1 + ci * 2
-                worksheet.write(row, col, val * sign, val_fmt)
+                disp_val = val * sign
+                worksheet.write(row, col, disp_val, row_val_fmt)
                 if show_pct and _actual_col_in_pct_years(ci):
                     rev = revenue_actual[ci] if ci < len(revenue_actual) else 0.0
                     if rev:
-                        worksheet.write(row, col + 1, abs(val) / rev, pct_fmt)
+                        worksheet.write(row, col + 1, disp_val / rev, row_pct_fmt)
                     else:
-                        worksheet.write(row, col + 1, "", empty_fmt)
+                        worksheet.write(row, col + 1, "", row_empty_fmt)
 
             budget_col_start = 1 + n_actual * 2
             for ci, val in enumerate(budget_vals):
                 col = budget_col_start + ci * 2
-                worksheet.write(row, col, val * sign, val_fmt)
+                disp_val = val * sign
+                worksheet.write(row, col, disp_val, row_val_fmt)
                 if show_pct:
                     rev = revenue_budget[ci] if ci < len(revenue_budget) else 0.0
                     if rev:
-                        worksheet.write(row, col + 1, abs(val) / rev, pct_fmt)
+                        worksheet.write(row, col + 1, disp_val / rev, row_pct_fmt)
                     else:
-                        worksheet.write(row, col + 1, "", empty_fmt)
+                        worksheet.write(row, col + 1, "", row_empty_fmt)
 
         workbook.close()
         output.seek(0)
