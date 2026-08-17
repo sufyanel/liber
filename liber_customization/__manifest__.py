@@ -15,6 +15,7 @@
         'stock',
         'sale_management',
         'contacts',
+        'account',
     ],
     'data': [
         'security/ir.model.access.csv',
