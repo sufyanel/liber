@@ -9,6 +9,7 @@
                     <field name="company_ids" widget="many2many_tags"/>
                     <field name="report_mode"/>
 <!--                    <field name="year"/>-->
+                    <field name="expense_pct_years"/>
                 </group>
                 <footer>
                     <button name="action_download_excel" string="Download Excel" type="object" class="btn-primary"/>
