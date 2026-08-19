@@ -86,16 +86,29 @@ section {
     padding: 0.75rem 0;
     background: var(--brand-nav-bg, #1A1A24);
     border-bottom: 1px solid var(--brand-border, #D5CABD);
+}
 
-    .nav-link {
-        font-weight: 500;
-        color: var(--brand-nav-text, #D5CABD);
-        padding: 0.5rem 1rem;
-        transition: color 0.15s;
+// Odoo's header always hardcodes a `navbar-light` class on the <nav> itself
+// (see website/views/website_templates.xml), independent of how dark we make
+// its background above. Bootstrap's own rule for that state —
+// `.navbar-light .navbar-nav .nav-link { color: rgba(black, .55) }` —
+// has 3 class-level selectors of specificity, which outranks the previous
+// `.navbar .nav-link` override here (only 2), so Bootstrap's near-black,
+// 55%-opacity text was winning and rendering almost invisible on our dark
+// nav background (menu items, cart/search icons, phone number, language and
+// account dropdowns all share this `.nav-link` class). Match Bootstrap's
+// selector specificity — for both the light and dark variants — so our
+// brand color actually takes effect.
+.navbar-light .navbar-nav .nav-link,
+.navbar-dark .navbar-nav .nav-link {
+    font-weight: 500;
+    color: var(--brand-nav-text, #D5CABD);
+    padding: 0.5rem 1rem;
+    transition: color 0.15s;
 
-        &:hover {
-            color: var(--brand-accent, #E65F2B);
-        }
+    &:hover,
+    &:focus {
+        color: var(--brand-accent, #E65F2B);
     }
 }
 

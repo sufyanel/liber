@@ -32,7 +32,7 @@
                             <!-- Cover image -->
                             <a t-attf-href="/blog/#{slug(post.blog_id)}/#{slug(post)}"
                                class="text-decoration-none overflow-hidden">
-                                <img t-att-src="image_url(post, 'cover', 'fill_600x400')"
+                                <img t-att-src="website.image_url(post, 'cover', 'fill_600x400')"
                                      class="card-img-top"
                                      alt="post.name"
                                      width="600" height="400"
