@@ -20,6 +20,8 @@
         <xpath expr="//div[@id='product_option_block']" position="after">
             <div t-if="product.seo_description" t-out="product.seo_description" class="o_seo_description mt-2"/>
         </xpath>
+        <xpath expr="//div[@id='product_full_description']" position="replace">
+        </xpath>
     </template>
 
 </odoo>
