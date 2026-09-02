@@ -1,0 +1,83 @@
+// =============================================
+// Typography — Readability & Hierarchy
+// =============================================
+// All colors use CSS custom properties for per-brand switching.
+// Fallbacks provide sensible defaults when properties are undefined.
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--brand-text, #1A1A24);
+    font-family: var(--font-body, 'Inter', sans-serif);
+}
+
+// --- Heading font overrides ---
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading, 'Inter', sans-serif);
+}
+
+// --- Blog Post Reading Experience ---
+// Scoped to #o_wblog_post_content (the real id website_blog renders for the
+// post body — see views/blog_post_template.xml), not an invented class.
+#o_wblog_post_content {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: 1rem;
+        color: var(--brand-text, #1A1A24);
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        line-height: 1.3;
+        margin-top: 2rem;
+        margin-bottom: 0.75rem;
+        color: var(--brand-primary, #1A1A24);
+    }
+
+    h3 {
+        font-size: 1.35rem;
+        font-weight: 600;
+        line-height: 1.4;
+        margin-top: 1.5rem;
+    }
+
+    p {
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: var(--brand-text-secondary, #374151);
+        margin-bottom: 1.25rem;
+    }
+
+    // Blockquotes for pull quotes in long-form content
+    blockquote {
+        border-left: 4px solid var(--brand-primary, #1A3C5E);
+        padding-left: 1.25rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: var(--brand-text-secondary, #4b5563);
+        font-size: 1.1rem;
+    }
+
+    // Image captions
+    .o_image_caption {
+        font-size: 0.875rem;
+        color: var(--brand-text-muted, #6b7280);
+        text-align: center;
+        margin-top: 0.5rem;
+    }
+}
+
+// --- Lead paragraph ---
+.lead {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--brand-text-secondary, #4b5563);
+}

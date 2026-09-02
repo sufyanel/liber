@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RBC Industrial — Blog Mockup (Mission Critical Industrial)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ===== Brand Tokens — RBC Industrial "Mission Critical Industrial" ===== */
+  :root {
+    --brand-primary: #4A352C;
+    --brand-secondary: #FED37E;
+    --brand-accent: #FED37E;
+    --brand-bg: #E9E8E8;
+    --brand-text: #181818;
+    --brand-text-secondary: #736C69;
+    --brand-text-muted: #B2ADAC;
+    --brand-border: #B2ADAC;
+    --brand-card-bg: #FFFFFF;
+    --brand-nav-bg: #181818;
+    --brand-nav-text: #FED37E;
+    --brand-footer-bg: #181818;
+    --font-heading: 'Montserrat', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --shadow-card: 0 2px 8px rgba(24,24,24,0.12);
+    --shadow-elevated: 0 8px 24px rgba(24,24,24,0.18);
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--brand-text);
+    background: var(--brand-bg);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 { font-family: var(--font-heading); font-weight: 700; }
+  h1 { font-size: 2.5rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; }
+  h2 { font-size: 1.75rem; line-height: 1.2; }
+  h3 { font-size: 1.2rem; line-height: 1.3; }
+  a { color: var(--brand-primary); text-decoration: none; transition: color 0.2s; }
+  a:hover { color: var(--brand-accent); }
+  .container { max-width: 1320px; margin: 0 auto; padding: 0 1.5rem; }
+
+  /* ===== Emergency Bar (Signature RBC Component) ===== */
+  .emergency-bar {
+    background: var(--brand-primary); color: var(--brand-secondary);
+    padding: 8px 16px; font-size: 0.8rem; font-weight: 600;
+    text-align: center; letter-spacing: 0.05em;
+    border-bottom: 1px solid #C4A063;
+  }
+  .emergency-bar .pulse {
+    display: inline-block; width: 8px; height: 8px;
+    background: #EF4444; border-radius: 50%; margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ===== Navigation ===== */
+  .navbar {
+    background: var(--brand-nav-bg);
+    border-bottom: 1px solid rgba(254,211,126,0.2);
+    padding: 1rem 0;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .navbar .container { display: flex; align-items: center; justify-content: space-between; }
+  .navbar-brand { font-family: var(--font-heading); font-size: 1.25rem; font-weight: 800; color: var(--brand-secondary); letter-spacing: -0.01em; }
+  .navbar-nav { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
+  .navbar-nav a { color: var(--brand-nav-text); font-size: 0.85rem; font-weight: 500; }
+  .navbar-nav a:hover { color: #FFFFFF; }
+
+  /* ===== Certification Badges (SDVOSB, HUB — required on every page) ===== */
+  .cert-badges { display: flex; gap: 0.5rem; }
+  .cert-badge {
+    background: var(--brand-primary); color: var(--brand-secondary);
+    font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 3px 8px; border-radius: 2px;
+  }
+
+  /* ===== Breadcrumbs ===== */
+  .breadcrumbs {
+    padding: 1.5rem 0 0.5rem; font-size: 0.8rem; color: var(--brand-text-muted);
+  }
+  .breadcrumbs a { color: var(--brand-primary); }
+  .breadcrumbs .sep { margin: 0 0.5rem; color: var(--brand-border); }
+  .breadcrumbs .current { color: var(--brand-text); font-weight: 600; }
+
+  /* ===== Blog Header ===== */
+  .blog-header { padding: 2rem 0 2.5rem; }
+  .blog-header h1 { margin-bottom: 0.5rem; }
+  .blog-header .lead { color: var(--brand-text-secondary); max-width: 620px; font-size: 1.05rem; line-height: 1.6; }
+
+  /* ===== Blog Card Grid ===== */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    padding-bottom: 3rem;
+  }
+  .blog-card {
+    background: var(--brand-card-bg);
+    border: 1px solid var(--brand-border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex; flex-direction: column;
+  }
+  .blog-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-elevated);
+  }
+  .blog-card-image {
+    position: relative; width: 100%; aspect-ratio: 3 / 2; overflow: hidden;
+    background: linear-gradient(135deg, #4A352C 0%, #876A47 100%);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .blog-card-image .img-placeholder {
+    font-size: 0.85rem; color: var(--brand-secondary); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: var(--font-heading);
+  }
+  .blog-card-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+  .blog-card-tags { margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .blog-card-tag {
+    font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 2px 6px; border-radius: 2px;
+    background: var(--brand-bg); color: var(--brand-text-secondary);
+  }
+  .blog-card-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700; line-height: 1.3; margin-bottom: 0.5rem; }
+  .blog-card-title a { color: var(--brand-text); }
+  .blog-card-title a:hover { color: var(--brand-primary); }
+  .blog-card-excerpt { color: var(--brand-text-secondary); font-size: 0.85rem; line-height: 1.6; flex: 1; margin-bottom: 0.75rem; }
+  .blog-card-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 0.75rem; border-top: 1px solid var(--brand-border);
+    font-size: 0.75rem; color: var(--brand-text-muted);
+  }
+  .blog-card-meta .author { font-weight: 600; color: var(--brand-primary); }
+
+  /* ===== RBC Gold CTA ===== */
+  .btn-gold {
+    display: inline-block; background: var(--brand-secondary); color: var(--brand-text);
+    font-family: var(--font-heading); font-weight: 700; font-size: 0.85rem;
+    padding: 10px 24px; border-radius: 4px; letter-spacing: 0.02em;
+    transition: background 0.2s; border: none; cursor: pointer;
+  }
+  .btn-gold:hover { background: #C4A063; }
+
+  /* ===== Footer ===== */
+  .site-footer {
+    background: var(--brand-footer-bg); color: var(--brand-text-muted);
+    padding: 3rem 0; font-size: 0.85rem;
+  }
+  .site-footer a { color: var(--brand-secondary); }
+  .site-footer a:hover { color: #FFFFFF; }
+  .site-footer h4 { color: var(--brand-secondary); font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem; }
+  .site-footer .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 2rem; }
+  .site-footer .cert-line { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(254,211,126,0.15); display: flex; gap: 0.75rem; }
+
+  @media (max-width: 900px) {
+    .blog-grid { grid-template-columns: repeat(2, 1fr); }
+    .site-footer .footer-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 600px) {
+    .blog-grid { grid-template-columns: 1fr; }
+    .navbar-nav { display: none; }
+    .blog-header h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body class="o_website_4">
+
+<!-- Emergency Bar -->
+<div class="emergency-bar">
+  <span class="pulse"></span>
+  LINE DOWN EMERGENCY? SAME-DAY DELIVERY FROM EL PASO — CALL 915-845-8188
+</div>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="container">
+    <a href="#" class="navbar-brand">RBC Industrial</a>
+    <ul class="navbar-nav">
+      <li><a href="#">Products</a></li>
+      <li><a href="#">Industries</a></li>
+      <li><a href="#">Knowledge</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Contact</a></li>
+      <li><span class="cert-badges">
+        <span class="cert-badge">SDVOSB</span>
+        <span class="cert-badge">TX HUB</span>
+      </span></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- Breadcrumbs -->
+<div class="container">
+  <div class="breadcrumbs">
+    <a href="#">Home</a><span class="sep">›</span>
+    <span class="current">Knowledge Base</span>
+  </div>
+</div>
+
+<!-- Blog Header -->
+<div class="container">
+  <div class="blog-header">
+    <h1>Knowledge Base</h1>
+    <p class="lead">Technical intelligence for plant operators, maintenance managers, and procurement officers. Written by RBC Industrial's team of trained engineers — delivering the right product at the right time, every time.</p>
+  </div>
+</div>
+
+<!-- Blog Card Grid -->
+<div class="container">
+  <div class="blog-grid">
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Precision Bearings</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Bearings</span>
+          <span class="blog-card-tag">Ceramic Hybrid</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Ceramic Hybrid Bearings: When to Upgrade from All-Steel for 40,000+ RPM</a></h3>
+        <p class="blog-card-excerpt">Zero thermal expansion, extreme corrosion resistance, and ±0.001mm tolerance. Technical comparison for high-velocity rotation environments.</p>
+        <div class="blog-card-meta">
+          <span class="author">RBC Engineering</span>
+          <span>Jun 20, 2026 · 9 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Power Transmission</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Power Transmission</span>
+          <span class="blog-card-tag">Gear Reducers</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Gear Reducer Selection: Matching Torque Curves to Application Demands</a></h3>
+        <p class="blog-card-excerpt">How to specify Bonfiglioli and SEW Eurodrive gear reducers for maximum torque efficiency. Covers service factor calculations and thermal ratings.</p>
+        <div class="blog-card-meta">
+          <span class="author">RBC Engineering</span>
+          <span>Jun 12, 2026 · 14 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Cross-Border MRO</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Logistics</span>
+          <span class="blog-card-tag">Juárez</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Cross-Border MRO Supply to Juárez Maquiladoras: A Procurement Guide</a></h3>
+        <p class="blog-card-excerpt">Same-day delivery from El Paso to all major Juárez industrial parks. How our 5-minute border proximity eliminates production line downtime for Mexican manufacturing.</p>
+        <div class="blog-card-meta">
+          <span class="author">Dale Betz</span>
+          <span>Jun 5, 2026 · 7 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">VFD Optimization</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Motors & Controls</span>
+          <span class="blog-card-tag">VFD</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">VFD Harmonic Distortion: Protecting Motors in Automated Production Lines</a></h3>
+        <p class="blog-card-excerpt">Variable frequency drives can introduce harmonics that degrade motor windings. How to specify line reactors and filters for Baldor-Reliance motors.</p>
+        <div class="blog-card-meta">
+          <span class="author">RBC Engineering</span>
+          <span>May 28, 2026 · 11 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Bearing Failure</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Bearings</span>
+          <span class="blog-card-tag">Failure Analysis</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Bearing Failure Analysis: 5 Root Causes and How to Prevent Them</a></h3>
+        <p class="blog-card-excerpt">Lubrication starvation, misalignment, contamination, fatigue spalling, and electrical fluting. Our field engineers' diagnostic methodology for each failure mode.</p>
+        <div class="blog-card-meta">
+          <span class="author">RBC Engineering</span>
+          <span>May 20, 2026 · 8 min</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="blog-card">
+      <div class="blog-card-image"><span class="img-placeholder">Fluid Dynamics</span></div>
+      <div class="blog-card-body">
+        <div class="blog-card-tags">
+          <span class="blog-card-tag">Hydraulics</span>
+          <span class="blog-card-tag">Parker</span>
+        </div>
+        <h3 class="blog-card-title"><a href="#">Hydraulic Seal Compatibility: Chemical Resistance Guide for Parker Systems</a></h3>
+        <p class="blog-card-excerpt">When standard NBR seals fail due to fluid incompatibility. Covers Viton, PTFE, and polyurethane alternatives for extreme pressure hydraulic environments.</p>
+        <div class="blog-card-meta">
+          <span class="author">RBC Engineering</span>
+          <span>May 12, 2026 · 6 min</span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>RBC Industrial LLC</h4>
+        <p>Service-disabled veteran-owned distributor of mechanical power transmission equipment, bearings, and MRO supplies. Founded 1946 — delivering the right product at the right time, every time.</p>
+        <p style="margin-top:0.75rem;">3950 Doniphan Dr. Ste P, El Paso, Texas 79922<br>Phone: 915-845-8188 | Fax: 915-845-8183<br>Sales@rbc-industrial.com</p>
+        <div class="cert-line">
+          <span class="cert-badge">SDVOSB Certified</span>
+          <span class="cert-badge">Texas HUB Certified</span>
+        </div>
+      </div>
+      <div>
+        <h4>Solutions</h4>
+        <p><a href="#">Precision Bearings</a></p>
+        <p><a href="#">Power Transmission</a></p>
+        <p><a href="#">Fluid Dynamics</a></p>
+        <p><a href="#">Line Down Support</a></p>
+      </div>
+      <div>
+        <h4>Resources</h4>
+        <p><a href="#">Knowledge Base</a></p>
+        <p><a href="#">ISO Certifications</a></p>
+        <p><a href="#">Line Card (PDF)</a></p>
+        <p><a href="#">Request Quote</a></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

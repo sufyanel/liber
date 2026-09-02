@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liber Website Theme — Design Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #1a3c5e;
+    --primary-dark: #0f2a42;
+    --secondary: #6c757d;
+    --light-bg: #f0f2f5;
+    --white: #ffffff;
+    --text: #1a1a2e;
+    --text-muted: #6c757d;
+    --border: #e2e5e9;
+    --shadow: 0 2px 8px rgba(0,0,0,0.08);
+    --radius: 6px;
+    --radius-lg: 8px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --container: 1320px;
+    --reading-col: 720px;
+  }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text);
+    background: var(--white);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* ===== Typography ===== */
+  h1 { font-size: 2.5rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+  h2 { font-size: 2rem; font-weight: 600; line-height: 1.25; }
+  h3 { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+  h4 { font-size: 1.25rem; font-weight: 600; }
+  p { font-size: 1rem; line-height: 1.8; color: #374151; }
+  .lead { font-size: 1.1rem; color: var(--text-muted); }
+  .small { font-size: 0.875rem; }
+  a { color: var(--primary); text-decoration: none; transition: color 0.2s; }
+  a:hover { color: var(--primary-dark); }
+
+  /* ===== Layout ===== */
+  .container { max-width: var(--container); margin: 0 auto; padding: 0 1.5rem; }
+  .container-narrow { max-width: var(--reading-col); margin: 0 auto; padding: 0 1.5rem; }
+  .section { padding: 4rem 0; }
+  .section-sm { padding: 2rem 0; }
+
+  /* ===== Navigation ===== */
+  .navbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .navbar .container { display: flex; align-items: center; justify-content: space-between; }
+  .navbar-brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); }
+  .navbar-nav { display: flex; gap: 1.5rem; list-style: none; }
+  .navbar-nav a { color: var(--text); font-size: 0.9rem; font-weight: 500; }
+  .navbar-nav a:hover { color: var(--primary); }
+
+  /* ===== Breadcrumbs ===== */
+  .breadcrumbs {
+    padding: 1rem 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .breadcrumbs a { color: var(--secondary); }
+  .breadcrumbs a:hover { color: var(--primary); }
+  .breadcrumbs .separator { margin: 0 0.5rem; color: #ccc; }
+  .breadcrumbs .current { color: var(--text); font-weight: 500; }
+
+  /* ===== Blog Header ===== */
+  .blog-header { text-align: center; padding: 3rem 0 2rem; }
+  .blog-header h1 { margin-bottom: 0.5rem; }
+  .blog-header .lead { max-width: 600px; margin: 0 auto; }
+
+  /* ===== Blog Card Grid ===== */
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .blog-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+  }
+  .blog-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  }
+  .blog-card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    overflow: hidden;
+    background: var(--light-bg);
+  }
+  .blog-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .blog-card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .blog-card-tags { margin-bottom: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .blog-tag {
+    display: inline-block;
+    background: var(--light-bg);
+    color: var(--secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .blog-card-title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 0.6rem;
+  }
+  .blog-card-title a { color: var(--text); }
+  .blog-card-title a:hover { color: var(--primary); }
+  .blog-card-teaser {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    flex: 1;
+    margin-bottom: 1rem;
+  }
+  .blog-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+  .blog-card-footer .author { font-weight: 500; color: var(--text); }
+
+  /* ===== Blog Post Detail ===== */
+  .post-header { padding: 2rem 0 1.5rem; }
+  .post-header h1 { margin-bottom: 1rem; font-size: 2.5rem; }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+  }
+  .post-meta .author-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--light-bg);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; color: var(--primary); font-size: 0.85rem;
+  }
+  .post-meta .author-name { font-weight: 600; color: var(--text); }
+  .post-cover {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: var(--light-bg);
+  }
+  .post-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .post-content { font-size: 1.05rem; line-height: 1.8; color: #374151; }
+  .post-content p { margin-bottom: 1.5rem; }
+  .post-content h2 { margin-top: 2.5rem; margin-bottom: 0.75rem; }
+  .post-content h3 { margin-top: 2rem; margin-bottom: 0.5rem; }
+  .post-content blockquote {
+    border-left: 3px solid var(--primary);
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    background: var(--light-bg);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-style: italic;
+    color: var(--text-muted);
+  }
+
+  /* ===== Call to Action ===== */
+  .cta-section {
+    background: var(--primary);
+    color: var(--white);
+    padding: 3rem;
+    border-radius: var(--radius-lg);
+    text-align: center;
+    margin: 3rem 0;
+  }
+  .cta-section h3 { color: var(--white); margin-bottom: 0.75rem; }
+  .cta-section p { color: rgba(255,255,255,0.8); margin-bottom: 1.5rem; }
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--white);
+    color: var(--primary);
+  }
+  .btn-primary:hover { background: var(--light-bg); transform: translateY(-1px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .btn-outline:hover { border-color: var(--white); }
+
+  /* ===== Author Bio ===== */
+  .author-bio {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--light-bg);
+    border-radius: var(--radius-lg);
+    margin: 2rem 0;
+    align-items: center;
+  }
+  .author-bio .avatar {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+  .author-bio .info { flex: 1; }
+  .author-bio .name { font-weight: 600; margin-bottom: 0.25rem; }
+  .author-bio .credentials { font-size: 0.85rem; color: var(--text-muted); }
+
+  /* ===== Related Posts ===== */
+  .related-posts { margin: 3rem 0; }
+  .related-posts h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
+
+  /* ===== Divider ===== */
+  .section-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ===== Tabs (mockup switcher) ===== */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: #111;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .tab-btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 4px;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: #333;
+    color: #999;
+    transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--primary); color: var(--white); }
+  .tab-btn:hover:not(.active) { background: #444; color: #ddd; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 992px) {
+    .blog-grid { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 2rem; }
+    .post-header h1 { font-size: 2rem; }
+  }
+  @media (max-width: 576px) {
+    .blog-grid { grid-template-columns: 1fr; }
+    .navbar-nav { display: none; }
+  }
+
+  /* ===== Progress Bar (reading indicator) ===== */
+  .reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: var(--primary);
+    z-index: 300;
+    transition: width 0.05s linear;
+  }
+</style>
+</head>
+<body>
+
+<!-- Reading Progress Bar -->
+<div class="reading-progress" id="readingProgress"></div>
+
+<!-- Tab Switcher -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('blog-list')">📰 Blog List View</button>
+  <button class="tab-btn" onclick="switchTab('blog-post')">📄 Blog Post Detail</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: BLOG LIST -->
+<!-- ============================================================ -->
+<div class="page active" id="blog-list">
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-brand">ToolingComponents</div>
+      <ul class="navbar-nav">
+        <li><a href="#">Products</a></li>
+        <li><a href="#">Industries</a></li>
+        <li><a href="#" style="color:var(--primary);font-weight:600;">Blog</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Breadcrumbs -->
+  <div class="container">
+    <div class="breadcrumbs">
+      <a href="#">Home</a><span class="separator">›</span>
+      <span class="current">Blog</span>
+    </div>
+  </div>
+
+  <!-- Blog Header -->
+  <div class="container">
+    <div class="blog-header">
+      <h1>Tooling & Machining Insights</h1>
+      <p class="lead">Technical guides, industry trends, and best practices from Liber Holdings' engineering teams.</p>
+    </div>
+  </div>
+
+  <!-- Blog Card Grid -->
+  <div class="section">
+    <div class="container">
+      <div class="blog-grid">
+
+        <!-- Card 1 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=600&h=400&fit=crop" alt="CNC machining" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Machining</span>
+              <span class="blog-tag">Precision</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">5-Axis CNC Machining: When to Make the Leap</a></h3>
+            <p class="blog-card-teaser">A practical guide to evaluating whether 5-axis machining makes economic sense for your production runs — including break-even analysis and case studies from our shop floor.</p>
+            <div class="blog-card-footer">
+              <span class="author">Mike Chen</span>
+              <span>Jun 15, 2026 · 8 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1563770551466-a1cd3f187c68?w=600&h=400&fit=crop" alt="Quality inspection" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Quality</span>
+              <span class="blog-tag">ISO</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">CMM Inspection Protocols That Reduce Scrap by 40%</a></h3>
+            <p class="blog-card-teaser">How a structured CMM inspection workflow — from first-article to in-process sampling — can cut material waste and rework costs in high-volume machining.</p>
+            <div class="blog-card-footer">
+              <span class="author">Sarah Okonkwo</span>
+              <span>Jun 8, 2026 · 12 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1504917595217-d4dc5ebe6122?w=600&h=400&fit=crop" alt="Supply chain" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Supply Chain</span>
+              <span class="blog-tag">Strategy</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">Nearshoring Precision Components: A 2026 Market Analysis</a></h3>
+            <p class="blog-card-teaser">With shifting trade policies and rising offshore costs, nearshoring precision machining is gaining momentum. We break down the numbers for Midwest manufacturers.</p>
+            <div class="blog-card-footer">
+              <span class="author">Dale Betz</span>
+              <span>Jun 1, 2026 · 6 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 4 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1580128660010-fd027e1e5871?w=600&h=400&fit=crop" alt="Tooling" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Tooling</span>
+              <span class="blog-tag">Carbide</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">Carbide vs. CBN: Selecting the Right Insert Material</a></h3>
+            <p class="blog-card-teaser">A head-to-head comparison of carbide and cubic boron nitride inserts across hardness, heat resistance, cost-per-part, and recommended applications.</p>
+            <div class="blog-card-footer">
+              <span class="author">Mike Chen</span>
+              <span>May 22, 2026 · 10 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 5 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=600&h=400&fit=crop" alt="Automation" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Automation</span>
+              <span class="blog-tag">Industry 4.0</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">Robotic Tending for Multi-Spindle Lathes: ROI Calculator</a></h3>
+            <p class="blog-card-teaser">An interactive framework for calculating the payback period on robotic part-tending automation for multi-spindle lathes — with real shop-floor data.</p>
+            <div class="blog-card-footer">
+              <span class="author">Sarah Okonkwo</span>
+              <span>May 15, 2026 · 8 min read</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Card 6 -->
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1581094271901-8022df4466f9?w=600&h=400&fit=crop" alt="Inspection" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags">
+              <span class="blog-tag">Materials</span>
+              <span class="blog-tag">Heat Treat</span>
+            </div>
+            <h3 class="blog-card-title"><a href="#">Heat Treat Distortion: Causes, Measurement, and Mitigation</a></h3>
+            <p class="blog-card-teaser">Understanding the metallurgical factors behind heat treat distortion and practical fixturing strategies that hold tight tolerances through the process.</p>
+            <div class="blog-card-footer">
+              <span class="author">Dale Betz</span>
+              <span>May 8, 2026 · 14 min read</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <hr class="section-divider">
+  <div class="section-sm" style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
+    <div class="container">
+      <p>© 2026 ToolingComponents · A Liber Holdings Company · All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 2: BLOG POST DETAIL -->
+<!-- ============================================================ -->
+<div class="page" id="blog-post">
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-brand">ToolingComponents</div>
+      <ul class="navbar-nav">
+        <li><a href="#">Products</a></li>
+        <li><a href="#">Industries</a></li>
+        <li><a href="#" style="color:var(--primary);font-weight:600;">Blog</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Breadcrumbs -->
+  <div class="container">
+    <div class="breadcrumbs">
+      <a href="#">Home</a><span class="separator">›</span>
+      <a href="#">Blog</a><span class="separator">›</span>
+      <a href="#">Machining</a><span class="separator">›</span>
+      <span class="current">5-Axis CNC Machining: When to Make the Leap</span>
+    </div>
+  </div>
+
+  <!-- Post Header -->
+  <div class="container-narrow">
+    <div class="post-header">
+      <h1>5-Axis CNC Machining: When to Make the Leap</h1>
+      <div class="post-meta">
+        <div class="author-avatar">MC</div>
+        <span><span class="author-name">Mike Chen</span> · Senior Manufacturing Engineer</span>
+        <span>·</span>
+        <span>June 15, 2026</span>
+        <span>·</span>
+        <span>8 min read</span>
+      </div>
+    </div>
+
+    <!-- Cover Image -->
+    <div class="post-cover">
+      <img src="https://images.unsplash.com/photo-1581091226033-d5c48150dbaa?w=1200&h=800&fit=crop" alt="5-axis CNC machining center">
+    </div>
+  </div>
+
+  <!-- Post Content -->
+  <div class="container-narrow">
+    <div class="post-content">
+
+      <p class="lead">Five-axis machining is no longer reserved for aerospace and medical device manufacturers. As 5-axis machines become more accessible and control software more intuitive, many mid-size job shops and contract manufacturers are evaluating the transition. But is it right for <em>your</em> operation?</p>
+
+      <h2>The Case for 5-Axis</h2>
+      <p>The primary advantage of 5-axis machining is the ability to machine complex geometries in a single setup. This eliminates multiple fixturing operations, reduces handling errors, and compresses lead times. For parts with compound angles, deep cavities, or undercuts, 5-axis isn't just better — it's the only practical option.</p>
+
+      <h2>Breaking Down the Economics</h2>
+      <p>Any capital equipment decision comes down to ROI. For 5-axis machining, the key variables are:</p>
+
+      <ul style="margin:1rem 0 1.5rem 1.5rem;line-height:1.8;">
+        <li><strong>Setup reduction:</strong> A single 5-axis setup vs. 3–5 setups on a 3-axis machine can cut total cycle time by 40–60%</li>
+        <li><strong>Fixture savings:</strong> Eliminating special fixturing for compound angles can save $500–$2,000 per part number</li>
+        <li><strong>Quality improvement:</strong> Fewer setups means fewer opportunities for datum errors — scrap rates typically drop 15–25%</li>
+        <li><strong>Machine premium:</strong> A 5-axis machining center costs 60–100% more than an equivalent 3-axis machine</li>
+      </ul>
+
+      <h2>When to Stay with 3-Axis</h2>
+      <p>Not every part benefits from 5-axis. If your work is predominantly 2.5D prismatic parts (pockets, drilled holes, simple contours), a well-maintained 3-axis machine with a trunnion table or indexer will handle the work at a lower cost-per-part. The thumb rule: if more than 20% of your part numbers require compound-angle machining or deep-cavity work, 5-axis is worth the investment.</p>
+
+      <!-- Inline CTA -->
+      <div class="cta-section">
+        <h3>Not sure if 5-axis is right for your parts?</h3>
+        <p>Send us your prints and we'll run a free process analysis — including setup reduction estimates and ROI projections.</p>
+        <a href="#" class="btn btn-primary" onclick="alert('CTA clicked — would route to contact form'); return false;">Request a Process Review</a>
+      </div>
+
+      <h2>Case Study: 35% Cost Reduction on Pump Housing</h2>
+      <p>One of our clients — a Midwest pump manufacturer — was producing a complex housing casting across four separate 3-axis setups. Total cycle time: 4.2 hours. Scrap rate: 12% (primarily from datum stackup errors). We moved the part to a Mazak 5-axis HMC with a single setup. Cycle time dropped to 2.1 hours. Scrap rate fell to under 2%. Annual savings: $187,000 on a run of 2,400 parts.</p>
+
+      <blockquote>"We were skeptical about 5-axis for what seemed like a simple housing. But the data didn't lie — the breakeven was 18 months on a $450,000 machine investment." — Plant Manager, Midwest Pump Co.</blockquote>
+
+      <h2>Getting Started: A Practical Framework</h2>
+      <p>If you're considering the transition, here's a structured approach:</p>
+      <ol style="margin:1rem 0 1.5rem 1.5rem;line-height:1.8;">
+        <li><strong>Audit your part portfolio</strong> — Classify each active part number by geometry complexity, number of setups, and scrap rate</li>
+        <li><strong>Run a 5-axis simulation</strong> — Many CAM packages (Mastercam, Siemens NX) can simulate 5-axis toolpaths on your existing 3D models</li>
+        <li><strong>Calculate the "pain score"</strong> — (Setups × handling time) + (scrap rate × part value) = savings opportunity per part</li>
+        <li><strong>Test with a machine shop partner</strong> — Run a sample batch on our 5-axis machines before committing to capital</li>
+      </ol>
+
+      <!-- Bottom CTA -->
+      <div class="cta-section">
+        <h3>Ready to evaluate your parts for 5-axis machining?</h3>
+        <p>We offer free process evaluations with detailed ROI projections. Upload your prints or contact our engineering team directly.</p>
+        <a href="#" class="btn btn-primary" onclick="alert('CTA clicked'); return false;">Submit Your Part Prints</a>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Author Bio -->
+  <div class="container-narrow">
+    <div class="author-bio">
+      <div class="avatar">MC</div>
+      <div class="info">
+        <div class="name">Mike Chen</div>
+        <div class="credentials">Senior Manufacturing Engineer · 14 years in precision machining · Specializes in 5-axis programming and process optimization. ASME certified.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Related Posts -->
+  <div class="container">
+    <div class="related-posts">
+      <h2>Related Articles</h2>
+      <div class="blog-grid">
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1563770551466-a1cd3f187c68?w=600&h=400&fit=crop" alt="Quality" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags"><span class="blog-tag">Quality</span></div>
+            <h3 class="blog-card-title"><a href="#">CMM Inspection Protocols That Reduce Scrap by 40%</a></h3>
+            <div class="blog-card-footer">
+              <span class="author">Sarah Okonkwo</span>
+              <span>Jun 8, 2026</span>
+            </div>
+          </div>
+        </article>
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1580128660010-fd027e1e5871?w=600&h=400&fit=crop" alt="Tooling" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags"><span class="blog-tag">Tooling</span></div>
+            <h3 class="blog-card-title"><a href="#">Carbide vs. CBN: Selecting the Right Insert Material</a></h3>
+            <div class="blog-card-footer">
+              <span class="author">Mike Chen</span>
+              <span>May 22, 2026</span>
+            </div>
+          </div>
+        </article>
+        <article class="blog-card">
+          <div class="blog-card-image">
+            <img src="https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?w=600&h=400&fit=crop" alt="Automation" loading="lazy">
+          </div>
+          <div class="blog-card-body">
+            <div class="blog-card-tags"><span class="blog-tag">Automation</span></div>
+            <h3 class="blog-card-title"><a href="#">Robotic Tending ROI Calculator for Multi-Spindle Lathes</a></h3>
+            <div class="blog-card-footer">
+              <span class="author">Sarah Okonkwo</span>
+              <span>May 15, 2026</span>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <hr class="section-divider">
+  <div class="section-sm" style="text-align:center;color:var(--text-muted);font-size:0.85rem;">
+    <div class="container">
+      <p>© 2026 ToolingComponents · A Liber Holdings Company · All rights reserved.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    event.target.classList.add('active');
+  }
+
+  // Reading progress bar simulation
+  const progress = document.getElementById('readingProgress');
+  let scrollPct = 0;
+  let scrolling = false;
+  window.addEventListener('scroll', () => {
+    if (!scrolling) {
+      window.requestAnimationFrame(() => {
+        const postContent = document.querySelector('.post-content');
+        if (postContent) {
+          const rect = postContent.getBoundingClientRect();
+          const total = postContent.offsetHeight - window.innerHeight + 200;
+          const scrolled = Math.abs(rect.top) + 200;
+          scrollPct = Math.min(100, Math.max(0, (scrolled / total) * 100));
+          progress.style.width = scrollPct + '%';
+        }
+        scrolling = false;
+      });
+      scrolling = true;
+    }
+  });
+</script>
+</body>
+</html>

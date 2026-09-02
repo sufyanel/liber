@@ -1,0 +1,58 @@
+// =============================================
+// Liber Website Theme — Odoo Variable Overrides
+// =============================================
+// This file is loaded via web._assets_primary_variables.
+// NEVER put Bootstrap variables here — they go in bootstrap_overridden.scss.
+// Mixing the two breaks the Website Builder customization UI.
+//
+// MULTI-BRAND STRATEGY:
+// Odoo's $o-color-palettes provides a neutral fallback for the Website Builder.
+// Actual per-brand colors are applied via CSS custom properties in style.scss,
+// scoped to .o_website_3 (Tooling Components) and .o_website_4 (RBC Industrial).
+
+// ==== Brand Color Palette (neutral fallback for Website Builder) ====
+// IMPORTANT: $o-color-palettes is a map of named palettes ('base-1',
+// 'default-1', ...) already populated by website/primary_variables.scss,
+// which loads before this file. Assigning to it directly (instead of
+// map-merge'ing) wipes out every stock palette and breaks
+// map-get($o-color-palettes, $o-color-palette-name) downstream in
+// website/secondary_variables.scss. We merge in our own named palette
+// instead, based on 'default-1' so it inherits the structural keys
+// (menu/footer/copyright) our 5 colors don't set.
+$o-color-palettes: map-merge($o-color-palettes, (
+    'liber-1': map-merge(map-get($o-color-palettes, 'default-1'), (
+        'o-color-1': #1A1A24,       // Primary CTAs — Dark Gunmetal (TC)
+        'o-color-2': #6c757d,        // Secondary actions — muted gray
+        'o-color-3': #F8F9FA,        // Light backgrounds, card surfaces
+        'o-color-4': #ffffff,        // White — clean open space
+        'o-color-5': #1A1A24,        // Body text — dark for contrast
+    )),
+));
+
+// Make our palette the default (still overridable per-website via the
+// Website Builder's Theme > Colors picker, which sets this later).
+$o-color-palette-name: 'liber-1';
+
+// ==== Typography (Inter as default — per-brand heading fonts via CSS custom properties) ====
+// IMPORTANT: $o-theme-font is NOT a place to describe a font — by the time
+// website/secondary_variables.scss runs, it's read as a plain CSS value
+// (`$font-family-sans-serif: $o-theme-font` in bootstrap_overridden.scss),
+// so assigning it a Sass map, as this file previously did, produces
+// "isn't a valid CSS value" at compile time. The correct hook to register
+// a font as a theme option is $o-theme-font-configs (a map keyed by font
+// name), same map-merge pattern as $o-color-palettes above so we don't wipe
+// out the stock fonts (Roboto, Open Sans, ...). The Google Fonts URL uses
+// the legacy comma-separated weights syntax website.scss builds the
+// stylesheet URL from — not the fonts.googleapis.com v2 "wght@" syntax.
+$o-theme-font-configs: map-merge($o-theme-font-configs, (
+    'Inter': (
+        'family': ('Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif),
+        'url': 'Inter:300,300i,400,400i,500,500i,600,600i,700,700i',
+    ),
+));
+
+// Make Inter the active default font (still overridable per-website via the
+// Website Builder's Theme > Fonts picker, which checks this key first).
+$o-base-website-values-palette: map-merge($o-base-website-values-palette, (
+    'font': 'Inter',
+));
