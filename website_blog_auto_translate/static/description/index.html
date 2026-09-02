@@ -1,0 +1,117 @@
+<section style="font-family: Roboto, Arial, sans-serif; color: #2b2b2b; line-height: 1.6;">
+
+    <div style="background: #714B67; color: #fff; padding: 32px 24px; border-radius: 6px;">
+        <h1 style="margin: 0 0 8px; font-size: 30px;">Website Blog Auto Translate</h1>
+        <p style="margin: 0; font-size: 17px; opacity: .9;">
+            Your blog reads in the visitor's language, translated the moment it is
+            asked for and refreshed whenever an author edits a post.
+        </p>
+    </div>
+
+    <div style="padding: 28px 24px 8px;">
+        <h2 style="font-size: 22px; color: #714B67;">What it does</h2>
+        <p>
+            A visitor switches your website to another language and the blog follows:
+            titles, subtitles, bodies and SEO metadata are machine-translated through
+            <strong>Google Cloud Translation</strong> while the page is being prepared.
+            Nothing is generated in advance and no batch job has to be planned.
+        </p>
+        <p>
+            The result is written into Odoo's own translation columns, so the first
+            visitor pays for the call and everyone after that is served straight from
+            the database. When an author edits a post, its stored translation no longer
+            matches the source and is produced again on the next visit.
+        </p>
+    </div>
+
+    <div style="padding: 8px 24px;">
+        <h2 style="font-size: 22px; color: #714B67;">Features</h2>
+        <ul>
+            <li><strong>Free, with nothing to sign up for.</strong> Translation runs
+                through the <em>deep-translator</em> library. If you would rather not
+                depend on a public endpoint, point it at a LibreTranslate instance of
+                your own instead &mdash; one setting, still free.</li>
+            <li><strong>Translated on demand.</strong> Blog posts, blogs, tags and tag
+                categories are translated the first time somebody opens them in a
+                language that has no translation yet.</li>
+            <li><strong>Kept in sync with the content.</strong> Every translated field
+                stores a fingerprint of the text it was made from. Edit the post and the
+                fingerprint stops matching, so the field is translated again &mdash;
+                fields you did not touch are left alone.</li>
+            <li><strong>Markup is preserved.</strong> The body is translated term by
+                term through the same mechanism Odoo's own translation dialog uses, so
+                links, images, snippets and styling come out untouched.</li>
+            <li><strong>Editable afterwards.</strong> Translations live in the standard
+                translation columns, so you can correct any of them from the usual
+                Odoo translation dialog.</li>
+            <li><strong>Hand corrections can be frozen.</strong> Untick <em>Auto
+                Translate</em> on a post and the module stops overwriting it.</li>
+            <li><strong>No noise in the audit trail.</strong> A visitor who
+                triggers a translation is not recorded as the last contributor,
+                and <em>Last Updated on</em> keeps showing the real last edit.</li>
+            <li><strong>Never breaks a page.</strong> If the credentials are wrong or
+                Google is unreachable, the error is logged and the page renders in the
+                source language.</li>
+            <li><strong>Fast where it counts.</strong> All the sentences on a page
+                travel together in as few requests as the free endpoint reliably
+                accepts, and identical texts are sent once. A whole blog post is
+                translated in about two seconds.</li>
+            <li><strong>Headlines first.</strong> Each page render has a work budget, so
+                no visitor waits on a long listing. Titles are always translated first;
+                bodies fill in over the next few views.</li>
+        </ul>
+    </div>
+
+    <div style="padding: 8px 24px;">
+        <h2 style="font-size: 22px; color: #714B67;">Configuration</h2>
+        <ol>
+            <li>Install the Python dependency:
+                <code style="background:#f4f4f4; padding:2px 6px; border-radius:3px;">pip install deep-translator</code>
+            </li>
+            <li>That is the whole setup for the default provider &mdash; there is no
+                key to obtain and no account to create.</li>
+            <li>Optionally, under <strong>Website &rsaquo; Configuration &rsaquo;
+                Settings &rsaquo; Blog Translation</strong>, switch the provider to a
+                self-hosted <em>LibreTranslate</em> instance if you would rather not use
+                a public endpoint.</li>
+            <li>Add the languages you want to serve under <strong>Website &rsaquo;
+                Configuration &rsaquo; Settings &rsaquo; Website Info &rsaquo;
+                Languages</strong>.</li>
+        </ol>
+        <p style="background:#fff6e5; border-left:4px solid #f0ad4e; padding:12px 16px; border-radius:3px;">
+            <strong>Good to know.</strong> The very first visit to a page in a new
+            language is the slow one &mdash; that is when its texts are sent off to be
+            translated. Every later visit is served from the database at normal speed.
+            The free endpoint occasionally refuses a request; when it does, the page
+            simply renders in its original language and is translated on a later
+            visit.
+        </p>
+    </div>
+
+    <div style="padding: 8px 24px 32px;">
+        <h2 style="font-size: 22px; color: #714B67;">Translated fields</h2>
+        <table style="width:100%; border-collapse: collapse;">
+            <tr style="background:#f4f4f4;">
+                <th style="text-align:left; padding:8px; border:1px solid #ddd;">Record</th>
+                <th style="text-align:left; padding:8px; border:1px solid #ddd;">Fields</th>
+            </tr>
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Blog Post</td>
+                <td style="padding:8px; border:1px solid #ddd;">Title, Subtitle, Content, Meta Title, Meta Description, Meta Keywords</td>
+            </tr>
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Blog</td>
+                <td style="padding:8px; border:1px solid #ddd;">Name, Subtitle, Content, Meta Title, Meta Description, Meta Keywords</td>
+            </tr>
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Blog Tag</td>
+                <td style="padding:8px; border:1px solid #ddd;">Name</td>
+            </tr>
+            <tr>
+                <td style="padding:8px; border:1px solid #ddd;">Blog Tag Category</td>
+                <td style="padding:8px; border:1px solid #ddd;">Name</td>
+            </tr>
+        </table>
+    </div>
+
+</section>
