@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #333; max-width: 760px; margin: 0 auto; padding: 24px; }
+  h1 { color: #1a1a1a; }
+  h2 { color: #1a1a1a; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 28px; }
+  code { background: #f2f2f2; padding: 1px 5px; border-radius: 3px; }
+  .note { background: #fff8e1; border: 1px solid #ffe08a; border-radius: 4px; padding: 10px 14px; }
+  ul { padding-left: 20px; }
+  li { margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <h1>Product Variant Combination Fix</h1>
+  <p class="note">This is a <strong>one-time data-fix utility</strong>, not a permanent
+     customization. Install it, run its scheduled action once, confirm the affected products are
+     clean, then uninstall it. It adds no fields and owns no other data of its own.</p>
+
+  <h2>What it fixes</h2>
+  <p>A product variant's defining combination should only ever contain values from
+     <code>always</code>/<code>dynamic</code> attributes. Some existing variants also carry
+     values from "Never" (<code>no_variant</code>) attributes in their combination - most likely
+     left over from a time those attributes were configured differently. Because of that, Odoo
+     can no longer match those variants against a new sale or purchase order for the same real
+     product, and creates a brand new duplicate variant instead of reusing the existing one.</p>
+
+  <h2>What running it does</h2>
+  <p>One run scans the whole database for every product template that actually has this
+     corruption - there is no list to maintain and nothing to schedule again later. For each one
+     found, it keeps the oldest variant per real combination, whether or not a duplicate has
+     already been created for it: moves any sale or purchase order lines pointing at a newer
+     duplicate onto the kept variant, deletes the duplicate, and removes the stale attribute
+     links so future orders match it correctly. If a duplicate still has other references (stock
+     moves, invoice lines) or its order can't be edited (locked/invoiced/delivered), it is left in
+     place and logged for manual review - that does not stop the run from fixing every other
+     affected product.</p>
+
+  <h2>Usage</h2>
+  <p>Go to <strong>Settings &gt; Technical &gt; Scheduled Actions &gt; "Fix Polluted Variant
+     Combinations"</strong> and click <strong>Run Manually</strong>. It does not run on a
+     schedule - one run is meant to catch everything currently affected.</p>
+</body>
+</html>
