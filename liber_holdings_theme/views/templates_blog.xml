@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Prefer regular cover (title + media) over full-bleed photo overlay -->
+    <record id="website_blog.opt_blog_post_regular_cover" model="ir.ui.view">
+        <field name="active" eval="True"/>
+    </record>
+
+    <template id="blog_index_liber" inherit_id="website_blog.index" name="Liber Blog Wrap" priority="50">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="class" add="o_liber_blog_wrap" separator=" "/>
+        </xpath>
+    </template>
+
+</odoo>
