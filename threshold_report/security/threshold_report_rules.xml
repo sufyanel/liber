@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="threshold_report_account_mapping_company_rule" model="ir.rule">
+        <field name="name">Threshold report account mapping: company</field>
+        <field name="model_id" ref="model_threshold_report_account_mapping"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="threshold_report_account_mapping_line_company_rule" model="ir.rule">
+        <field name="name">Threshold report account mapping line: company</field>
+        <field name="model_id" ref="model_threshold_report_account_mapping_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>
