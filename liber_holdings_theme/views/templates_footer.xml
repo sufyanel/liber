@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Liber main footer (replaces default footer_custom content) -->
+    <template id="footer_liber" inherit_id="website.footer_custom" name="Liber Footer" priority="50">
+        <xpath expr="//div[@id='footer']" position="replace">
+            <div id="footer" class="o_liber_footer oe_structure oe_structure_solo" t-ignore="true" data-name="Footer">
+                <div class="container">
+                    <div class="row gy-4 align-items-start">
+                        <div class="col-md-6 col-lg-3">
+                            <h5 class="o_liber_footer_brand">Liber</h5>
+                            <p class="mb-3">Industrial spare parts — bearings, seals, springs, power transmission, and more.</p>
+                            <a href="tel:+18327912535" class="o_liber_phone">+1 832-791-2535</a>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <h5>Shop</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/shop">All Products</a></li>
+                                <li><a href="/shop/category/bearings-1">Bearings</a></li>
+                                <li><a href="/shop/category/seals-16">Seals</a></li>
+                                <li><a href="/brands">Brands</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-6 col-lg-3">
+                            <h5>Company</h5>
+                            <ul class="list-unstyled mb-0">
+                                <li><a href="/about-us">About</a></li>
+                                <li><a href="/news">News</a></li>
+                                <li><a href="/contactus">Contact</a></li>
+                                <li><a href="/quote">Request Quote</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 col-lg-3">
+                            <h5>How to buy</h5>
+                            <p class="mb-2">In-stock parts: add to cart and checkout.</p>
+                            <p class="mb-0">Special or out-of-stock parts: request a quote.</p>
+                        </div>
+                    </div>
+                    <div class="o_liber_footer_bottom d-flex flex-wrap justify-content-between gap-2">
+                        <span>© Liber Holdings. Industrial spare parts.</span>
+                        <span>www.liberholdings.com</span>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Hide stock second copyright bar (duplicate of Liber footer bottom) -->
+    <template id="footer_hide_stock_copyright" inherit_id="website.layout" name="Liber Hide Stock Copyright" priority="50">
+        <xpath expr="//div[hasclass('o_footer_copyright')]" position="before">
+            <t t-set="no_copyright" t-value="True"/>
+        </xpath>
+    </template>
+
+</odoo>

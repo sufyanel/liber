@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Dual header CTAs: Request Quote (primary) + Contact -->
+    <template id="header_call_to_action_liber"
+              inherit_id="website.header_call_to_action"
+              name="Liber Header CTAs"
+              priority="50">
+        <xpath expr="//a[hasclass('btn_cta')]" position="replace">
+            <a href="/quote" class="oe_unremovable btn btn-primary btn_cta me-1">Request Quote</a>
+            <a href="/contactus" class="oe_unremovable btn btn-outline-liber btn_cta">Contact</a>
+        </xpath>
+    </template>
+
+    <!-- Persistent desktop cart: after utility links, before sign-in / CTAs. -->
+    <template id="header_cart_liber"
+              inherit_id="website.template_header_default"
+              name="Liber Desktop Header Cart"
+              priority="60">
+        <xpath expr="//ul[hasclass('navbar-nav')]/t[@t-call='portal.placeholder_user_sign_in']"
+               position="before">
+            <t t-if="not request.env.user._is_public()" t-call="website_sale.header_cart_link">
+                <t t-set="_icon" t-value="True"/>
+                <t t-set="_text" t-value="True"/>
+                <t t-set="_item_class" t-value="'o_liber_header_cart'"/>
+                <t t-set="_link_class"
+                   t-value="'btn o_liber_cart_link position-relative d-flex align-items-center gap-2'"/>
+                <t t-set="_icon_wrap_class" t-value="'o_liber_cart_icon position-relative'"/>
+                <t t-set="_badge_class"
+                   t-value="'position-absolute top-0 start-100 translate-middle rounded-pill'"/>
+                <t t-set="_text_class" t-value="'o_liber_cart_text'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Hide stock mobile/desktop cart chrome for anonymous visitors -->
+    <template id="header_cart_login_required"
+              inherit_id="website_sale.header_cart_link"
+              name="Liber Cart Login Required"
+              priority="50">
+        <xpath expr="//t[@t-set='show_cart']" position="after">
+            <t t-set="show_cart" t-value="show_cart and not request.env.user._is_public()"/>
+        </xpath>
+    </template>
+
+</odoo>
