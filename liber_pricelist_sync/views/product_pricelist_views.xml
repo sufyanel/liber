@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inherit Product Pricelist Form View -->
+    <record id="product_pricelist_view_inherit_vendor_sync" model="ir.ui.view">
+        <field name="name">product.pricelist.form.inherit.vendor.sync</field>
+        <field name="model">product.pricelist</field>
+        <field name="inherit_id" ref="product.product_pricelist_view"/>
+        <field name="arch" type="xml">
+            <!-- Add header button for Sync Vendor Prices -->
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_sync_vendor_prices"
+                            string="Sync Vendor Prices"
+                            type="object"
+                            class="oe_highlight"
+                            icon="fa-refresh"/>
+                </header>
+            </xpath>
+
+            <!-- Add Tier field -->
+            <field name="currency_id" position="after">
+                <field name="tier_id" placeholder="Select Tier..."/>
+            </field>
+
+            <!-- Add vendor_cost and percentage_extra to simple mode inline tree view -->
+            <xpath expr="//field[@name='item_ids']/tree[@groups='!product.group_sale_pricelist']/field[@name='fixed_price']" position="before">
+                <field name="vendor_cost" optional="show"/>
+                <field name="percentage_extra" optional="show"/>
+            </xpath>
+
+            <!-- Add vendor_cost and percentage_extra to advanced mode inline tree view -->
+            <xpath expr="//field[@name='item_ids']/tree[@groups='product.group_sale_pricelist']/field[@name='price']" position="before">
+                <field name="vendor_cost" optional="show"/>
+                <field name="percentage_extra" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Product Pricelist Item Form View (Dialog/Page) -->
+    <record id="product_pricelist_item_form_view_inherit_vendor" model="ir.ui.view">
+        <field name="name">product.pricelist.item.form.inherit.vendor</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='fixed_price']" position="after">
+                <field name="vendor_cost" invisible="compute_price != 'fixed'"/>
+                <field name="percentage_extra" invisible="compute_price != 'fixed'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Inherit Product Pricelist Item Tree View -->
+    <record id="product_pricelist_item_tree_view_inherit_vendor" model="ir.ui.view">
+        <field name="name">product.pricelist.item.tree.inherit.vendor</field>
+        <field name="model">product.pricelist.item</field>
+        <field name="inherit_id" ref="product.product_pricelist_item_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="price" position="before">
+                <field name="vendor_cost" optional="show"/>
+                <field name="percentage_extra" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
