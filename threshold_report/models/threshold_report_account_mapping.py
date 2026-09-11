@@ -75,7 +75,9 @@ class ThresholdReportAccountMappingLine(models.Model):
         "account.account",
         string="Account",
         required=True,
-        check_company=True,
+        help="Any company's account can be used here — the report pulls "
+        "data straight from this account regardless of which company owns "
+        "it, e.g. to attribute a related company's account to this row.",
     )
     percentage = fields.Float(
         string="Percentage",
