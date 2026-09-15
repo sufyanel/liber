@@ -37,6 +37,14 @@ class ThresholdReportAccountMapping(models.Model):
         help="Used only when this row has no account lines. "
         "Ignored as soon as at least one account line is added.",
     )
+    use_balance_change = fields.Boolean(
+        string="Use Period Change (Closing − Opening)",
+        help="When enabled, the report pulls this row's account balance as "
+        "of the period's start and end dates and uses the difference "
+        "(closing minus opening) instead of the balance posted during the "
+        "period. Has no effect on Change in Accounts Payable, which always "
+        "computes a period-start/period-end difference of its own.",
+    )
     line_ids = fields.One2many(
         "threshold.report.account.mapping.line",
         "mapping_id",
@@ -52,6 +60,15 @@ class ThresholdReportAccountMapping(models.Model):
             "Each row type can only have one mapping per company.",
         ),
     ]
+
+    @api.onchange("row_key")
+    def _onchange_row_key_default_balance_change(self):
+        """Pre-check Use Period Change for Change in A/R and Change in
+        Inventory on new rows, matching this module's historical behaviour
+        for those two keys. Only fires on unsaved records, so it never
+        overrides a choice already made on an existing mapping."""
+        if not self.id and self.row_key in ("change_ar", "change_inventory"):
+            self.use_balance_change = True
 
 
 class ThresholdReportAccountMappingLine(models.Model):

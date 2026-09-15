@@ -135,42 +135,45 @@ class ThresholdReportWizard(models.TransientModel):
         }
 
         # Get salary
-        data['salary'] = self._get_mapping_amount('salary')
+        data['salary'] = self._get_mapping_value('salary')
 
         # Taxes: mapping if one is configured, else the wizard's manual input
-        data['taxes'] = self._get_mapping_amount_or_default('taxes', self.tax or 0.0)
+        data['taxes'] = self._get_mapping_value('taxes', default=self.tax or 0.0)
 
         # Get net profit and calculate PBT
         net_profit = self._get_net_profit()
         data['pbt'] = net_profit
 
-        data['depreciation'] = self._get_mapping_amount('depreciation')
+        data['depreciation'] = self._get_mapping_value('depreciation')
 
         # Capital investments: mapping if one is configured, else the wizard's manual input
-        data['capital_investments'] = self._get_mapping_amount_or_default(
-            'capital_investments', self.capital_investments
+        data['capital_investments'] = self._get_mapping_value(
+            'capital_investments', default=self.capital_investments
         )
 
-        # Change in A/R (closing balance minus opening balance over the mapped accounts)
-        data['change_ar'] = self._get_mapping_balance_change('change_ar')
+        # Change in A/R: closing-minus-opening balance when Use Period Change is on,
+        # otherwise the balance posted during the period
+        data['change_ar'] = self._get_mapping_value('change_ar')
 
+        # Change in A/P always uses the period-start/period-end residual difference
         data['change_payables'] = self._get_mapping_payables_amount('change_payables')
 
         # Change Net Change in A/R and A/P
         data['change_payables_receivable'] = data['change_ar'] + data['change_payables']
 
-        # Change in Inventory (closing balance minus opening balance over the mapped accounts)
-        data['change_inventory'] = self._get_mapping_balance_change('change_inventory')
+        # Change in Inventory: closing-minus-opening balance when Use Period Change is on,
+        # otherwise the balance posted during the period
+        data['change_inventory'] = self._get_mapping_value('change_inventory')
 
-        data['debt_retirement'] = self._get_mapping_amount('debt_retirement')
+        data['debt_retirement'] = self._get_mapping_value('debt_retirement')
 
         # Investor Return: mapping if one is configured, else the wizard's manual input
-        data['investor_return_total'] = self._get_mapping_amount_or_default(
-            'investor_return', self.investor_return
+        data['investor_return_total'] = self._get_mapping_value(
+            'investor_return', default=self.investor_return
         )
 
         # Savings: mapping if one is configured, else the wizard's manual input
-        data['savings'] = self._get_mapping_amount_or_default('savings', self.savings)
+        data['savings'] = self._get_mapping_value('savings', default=self.savings)
 
         # Calculate Financial Security Threshold
         data['financial_threshold'] = self._calculate_threshold(data)
@@ -187,18 +190,21 @@ class ThresholdReportWizard(models.TransientModel):
             ('row_key', '=', row_key),
         ], limit=1)
 
-    def _get_mapping_amount_or_default(self, row_key, default, date_from=None, date_to=None, company=None):
-        """Like _get_mapping_amount, but for the wizard's manual-input rows
-        (capital investments, savings, taxes, investor return): when no
-        mapping row exists at all for this company/row_key, fall back to the
-        wizard's own field value instead of 0.0. When a mapping row does
-        exist, it is authoritative even if it computes to 0."""
+    def _get_mapping_value(self, row_key, default=None, company=None):
+        """Dispatch to the point-in-time balance or the period's closing-minus-
+        opening change, depending on the row's Use Period Change checkbox.
+        `default` is returned (matching _get_mapping_amount_or_default) when
+        no mapping row exists at all for this company/row_key; omit it to get
+        0.0 in that case instead, like the plain _get_mapping_amount rows."""
         company = company or self.company_id
         if not company:
-            return default
-        if not self._get_mapping(row_key, company):
-            return default
-        return self._get_mapping_amount(row_key, date_from=date_from, date_to=date_to, company=company)
+            return default if default is not None else 0.0
+        mapping = self._get_mapping(row_key, company)
+        if not mapping:
+            return default if default is not None else 0.0
+        if mapping.use_balance_change:
+            return self._get_mapping_balance_change(row_key, company=company)
+        return self._get_mapping_amount(row_key, company=company)
 
     def _get_mapping_amount(self, row_key, date_from=None, date_to=None, company=None):
         """Sum posted move line balances for the row's mapped accounts, weighted by
@@ -284,11 +290,43 @@ class ThresholdReportWizard(models.TransientModel):
             total += change * (line.percentage or 0.0) / 100.0
         return total
 
+    def _get_residual_as_of(self, move_line, as_of_date):
+        """Reconstruct move_line's residual amount as it stood on as_of_date,
+        using the same max_date technique as Odoo's own Aged Payable/
+        Receivable reports (account_aged_partner_balance.py): only the
+        reconciliations (payments) whose max_date had already happened by
+        that date reduce the residual, so a bill paid off after as_of_date
+        still shows as outstanding on it."""
+        if as_of_date < move_line.date:
+            return 0.0
+        # Confusingly, matched_debit_ids' inverse is credit_move_id (and vice
+        # versa) - it lists the *counterpart* debit lines matched against
+        # this (credit) line. To mirror _compute_amount_residual's own SQL
+        # (which sums by debit_move_id/credit_move_id directly), the amount
+        # to subtract for a debit_move_id match comes from matched_credit_ids.
+        debit_amount = sum(
+            partial.amount for partial in move_line.matched_credit_ids
+            if partial.max_date <= as_of_date
+        )
+        credit_amount = sum(
+            partial.amount for partial in move_line.matched_debit_ids
+            if partial.max_date <= as_of_date
+        )
+        return abs(move_line.balance - debit_amount + credit_amount)
+
     def _get_mapping_payables_amount(self, row_key, company=None):
-        """Sum residual amounts of unpaid/partial bills booked against the row's
-        mapped accounts that were placed on behalf of this company (directly, or
-        via a drop-ship sale to the related company), weighted by each line's
-        percentage. Falls back to the mapping's manual amount when no account
+        """Return the change (closing minus opening) in the amount owed on
+        bills booked against the row's mapped accounts that were placed on
+        behalf of this company (directly, or via a drop-ship sale to the
+        related company), weighted by each line's percentage.
+
+        A bill's amount_residual only reflects what is owed *today*, so a
+        bill that was outstanding on the period's end date but has since
+        been paid would wrongly compute as 0. Each matched bill's residual
+        is instead reconstructed as it stood on the period's opening and
+        closing dates via _get_residual_as_of, and the two are diffed - same
+        pattern as _get_mapping_balance_change uses for a plain account
+        balance. Falls back to the mapping's manual amount when no account
         lines are configured."""
         company = company or self.company_id
         if not company:
@@ -301,10 +339,14 @@ class ThresholdReportWizard(models.TransientModel):
             return mapping.amount or 0.0
 
         date_from, date_to = self._get_date_range()
+        opening_date = date_from - relativedelta(days=1)
         account_ids = mapping.line_ids.account_id.ids
+
+        # Any bill still open at, or settled on/after, the opening date could
+        # contribute to either boundary's residual - not just bills dated
+        # inside the report period - so there is no lower date bound here.
         amls = self.env['account.move.line'].sudo().search([
             ('account_id', 'in', account_ids),
-            ('date', '>=', date_from),
             ('date', '<=', date_to),
             ('parent_state', '=', 'posted'),
         ])
@@ -323,11 +365,9 @@ class ThresholdReportWizard(models.TransientModel):
             if not account_amls:
                 continue
             bills = account_amls.mapped('move_id').filtered(
-                lambda m: m.move_type == 'in_invoice'
-                and m.state == 'posted'
-                and m.payment_state in ('not_paid', 'partial')
+                lambda m: m.move_type == 'in_invoice' and m.state == 'posted'
             )
-            line_total = 0.0
+            line_change = 0.0
             for bill in bills:
                 po_lines = bill.invoice_line_ids.mapped('purchase_line_id').filtered(lambda pl: pl)
                 orders = po_lines.mapped('order_id')
@@ -348,9 +388,13 @@ class ThresholdReportWizard(models.TransientModel):
                                 break
                     if matched:
                         break
-                if matched:
-                    line_total += bill.amount_residual
-            total += line_total * (line.percentage or 0.0) / 100.0
+                if not matched:
+                    continue
+                payable_lines = bill.line_ids.filtered(lambda l: l.account_id.id in account_ids)
+                opening_residual = sum(self._get_residual_as_of(l, opening_date) for l in payable_lines)
+                closing_residual = sum(self._get_residual_as_of(l, date_to) for l in payable_lines)
+                line_change += closing_residual - opening_residual
+            total += line_change * (line.percentage or 0.0) / 100.0
         return total
 
     def _get_net_profit(self):
