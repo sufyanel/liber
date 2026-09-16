@@ -99,7 +99,18 @@ class TestPricelistSync(TransactionCase):
         self.assertAlmostEqual(item.fixed_price, 125.0, places=2)
 
     def test_04_sync_vendor_prices(self):
-        """Test syncing vendor prices from purchase order with posted vendor bill"""
+        """Test syncing vendor prices for existing pricelist items only"""
+        # Create an existing item on the pricelist for product_1
+        item_1 = self.ProductPricelistItem.create({
+            'pricelist_id': self.pricelist.id,
+            'applied_on': '0_product_variant',
+            'product_id': self.product_1.id,
+            'compute_price': 'fixed',
+            'vendor_cost': 50.0,
+            'percentage_extra': 15.0,
+            'fixed_price': 57.5,
+        })
+
         vendor = self.env['res.partner'].create({'name': 'Test Vendor Sync', 'supplier_rank': 1})
         po = self.env['purchase.order'].create({
             'partner_id': vendor.id,
@@ -132,13 +143,8 @@ class TestPricelistSync(TransactionCase):
         res = self.pricelist.action_sync_vendor_prices()
         self.assertEqual(res['type'], 'ir.actions.client')
 
-        # Verify pricelist item updated/created for product_1
-        item = self.ProductPricelistItem.search([
-            ('pricelist_id', '=', self.pricelist.id),
-            ('product_id', '=', self.product_1.id)
-        ], limit=1)
-
-        self.assertTrue(item)
-        self.assertAlmostEqual(item.vendor_cost, 80.0, places=2)
-        self.assertAlmostEqual(item.percentage_extra, 15.0, places=2)
-        self.assertAlmostEqual(item.fixed_price, 92.0, places=2)  # 80 * 1.15 = 92
+        # Verify existing pricelist item vendor_cost was updated to 80.0 and fixed_price to 92.0
+        item_1.invalidate_recordset()
+        self.assertAlmostEqual(item_1.vendor_cost, 80.0, places=2)
+        self.assertAlmostEqual(item_1.percentage_extra, 15.0, places=2)
+        self.assertAlmostEqual(item_1.fixed_price, 92.0, places=2)  # 80 * 1.15 = 92
