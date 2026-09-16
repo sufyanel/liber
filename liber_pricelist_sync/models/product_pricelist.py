@@ -66,18 +66,23 @@ class ProductPricelist(models.Model):
             }
 
         existing_items_by_product = {}
+        existing_items_by_template = {}
         for item in self.item_ids:
             if item.product_id:
                 existing_items_by_product[item.product_id.id] = item
+            elif item.product_tmpl_id:
+                existing_items_by_template[item.product_tmpl_id.id] = item
 
         updated_count = 0
-        created_count = 0
-
         default_percentage = self.tier_id.percentage if (self.tier_id and self.tier_id.percentage) else 0.0
 
         for product_id, latest_cost in latest_product_prices.items():
-            if product_id in existing_items_by_product:
-                item = existing_items_by_product[product_id]
+            item = existing_items_by_product.get(product_id)
+            if not item:
+                product = self.env['product.product'].browse(product_id)
+                item = existing_items_by_template.get(product.product_tmpl_id.id)
+
+            if item:
                 perc = item.percentage_extra if item.percentage_extra else default_percentage
                 new_fixed_price = latest_cost * (1.0 + (perc / 100.0))
                 item.write({
@@ -86,27 +91,13 @@ class ProductPricelist(models.Model):
                     'fixed_price': new_fixed_price,
                 })
                 updated_count += 1
-            else:
-                # Create a new pricelist item for the product
-                perc = default_percentage
-                new_fixed_price = latest_cost * (1.0 + (perc / 100.0))
-                self.env['product.pricelist.item'].create({
-                    'pricelist_id': self.id,
-                    'applied_on': '0_product_variant',
-                    'product_id': product_id,
-                    'compute_price': 'fixed',
-                    'vendor_cost': latest_cost,
-                    'percentage_extra': perc,
-                    'fixed_price': new_fixed_price,
-                })
-                created_count += 1
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': 'Sync Vendor Prices',
-                'message': f'Vendor prices synced successfully! Updated {updated_count} item(s), created {created_count} new item(s).',
+                'message': f'Vendor prices synced successfully! Updated {updated_count} existing item(s).',
                 'type': 'success',
                 'sticky': False,
             }
