@@ -7,7 +7,7 @@
         - Relational Tier model (pricelist.tier) for contacts and pricelists.
         - Vendor cost and percentage extra fields with dynamic forward and reverse calculations on pricelist items.
         - Sync vendor prices button on pricelists fetching latest prices from confirmed purchase orders with posted vendor bills.
-        - Automatically creates pricelist items for missing products during sync.
+        - Syncs vendor prices only for existing products in the pricelist without adding new products.
     """,
     'version': '17.0.1.0.0',
     'category': 'Sales/Pricelist',

@@ -36,11 +36,35 @@ class ProductPricelist(models.Model):
     def action_sync_vendor_prices(self):
         self.ensure_one()
 
-        # Find purchase order lines where PO is confirmed/done and has a posted vendor bill
+        # Collect existing pricelist items grouped by product.product ID
+        items_by_product = {}
+        for item in self.item_ids:
+            if item.product_id:
+                items_by_product.setdefault(item.product_id.id, self.env['product.pricelist.item'])
+                items_by_product[item.product_id.id] |= item
+            elif item.product_tmpl_id:
+                for variant in item.product_tmpl_id.product_variant_ids:
+                    items_by_product.setdefault(variant.id, self.env['product.pricelist.item'])
+                    items_by_product[variant.id] |= item
+
+        if not items_by_product:
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Sync Vendor Prices',
+                    'message': 'No products found in this pricelist to sync.',
+                    'type': 'warning',
+                    'sticky': False,
+                }
+            }
+
+        # Find purchase order lines for products present in this pricelist
+        # where PO is confirmed/done and has a posted vendor bill
         domain = [
             ('order_id.state', 'in', ['purchase', 'done']),
             ('order_id.invoice_ids.state', '=', 'posted'),
-            ('product_id', '!=', False),
+            ('product_id', 'in', list(items_by_product.keys())),
         ]
         
         # Fetch matching PO lines and sort by purchase order date descending to get the latest unit price
@@ -59,54 +83,34 @@ class ProductPricelist(models.Model):
                 'tag': 'display_notification',
                 'params': {
                     'title': 'Sync Vendor Prices',
-                    'message': 'No qualified Purchase Orders with posted Vendor Bills were found.',
+                    'message': 'No qualified Purchase Orders with posted Vendor Bills were found for products in this pricelist.',
                     'type': 'warning',
                     'sticky': False,
                 }
             }
 
-        existing_items_by_product = {}
-        for item in self.item_ids:
-            if item.product_id:
-                existing_items_by_product[item.product_id.id] = item
-
-        updated_count = 0
-        created_count = 0
-
         default_percentage = self.tier_id.percentage if (self.tier_id and self.tier_id.percentage) else 0.0
+        updated_items = self.env['product.pricelist.item']
 
         for product_id, latest_cost in latest_product_prices.items():
-            if product_id in existing_items_by_product:
-                item = existing_items_by_product[product_id]
-                perc = item.percentage_extra if item.percentage_extra else default_percentage
-                new_fixed_price = latest_cost * (1.0 + (perc / 100.0))
-                item.write({
-                    'vendor_cost': latest_cost,
-                    'percentage_extra': perc,
-                    'fixed_price': new_fixed_price,
-                })
-                updated_count += 1
-            else:
-                # Create a new pricelist item for the product
-                perc = default_percentage
-                new_fixed_price = latest_cost * (1.0 + (perc / 100.0))
-                self.env['product.pricelist.item'].create({
-                    'pricelist_id': self.id,
-                    'applied_on': '0_product_variant',
-                    'product_id': product_id,
-                    'compute_price': 'fixed',
-                    'vendor_cost': latest_cost,
-                    'percentage_extra': perc,
-                    'fixed_price': new_fixed_price,
-                })
-                created_count += 1
+            items = items_by_product.get(product_id, self.env['product.pricelist.item'])
+            for item in items:
+                if item not in updated_items:
+                    perc = item.percentage_extra if item.percentage_extra else default_percentage
+                    new_fixed_price = latest_cost * (1.0 + (perc / 100.0))
+                    item.write({
+                        'vendor_cost': latest_cost,
+                        'percentage_extra': perc,
+                        'fixed_price': new_fixed_price,
+                    })
+                    updated_items |= item
 
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
                 'title': 'Sync Vendor Prices',
-                'message': f'Vendor prices synced successfully! Updated {updated_count} item(s), created {created_count} new item(s).',
+                'message': f'Vendor prices synced successfully! Updated {len(updated_items)} item(s).',
                 'type': 'success',
                 'sticky': False,
             }
