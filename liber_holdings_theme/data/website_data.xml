@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="redirect_contact_to_contactus" model="website.rewrite">
+        <field name="name">Contact to Contact Us</field>
+        <field name="url_from">/contact</field>
+        <field name="url_to">/contactus</field>
+        <field name="redirect_type">301</field>
+    </record>
+
+    <function model="website" name="_liber_theme_setup"/>
+</odoo>
+

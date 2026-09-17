@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Prefer Liber SEO title pattern in document title when meta empty -->
+    <template id="layout_seo_liber" inherit_id="website.layout" name="Liber SEO Layout" priority="45">
+        <xpath expr="//html" position="attributes">
+            <attribute name="data-liber-theme">1</attribute>
+        </xpath>
+    </template>
+
+    <!-- Category short intros for top categories (website_description) applied in hook -->
+    <function model="product.public.category" name="_liber_seed_category_seo"/>
+
+</odoo>
