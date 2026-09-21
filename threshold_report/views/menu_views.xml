@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="threshold_report_menu" 
-              name="Threshold Report" 
-              parent="account.menu_finance_reports" 
-              action="threshold_report_wizard_action" 
+    <menuitem id="threshold_report_menu"
+              name="Threshold Report"
+              parent="account.menu_finance_reports"
+              action="threshold_report_wizard_action"
               sequence="100"/>
+    <menuitem id="threshold_report_account_mapping_menu"
+              name="Threshold Report Accounts"
+              parent="account.account_account_menu"
+              action="action_threshold_report_account_mapping"
+              sequence="121"/>
 </odoo>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Threshold Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background-color: white;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 1.1em;
+            color: #6b7280;
+            margin-bottom: 40px;
+            line-height: 1.8;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 35px;
+            margin-bottom: 20px;
+            color: #1f2937;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.2em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        ul, ol {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #4b5563;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .feature-box {
+            padding: 25px;
+            background-color: #f3f4f6;
+            border-left: 4px solid #3b82f6;
+            border-radius: 4px;
+        }
+
+        .feature-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+        }
+
+        .config-step {
+            margin: 25px 0;
+            padding: 20px;
+            background-color: #f9fafb;
+            border-radius: 4px;
+            border-left: 4px solid #10b981;
+        }
+
+        .config-step strong {
+            color: #1f2937;
+        }
+
+        code {
+            background-color: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+            font-size: 0.9em;
+        }
+
+        .highlight {
+            background-color: #fef3c7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #f59e0b;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fff;
+        }
+
+        th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #d1d5db;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+
+        .row-type {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .divider {
+            border: 0;
+            height: 1px;
+            background-color: #e5e7eb;
+            margin: 40px 0;
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            h2 {
+                font-size: 1.3em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Threshold Report</h1>
+        <div class="subtitle">
+            A Financial Security Threshold report that combines accounting data with manual inputs, exported as an Excel workbook for detailed cash-flow analysis.
+        </div>
+
+        <h2>What This Module Does</h2>
+        <p>
+            The Threshold Report module helps you generate comprehensive financial security assessments by combining posted accounting data with manual adjustments. It creates a detailed cash-flow analysis covering key financial items such as salary, depreciation, changes in receivables and payables, inventory changes, debt retirement, investments, savings, and taxes—all exported directly to Excel for easy analysis and reporting.
+        </p>
+
+        <h2>Key Features</h2>
+
+        <div class="feature-grid">
+            <div class="feature-box">
+                <h3>Flexible Account Mapping</h3>
+                <p>Map each report row to one or more accounts with individual percentage weights, or define manual amounts. Mix account-based and manual rows as needed.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Period-Based Analysis</h3>
+                <p>Generate reports for any time period—full year, quarter, or month—with opening and closing date calculations for accurate financial snapshots.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Use Period Change Checkbox</h3>
+                <p>Toggle between posted balances during the period or opening-vs-closing balance differences. Default is period-posted balance; optional for deeper analysis.</p>
+            </div>
+
+            <div class="feature-box">
+                <h3>Excel Export</h3>
+                <p>Download complete reports as professional Excel workbooks ready for presentation, analysis, or further processing.</p>
+            </div>
+        </div>
+
+        <h2>Configuration</h2>
+
+        <h3>Step 1: Set Up Account Mappings</h3>
+        <div class="config-step">
+            <strong>Navigate to:</strong> <code>Accounting > Configuration > Accounting > Threshold Report Accounts</code>
+            <p style="margin-top: 12px;">
+                Here you map each of the nine report rows to accounts that will feed that row's calculation:
+            </p>
+            <ul>
+                <li><strong>Salary</strong> – Personnel costs</li>
+                <li><strong>Depreciation</strong> – Asset depreciation</li>
+                <li><strong>Change in Accounts Receivable</strong> – Customer receivables movement</li>
+                <li><strong>Change in Accounts Payable</strong> – Supplier payables movement</li>
+                <li><strong>Change in Inventory</strong> – Stock changes</li>
+                <li><strong>Debt Retirement</strong> – Loan repayments</li>
+                <li><strong>Capital Investments</strong> – Capital expenditures (optional; can fall back to manual input)</li>
+                <li><strong>Investor Return</strong> – Distributions to investors (optional)</li>
+                <li><strong>Savings</strong> – Cash reserves (optional)</li>
+                <li><strong>Taxes</strong> – Tax payments (optional)</li>
+            </ul>
+        </div>
+
+        <h3>Account Mapping Details</h3>
+        <div class="config-step">
+            <strong>For each mapping row, you can:</strong>
+            <ul>
+                <li><strong>Add account lines</strong> with individual percentage weights (totaling 100%)</li>
+                <li><strong>Define a manual amount</strong> instead of accounts</li>
+                <li><strong>Leave it blank</strong> to use the corresponding manual field in the report wizard (only for Capital Investments, Savings, Taxes, and Investor Return)</li>
+            </ul>
+        </div>
+
+        <h3>The "Use Period Change (Closing − Opening)" Checkbox</h3>
+        <div class="highlight">
+            <strong>New in this version:</strong> Each account mapping row now has a <code>Use Period Change (Closing − Opening)</code> checkbox.
+        </div>
+
+        <p><strong>When unchecked (default):</strong></p>
+        <ul>
+            <li>The report sums the account's posted balance during the printed period only.</li>
+            <li>Example: For the period January 1 – March 31, it totals all transactions posted between those dates.</li>
+        </ul>
+
+        <p><strong>When checked:</strong></p>
+        <ul>
+            <li>The report fetches the account's balance as of the period's opening date and as of its closing date, then reports the difference (closing minus opening).</li>
+            <li>Example: For the period January 1 – March 31, it retrieves the balance as of December 31 (opening) and as of March 31 (closing), then shows the difference.</li>
+        </ul>
+
+        <p><strong>Default behavior by row:</strong></p>
+        <ul>
+            <li><strong>Checked by default:</strong> "Change in Accounts Receivable" and "Change in Inventory" – these rows historically used opening/closing differences.</li>
+            <li><strong>Unchecked by default:</strong> All other rows – but you can enable them for period-change analysis if needed.</li>
+            <li><strong>Not available:</strong> "Change in Accounts Payable" – see below for how it is handled.</li>
+        </ul>
+
+        <p><strong>On module upgrade:</strong> Existing mappings for "Change in Accounts Receivable" and "Change in Inventory" are automatically switched on, preserving their historical behavior.</p>
+
+        <h3>Change in Accounts Payable – Historical Residual Amounts</h3>
+        <div class="highlight">
+            <strong>Important:</strong> The "Change in Accounts Payable" row is <strong>always</strong> computed as a historical opening-vs-closing difference, similar to the "Use Period Change" feature. It does <strong>not</strong> use today's live residual amount.
+        </div>
+
+        <p>
+            <strong>How it works:</strong> For each matched bill, the system reconstructs how much was actually owed as of the period's opening date and as of the period's closing date, then reports the difference between those two amounts. This ensures accurate cash-flow reporting even if bills have been paid off or adjusted after the period ends.
+        </p>
+
+        <p>
+            <strong>Why this matters:</strong> If a bill was unpaid on the report's closing date but has since been paid by the time the report is run, using today's residual would incorrectly show zero. Instead, the system captures the actual amount owed during the period.
+        </p>
+
+        <p>
+            <strong>Bill matching:</strong> The system continues to use the same matching logic to identify which bills belong to your company (via purchase order drop-ship/company address matching). Only the amount calculation changed—from today's snapshot to historical opening/closing values.
+        </p>
+
+        <h3>Step 2: Configure Companies</h3>
+        <div class="config-step">
+            <strong>Navigate to:</strong> <code>Accounting > Configuration > Companies</code>
+            <p style="margin-top: 12px;">
+                On any company that should appear in the Threshold Report wizard:
+            </p>
+            <ul>
+                <li>Set <strong>Related Company</strong> (if applicable)</li>
+                <li>Set <strong>Required Threshold Report</strong> to indicate this company uses the threshold report</li>
+            </ul>
+        </div>
+
+        <h2>Usage</h2>
+
+        <div class="config-step">
+            <strong>To generate a report:</strong>
+            <ol>
+                <li>Go to <code>Accounting > Reporting > Threshold Report</code></li>
+                <li>Select the company and the reporting period (year, quarter, or month)</li>
+                <li>Enter any manual values not covered by account mappings (if applicable)</li>
+                <li>Click <strong>Download Excel Report</strong> to generate the workbook</li>
+            </ol>
+        </div>
+
+        <h2>Benefits</h2>
+        <ul>
+            <li><strong>Accurate cash flow:</strong> Combines accounting data with manual inputs for complete financial visibility</li>
+            <li><strong>Flexible period analysis:</strong> Generate reports for any time window using opening/closing balances</li>
+            <li><strong>Historical accuracy:</strong> Captures actual amounts owed during the period, not current snapshots</li>
+            <li><strong>Easy exports:</strong> Excel format ready for presentation and further analysis</li>
+            <li><strong>Configurable:</strong> Adapt each row to match your chart of accounts and reporting needs</li>
+        </ul>
+
+        <hr class="divider">
+
+        <p style="text-align: center; color: #9ca3af; margin-top: 40px;">
+            For detailed configuration questions or support, contact your Odoo administrator.
+        </p>
+    </div>
+</body>
+</html>

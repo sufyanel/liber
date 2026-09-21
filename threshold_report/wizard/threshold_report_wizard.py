@@ -1,10 +1,11 @@
 import base64
 import io
+from collections import defaultdict
 from datetime import datetime, date
 
 import xlsxwriter
 from dateutil.relativedelta import relativedelta
-from odoo import models, fields, api
+from odoo import _, models, fields, api
 from odoo.exceptions import UserError
 
 
@@ -113,11 +114,11 @@ class ThresholdReportWizard(models.TransientModel):
     def action_download_excel(self):
         # Validate required fields based on duration
         if self.duration == 'year' and not self.year:
-            raise UserError('Please select a year.')
+            raise UserError(_('Please select a year.'))
         elif self.duration == 'quarter' and (not self.year or not self.quarter):
-            raise UserError('Please select a year and quarter.')
+            raise UserError(_('Please select a year and quarter.'))
         elif self.duration == 'month' and (not self.year or not self.month):
-            raise UserError('Please select a year and month.')
+            raise UserError(_('Please select a year and month.'))
 
         data = self._get_threshold_data()
         return self._download_excel(data)
@@ -133,210 +134,268 @@ class ThresholdReportWizard(models.TransientModel):
             'date_to': date_to
         }
 
-        # Get salary (account code 240100)
-        data['salary'] = self._get_account_balance('240100')
+        # Get salary
+        data['salary'] = self._get_mapping_value('salary')
 
-        # Get tax (account code 240400)
-        tax_amount = self._get_account_balance('240400')
-        data['taxes'] = self.tax or 0
+        # Taxes: mapping if one is configured, else the wizard's manual input
+        data['taxes'] = self._get_mapping_value('taxes', default=self.tax or 0.0)
 
         # Get net profit and calculate PBT
         net_profit = self._get_net_profit()
         data['pbt'] = net_profit
 
-        data['depreciation'] = self._get_account_balance('06.2.102')
+        data['depreciation'] = self._get_mapping_value('depreciation')
 
-        # Capital investments from wizard
-        data['capital_investments'] = self.capital_investments
+        # Capital investments: mapping if one is configured, else the wizard's manual input
+        data['capital_investments'] = self._get_mapping_value(
+            'capital_investments', default=self.capital_investments
+        )
 
-        # Change in A/R (using Trial Balance approach)
-        data['change_ar'] = self._get_balance_change_from_trial_balance('asset_receivable')
+        # Change in A/R: closing-minus-opening balance when Use Period Change is on,
+        # otherwise the balance posted during the period
+        data['change_ar'] = self._get_mapping_value('change_ar')
 
-        data['change_payables'] = self._get_payables_threshold_amount('02.1.101')
+        # Change in A/P always uses the period-start/period-end residual difference
+        data['change_payables'] = self._get_mapping_payables_amount('change_payables')
 
         # Change Net Change in A/R and A/P
         data['change_payables_receivable'] = data['change_ar'] + data['change_payables']
 
-        # Change in Inventory (using Trial Balance approach)
-        data['change_inventory'] = self._get_balance_change_from_trial_balance('asset_current')
+        # Change in Inventory: closing-minus-opening balance when Use Period Change is on,
+        # otherwise the balance posted during the period
+        data['change_inventory'] = self._get_mapping_value('change_inventory')
 
-        # Get depreciation with company-specific account codes
-        depreciation_accounts = ['02.2.202', '02.1.402', '02.2.201']
-        data['debt_retirement'] = self._get_account_balance_related(depreciation_accounts)
+        data['debt_retirement'] = self._get_mapping_value('debt_retirement')
 
-        # Investor Return (wizard value + account 03.0.004)
-        account_investor_return = self._get_account_balance('03.0.004')
-        data['investor_return_total'] = self.investor_return + account_investor_return
+        # Investor Return: mapping if one is configured, else the wizard's manual input
+        data['investor_return_total'] = self._get_mapping_value(
+            'investor_return', default=self.investor_return
+        )
 
-        # Savings from wizard
-        data['savings'] = self.savings
+        # Savings: mapping if one is configured, else the wizard's manual input
+        data['savings'] = self._get_mapping_value('savings', default=self.savings)
 
         # Calculate Financial Security Threshold
         data['financial_threshold'] = self._calculate_threshold(data)
 
         return data
 
-    def _get_payables_threshold_amount(self, account_code='02.1.101'):
-        self.ensure_one()
-        company = self.company_id
+    def _get_mapping(self, row_key, company=None):
+        """Return the threshold report account mapping for row_key/company, if any."""
+        company = company or self.company_id
+        if not company:
+            return self.env['threshold.report.account.mapping']
+        return self.env['threshold.report.account.mapping'].sudo().search([
+            ('company_id', '=', company.id),
+            ('row_key', '=', row_key),
+        ], limit=1)
+
+    def _get_mapping_value(self, row_key, default=None, company=None):
+        """Dispatch to the point-in-time balance or the period's closing-minus-
+        opening change, depending on the row's Use Period Change checkbox.
+        `default` is returned (matching _get_mapping_amount_or_default) when
+        no mapping row exists at all for this company/row_key; omit it to get
+        0.0 in that case instead, like the plain _get_mapping_amount rows."""
+        company = company or self.company_id
+        if not company:
+            return default if default is not None else 0.0
+        mapping = self._get_mapping(row_key, company)
+        if not mapping:
+            return default if default is not None else 0.0
+        if mapping.use_balance_change:
+            return self._get_mapping_balance_change(row_key, company=company)
+        return self._get_mapping_amount(row_key, company=company)
+
+    def _get_mapping_amount(self, row_key, date_from=None, date_to=None, company=None):
+        """Sum posted move line balances for the row's mapped accounts, weighted by
+        each line's percentage. Falls back to the mapping's manual amount when no
+        account lines are configured."""
+        company = company or self.company_id
         if not company:
             return 0.0
-        date_from, date_to = self._get_date_range()
-        Account = self.env['account.account'].sudo()
-        accounts = Account.search([('code', '=', account_code)])
-        if not accounts:
+        if not date_from or not date_to:
+            date_from, date_to = self._get_date_range()
+
+        mapping = self._get_mapping(row_key, company)
+        if not mapping:
             return 0.0
+        if not mapping.line_ids:
+            return mapping.amount or 0.0
+
+        groups = self.env['account.move.line'].sudo().read_group(
+            [
+                ('account_id', 'in', mapping.line_ids.account_id.ids),
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+                ('move_id.state', '=', 'posted'),
+            ],
+            ['balance:sum'],
+            ['account_id'],
+        )
+        balance_by_account = {g['account_id'][0]: g['balance'] for g in groups}
+
+        total = 0.0
+        for line in mapping.line_ids:
+            balance = balance_by_account.get(line.account_id.id, 0.0)
+            total += balance * (line.percentage or 0.0) / 100.0
+        return total
+
+    def _get_mapping_balance_change(self, row_key, company=None):
+        """Return the closing-minus-opening balance change over the row's mapped
+        accounts, weighted by each line's percentage. Falls back to the mapping's
+        manual amount when no account lines are configured."""
+        company = company or self.company_id
+        if not company:
+            return 0.0
+
+        mapping = self._get_mapping(row_key, company)
+        if not mapping:
+            return 0.0
+        if not mapping.line_ids:
+            return mapping.amount or 0.0
+
+        date_from, date_to = self._get_date_range()
+        opening_date = date_from - relativedelta(days=1)
+        account_ids = mapping.line_ids.account_id.ids
         MoveLine = self.env['account.move.line'].sudo()
-        amls = MoveLine.search([
-            ('account_id', 'in', accounts.ids),
-            ('date', '>=', date_from),
+
+        opening_by_account = {
+            g['account_id'][0]: g['balance']
+            for g in MoveLine.read_group(
+                [
+                    ('account_id', 'in', account_ids),
+                    ('date', '<=', opening_date),
+                    ('move_id.state', '=', 'posted'),
+                ],
+                ['balance:sum'],
+                ['account_id'],
+            )
+        }
+        closing_by_account = {
+            g['account_id'][0]: g['balance']
+            for g in MoveLine.read_group(
+                [
+                    ('account_id', 'in', account_ids),
+                    ('date', '<=', date_to),
+                    ('move_id.state', '=', 'posted'),
+                ],
+                ['balance:sum'],
+                ['account_id'],
+            )
+        }
+
+        total = 0.0
+        for line in mapping.line_ids:
+            change = closing_by_account.get(line.account_id.id, 0.0) - opening_by_account.get(line.account_id.id, 0.0)
+            total += change * (line.percentage or 0.0) / 100.0
+        return total
+
+    def _get_residual_as_of(self, move_line, as_of_date):
+        """Reconstruct move_line's residual amount as it stood on as_of_date,
+        using the same max_date technique as Odoo's own Aged Payable/
+        Receivable reports (account_aged_partner_balance.py): only the
+        reconciliations (payments) whose max_date had already happened by
+        that date reduce the residual, so a bill paid off after as_of_date
+        still shows as outstanding on it."""
+        if as_of_date < move_line.date:
+            return 0.0
+        # Confusingly, matched_debit_ids' inverse is credit_move_id (and vice
+        # versa) - it lists the *counterpart* debit lines matched against
+        # this (credit) line. To mirror _compute_amount_residual's own SQL
+        # (which sums by debit_move_id/credit_move_id directly), the amount
+        # to subtract for a debit_move_id match comes from matched_credit_ids.
+        debit_amount = sum(
+            partial.amount for partial in move_line.matched_credit_ids
+            if partial.max_date <= as_of_date
+        )
+        credit_amount = sum(
+            partial.amount for partial in move_line.matched_debit_ids
+            if partial.max_date <= as_of_date
+        )
+        return abs(move_line.balance - debit_amount + credit_amount)
+
+    def _get_mapping_payables_amount(self, row_key, company=None):
+        """Return the change (closing minus opening) in the amount owed on
+        bills booked against the row's mapped accounts that were placed on
+        behalf of this company (directly, or via a drop-ship sale to the
+        related company), weighted by each line's percentage.
+
+        A bill's amount_residual only reflects what is owed *today*, so a
+        bill that was outstanding on the period's end date but has since
+        been paid would wrongly compute as 0. Each matched bill's residual
+        is instead reconstructed as it stood on the period's opening and
+        closing dates via _get_residual_as_of, and the two are diffed - same
+        pattern as _get_mapping_balance_change uses for a plain account
+        balance. Falls back to the mapping's manual amount when no account
+        lines are configured."""
+        company = company or self.company_id
+        if not company:
+            return 0.0
+
+        mapping = self._get_mapping(row_key, company)
+        if not mapping:
+            return 0.0
+        if not mapping.line_ids:
+            return mapping.amount or 0.0
+
+        date_from, date_to = self._get_date_range()
+        opening_date = date_from - relativedelta(days=1)
+        account_ids = mapping.line_ids.account_id.ids
+
+        # Any bill still open at, or settled on/after, the opening date could
+        # contribute to either boundary's residual - not just bills dated
+        # inside the report period - so there is no lower date bound here.
+        amls = self.env['account.move.line'].sudo().search([
+            ('account_id', 'in', account_ids),
             ('date', '<=', date_to),
             ('parent_state', '=', 'posted'),
         ])
-        bills = amls.mapped('move_id').filtered(
-            lambda m: m.move_type == 'in_invoice'
-            and m.state == 'posted'
-            and m.payment_state in ('not_paid', 'partial')
-        )
+        amls_by_account = defaultdict(lambda: self.env['account.move.line'])
+        for aml in amls:
+            amls_by_account[aml.account_id.id] |= aml
+
         company_partner = company.partner_id
         related_partner = company.related_company_id.partner_id if company.related_company_id else False
         Poline = self.env['purchase.order.line']
         has_sale_line = 'sale_line_id' in Poline._fields
+
         total = 0.0
-        for bill in bills:
-            po_lines = bill.invoice_line_ids.mapped('purchase_line_id').filtered(lambda pl: pl)
-            orders = po_lines.mapped('order_id')
-            if not orders:
+        for line in mapping.line_ids:
+            account_amls = amls_by_account.get(line.account_id.id)
+            if not account_amls:
                 continue
-            matched = False
-            for po in orders:
-                if po.dest_address_id and po.dest_address_id == company_partner:
-                    matched = True
-                    break
-                if has_sale_line:
-                    for so in po.order_line.mapped('sale_line_id.order_id').filtered(lambda s: s):
-                        if related_partner and so.partner_id == related_partner:
-                            matched = True
-                            break
-                        if not related_partner and so.partner_id == company_partner:
-                            matched = True
-                            break
-                if matched:
-                    break
-            if matched:
-                total += bill.amount_residual
+            bills = account_amls.mapped('move_id').filtered(
+                lambda m: m.move_type == 'in_invoice' and m.state == 'posted'
+            )
+            line_change = 0.0
+            for bill in bills:
+                po_lines = bill.invoice_line_ids.mapped('purchase_line_id').filtered(lambda pl: pl)
+                orders = po_lines.mapped('order_id')
+                if not orders:
+                    continue
+                matched = False
+                for po in orders:
+                    if po.dest_address_id and po.dest_address_id == company_partner:
+                        matched = True
+                        break
+                    if has_sale_line:
+                        for so in po.order_line.mapped('sale_line_id.order_id').filtered(lambda s: s):
+                            if related_partner and so.partner_id == related_partner:
+                                matched = True
+                                break
+                            if not related_partner and so.partner_id == company_partner:
+                                matched = True
+                                break
+                    if matched:
+                        break
+                if not matched:
+                    continue
+                payable_lines = bill.line_ids.filtered(lambda l: l.account_id.id in account_ids)
+                opening_residual = sum(self._get_residual_as_of(l, opening_date) for l in payable_lines)
+                closing_residual = sum(self._get_residual_as_of(l, date_to) for l in payable_lines)
+                line_change += closing_residual - opening_residual
+            total += line_change * (line.percentage or 0.0) / 100.0
         return total
-
-    def _get_account_balance(self, account_code, date_from=None, date_to=None):
-        """Get account balance for specified code and period"""
-        if not date_from or not date_to:
-            date_from, date_to = self._get_date_range()
-        if not self.company_id:
-            return 0.0
-
-        domain = [('code', '=', account_code), ('company_id', '=', self.company_id.id)]
-
-        accounts = self.env['account.account'].sudo().search(domain)
-
-        if not accounts:
-            return 0.0
-
-        domain = [
-            ('account_id', 'in', accounts.ids),
-            ('date', '>=', date_from),
-            ('date', '<=', date_to),
-            ('move_id.state', '=', 'posted')
-        ]
-
-        moves = self.env['account.move.line'].sudo().search(domain)
-        return sum(moves.mapped('balance'))
-
-    def _get_account_balance_related(self, account_codes, date_from=None, date_to=None):
-        """Get account balance for specified codes and period"""
-        if not date_from or not date_to:
-            date_from, date_to = self._get_date_range()
-
-        if isinstance(account_codes, str):
-            account_codes = [account_codes]
-
-        total_balance = 0.0
-        related_accounts = ['02.2.201', '01.1.110', '01.1.105', '01.1.104']
-        liber_balance = 0.0
-        for related_account_code in related_accounts:
-            related_company_balance = self._get_related_balance(related_account_code, date_from, date_to)
-            liber_balance += related_company_balance
-        total_balance += liber_balance * 0.5
-
-        for account_code in account_codes:
-            company_balance = self._get_single_account_balance(account_code, date_from, date_to)
-            total_balance += company_balance
-
-        return total_balance
-
-    def _get_single_account_balance(self, account_code, date_from, date_to):
-        """Get balance for a single account code from Trial Balance report."""
-        if not self.company_id:
-            return 0.0
-
-        trial_balance_report = self.env.ref('account_reports.trial_balance_report').sudo().with_company(self.company_id).with_context(
-            allowed_company_ids=[self.company_id.id]
-        )
-        previous_options = {
-            'date': {
-                'date_from': date_from.strftime('%Y-%m-%d'),
-                'date_to': date_to.strftime('%Y-%m-%d'),
-                'mode': 'range'
-            },
-            'companies': [{'id': self.company_id.id, 'name': self.company_id.name}],
-        }
-        report_options = trial_balance_report.get_options(previous_options)
-        lines = trial_balance_report._get_lines(report_options)
-
-        for line in lines:
-            name = (line.get('name') or '').strip()
-            code = (line.get('code') or '').strip()
-            if code == account_code or (name and name.split(' ')[0] == account_code):
-                columns = line.get('columns') or []
-                numeric_columns = [col.get('no_format') for col in columns if isinstance(col.get('no_format'), (int, float))]
-                if len(numeric_columns) >= 2:
-                    return numeric_columns[-2] - numeric_columns[-1]
-                if numeric_columns:
-                    return numeric_columns[-1]
-                return 0.0
-        return 0.0
-
-    def _get_related_balance(self, account_code, date_from, date_to):
-        """Get balance for a single related company account code from Trial Balance report."""
-        related_company = self.company_id.related_company_id
-        if not related_company:
-            return 0.0
-
-        trial_balance_report = self.env.ref('account_reports.trial_balance_report').sudo().with_company(related_company).with_context(
-            allowed_company_ids=[related_company.id]
-        )
-        previous_options = {
-            'date': {
-                'date_from': date_from.strftime('%Y-%m-%d'),
-                'date_to': date_to.strftime('%Y-%m-%d'),
-                'mode': 'range'
-            },
-            'companies': [{'id': related_company.id, 'name': related_company.name}],
-        }
-        report_options = trial_balance_report.get_options(previous_options)
-        lines = trial_balance_report._get_lines(report_options)
-
-        for line in lines:
-            name = (line.get('name') or '').strip()
-            code = (line.get('code') or '').strip()
-            if code == account_code or (name and name.split(' ')[0] == account_code):
-                columns = line.get('columns') or []
-                numeric_columns = [col.get('no_format') for col in columns if isinstance(col.get('no_format'), (int, float))]
-                if len(numeric_columns) >= 2:
-                    return numeric_columns[-2] - numeric_columns[-1]
-                if numeric_columns:
-                    return numeric_columns[-1]
-                return 0.0
-        return 0.0
 
     def _get_net_profit(self):
         """Get net profit from standard P&L report using exact same method as standard report"""
@@ -371,44 +430,6 @@ class ThresholdReportWizard(models.TransientModel):
             return lines[0]['columns'][0].get('no_format', 0.0)
 
         return 0.0
-
-    def _get_balance_change_from_trial_balance(self, account_type):
-        """Get balance change by calculating opening and closing balances directly"""
-        date_from, date_to = self._get_date_range()
-
-        # Get opening balance (as of day before period start)
-        opening_date = date_from - relativedelta(days=1)
-        opening_balance = self._get_balance_as_of_date(account_type, opening_date)
-
-        # Get closing balance (as of period end)
-        closing_balance = self._get_balance_as_of_date(account_type, date_to)
-
-        # Return the change (closing - opening)
-        return closing_balance - opening_balance
-
-    def _get_balance_as_of_date(self, account_type, as_of_date):
-        """Get total balance for account type as of specific date"""
-        if not self.company_id:
-            return 0.0
-        # Get accounts of the specified type
-        domain = [('account_type', '=', account_type), ('company_id', '=', self.company_id.id)]
-
-        accounts = self.env['account.account'].sudo().search(domain)
-
-        if not accounts:
-            return 0.0
-        if accounts and account_type == 'asset_current':
-            accounts = accounts.filtered(lambda a: a.code in ['101110', '01.1.401'])
-
-        # Get all move lines up to the specified date
-        move_domain = [
-            ('account_id', 'in', accounts.ids),
-            ('date', '<=', as_of_date),
-            ('move_id.state', '=', 'posted')
-        ]
-
-        moves = self.env['account.move.line'].sudo().search(move_domain)
-        return sum(moves.mapped('balance'))
 
     def _calculate_threshold(self, data):
         """Calculate the Financial Security Threshold"""
