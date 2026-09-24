@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Pricelist Tier Tree View -->
+    <record id="view_pricelist_tier_tree" model="ir.ui.view">
+        <field name="name">pricelist.tier.tree</field>
+        <field name="model">pricelist.tier</field>
+        <field name="arch" type="xml">
+            <tree string="Pricelist Tiers" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="percentage"/>
+                <field name="code"/>
+                <field name="active" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Pricelist Tier Form View -->
+    <record id="view_pricelist_tier_form" model="ir.ui.view">
+        <field name="name">pricelist.tier.form</field>
+        <field name="model">pricelist.tier</field>
+        <field name="arch" type="xml">
+            <form string="Pricelist Tier">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Tier A"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="percentage"/>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description">
+                            <field name="description" placeholder="Add description for this tier..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Pricelist Tier Action -->
+    <record id="action_pricelist_tier" model="ir.actions.act_window">
+        <field name="name">Pricelist Tiers</field>
+        <field name="res_model">pricelist.tier</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new Pricelist Tier
+            </p>
+            <p>
+                Define tiers to assign default percentage extra markups to pricelists and contacts.
+            </p>
+        </field>
+    </record>
+
+    <!-- Pricelist Tier Menu Item under Sales -> Configuration -->
+    <menuitem id="menu_pricelist_tier"
+              name="Pricelist Tiers"
+              action="action_pricelist_tier"
+              parent="sale.menu_sale_config"
+              sequence="30"/>
+
+</odoo>

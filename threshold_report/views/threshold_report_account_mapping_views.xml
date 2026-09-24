@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_threshold_report_account_mapping_tree" model="ir.ui.view">
+        <field name="name">threshold.report.account.mapping.tree</field>
+        <field name="model">threshold.report.account.mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Account Mappings">
+                <field name="company_id" readonly="1"/>
+                <field name="row_key"/>
+                <field name="amount"/>
+                <field name="use_balance_change" invisible="row_key == 'change_payables'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_threshold_report_account_mapping_form" model="ir.ui.view">
+        <field name="name">threshold.report.account.mapping.form</field>
+        <field name="model">threshold.report.account.mapping</field>
+        <field name="arch" type="xml">
+            <form string="Account Mapping">
+                <sheet>
+                    <group>
+                        <field name="company_id" options="{'no_create': True}"/>
+                        <field name="row_key"/>
+                        <field name="amount"/>
+                        <field name="use_balance_change" invisible="row_key == 'change_payables'"/>
+                    </group>
+                    <separator string="Accounts"/>
+                    <p class="text-muted">
+                        Leave the amount above at 0 and list the accounts to pull from here instead.
+                        As soon as one account line is added, the manual amount is ignored.
+                        For Capital Investments, Savings, Taxes and Investor Return: if no mapping
+                        row exists at all for a company/row, the Threshold Report wizard's own
+                        manual input field is used instead.
+                        Use Period Change makes the report use this row's closing balance minus
+                        its opening balance for the printed period, instead of the balance posted
+                        during the period — this is always on for Change in Accounts Payable,
+                        which computes its own period-start/period-end difference regardless of
+                        this checkbox.
+                    </p>
+                    <field name="line_ids">
+                        <tree editable="bottom">
+                            <field name="company_id" column_invisible="1"/>
+                            <field name="account_id"/>
+                            <field name="percentage"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_threshold_report_account_mapping" model="ir.actions.act_window">
+        <field name="name">Account Mappings</field>
+        <field name="res_model">threshold.report.account.mapping</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+</odoo>
