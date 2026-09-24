@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Main Header & Emergency Bar Override -->
+    <template id="header_rbc_main" inherit_id="website.layout" name="RBC Main Header &amp; Navigation" priority="99">
+        <xpath expr="//header" position="attributes">
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+        </xpath>
+        <xpath expr="//header" position="after">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <header id="top" data-anchor="true" data-name="Header" class="site-header sticky-top">
+                    <!-- Signature RBC Emergency Line-Down Bar -->
+                    <div class="emergency-bar">
+                        <span class="pulse"/>
+                        LINE DOWN EMERGENCY? SAME-DAY DELIVERY FROM EL PASO — CALL 915-845-8188
+                    </div>
+
+                    <!-- Signature RBC Navigation Header matching Screenshot 1 -->
+                    <nav class="navbar navbar-expand-lg navbar-dark py-2" style="background-color: #181818 !important; border-bottom: 1px solid rgba(254,211,126,0.2) !important;">
+                        <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
+                            <!-- Brand Text Logo: RBC Industrial -->
+                            <a href="/" class="navbar-brand me-4 text-decoration-none d-flex align-items-center">
+                                <span class="rbc-brand-logo fs-3 fw-bold" style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; letter-spacing: -0.01em;">RBC Industrial</span>
+                            </a>
+
+                            <!-- Mobile Toggle Button -->
+                            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#rbcNavCollapse" aria-controls="rbcNavCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                            </button>
+
+                            <!-- Navbar Menu Content -->
+                            <div class="collapse navbar-collapse" id="rbcNavCollapse">
+                                <ul id="top_menu" class="navbar-nav me-auto mb-2 mb-lg-0 d-flex align-items-center gap-3 gap-xl-4" role="menu">
+                                    <li class="nav-item">
+                                        <a href="/shop" class="nav-link text-warning fw-semibold px-2" style="color: #FED37E !important;">Products</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/#industries" class="nav-link text-light fw-semibold px-2">Industries</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/blog" class="nav-link text-light fw-semibold px-2">Knowledge</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/about-us" class="nav-link text-light fw-semibold px-2">About</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/contactus" class="nav-link text-light fw-semibold px-2">Contact</a>
+                                    </li>
+                                    <li class="nav-item d-flex align-items-center ms-1">
+                                        <span class="cert-badges d-flex gap-1">
+                                            <span class="cert-badge" style="background: #4A352C !important; color: #FED37E !important; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 2px; border: 1px solid rgba(254,211,126,0.3);">SDVOSB</span>
+                                            <span class="cert-badge" style="background: #4A352C !important; color: #FED37E !important; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 2px; border: 1px solid rgba(254,211,126,0.3);">TX HUB</span>
+                                        </span>
+                                    </li>
+                                </ul>
+
+                                <!-- Right Side Tools: Search, Cart, Sign In / User Dropdown -->
+                                <ul class="navbar-nav ms-auto align-items-center gap-2 mb-0">
+                                    <li class="nav-item">
+                                        <t t-call="website.placeholder_header_search_box">
+                                            <t t-set="_layout" t-valuef="modal"/>
+                                        </t>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="/shop/cart" class="nav-link px-2 d-flex align-items-center" style="color: #FED37E !important;" title="Cart">
+                                            <i class="fa fa-shopping-cart fs-5 me-1"/>
+                                            <t t-set="website_sale_cart_quantity" t-value="website.sale_get_order().cart_quantity if website else 0"/>
+                                            <span class="badge bg-warning text-dark rounded-pill my-auto ms-1" t-out="website_sale_cart_quantity or '0'"/>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item ms-1">
+                                        <t t-call="portal.placeholder_user_sign_in"/>
+                                        <t t-call="portal.user_dropdown">
+                                            <t t-set="_user_name" t-value="True"/>
+                                            <t t-set="_item_class" t-valuef="dropdown"/>
+                                            <t t-set="_link_class" t-valuef="nav-link text-warning fw-bold small"/>
+                                        </t>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </header>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

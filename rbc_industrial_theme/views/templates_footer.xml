@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Main Footer Override -->
+    <template id="footer_rbc_main" inherit_id="website.layout" name="RBC Main Footer" priority="99">
+        <xpath expr="//div[@id='footer']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[@id='footer']" position="after">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div id="footer" class="oe_structure">
+                    <footer class="site-footer" style="background: #181818 !important; color: #B2ADAC !important; padding: 3rem 0; font-size: 0.85rem; border-top: 1px solid rgba(254,211,126,0.2) !important;">
+                        <div class="container">
+                            <div class="footer-grid d-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                                <div>
+                                    <h4 style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">RBC Industrial LLC</h4>
+                                    <p style="color: #B2ADAC !important; margin-bottom: 0.5rem;">Service-disabled veteran-owned distributor of mechanical power transmission equipment, bearings, and MRO supplies. Founded 1946 — delivering the right product at the right time, every time.</p>
+                                    <p style="color: #B2ADAC !important; margin-top: 0.75rem;">3950 Doniphan Dr. Ste P, El Paso, Texas 79922<br/>Phone: 915-845-8188 | Fax: 915-845-8183<br/>Sales@rbc-industrial.com</p>
+                                    <div class="cert-line d-flex gap-2" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(254,211,126,0.15);">
+                                        <span class="cert-badge" style="background: #4A352C !important; color: #FED37E !important; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 2px;">SDVOSB Certified</span>
+                                        <span class="cert-badge" style="background: #4A352C !important; color: #FED37E !important; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 2px;">Texas HUB Certified</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Solutions</h4>
+                                    <p class="mb-2"><a href="/shop" style="color: #FED37E !important; text-decoration: none;">Precision Bearings</a></p>
+                                    <p class="mb-2"><a href="/shop" style="color: #FED37E !important; text-decoration: none;">Power Transmission</a></p>
+                                    <p class="mb-2"><a href="/shop" style="color: #FED37E !important; text-decoration: none;">Fluid Dynamics</a></p>
+                                    <p class="mb-2"><a href="/contactus" style="color: #FED37E !important; text-decoration: none;">Line Down Support</a></p>
+                                </div>
+                                <div>
+                                    <h4 style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">Resources</h4>
+                                    <p class="mb-2"><a href="/blog" style="color: #FED37E !important; text-decoration: none;">Knowledge Base</a></p>
+                                    <p class="mb-2"><a href="/about-us" style="color: #FED37E !important; text-decoration: none;">About RBC Industrial</a></p>
+                                    <p class="mb-2"><a href="/shop" style="color: #FED37E !important; text-decoration: none;">Line Card (PDF)</a></p>
+                                    <p class="mb-2"><a href="/contactus" style="color: #FED37E !important; text-decoration: none;">Request Quote</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

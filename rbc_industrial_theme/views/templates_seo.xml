@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Inject Google Fonts for RBC Industrial into head -->
+    <template id="head_fonts_rbc" inherit_id="website.layout" name="RBC Google Fonts" priority="5">
+        <xpath expr="//head" position="inside">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <link rel="preconnect" href="https://fonts.googleapis.com"/>
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap"/>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- Inject data-rbc-theme attribute on html element ONLY for RBC Industrial website -->
+    <template id="layout_seo_rbc" inherit_id="website.layout" name="RBC SEO Layout" priority="45">
+        <xpath expr="//html" position="attributes">
+            <attribute name="t-att-data-rbc-theme">request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4) and '1' or None</attribute>
+        </xpath>
+    </template>
+
+</odoo>

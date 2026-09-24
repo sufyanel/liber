@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Industrial About Us Page Template Override -->
+    <template id="aboutus_page_rbc" inherit_id="website.aboutus" name="RBC About Us Page" priority="30">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="after">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div id="wrap" class="oe_structure o_rbc_about_page">
+                    <!-- Breadcrumbs -->
+                    <div class="container">
+                        <div class="breadcrumbs py-3">
+                            <a href="/">Home</a><span class="sep mx-2">›</span>
+                            <span class="current">About RBC Industrial</span>
+                        </div>
+                    </div>
+
+                    <!-- Page Header -->
+                    <div class="container">
+                        <div class="page-header">
+                            <h1>About RBC Industrial</h1>
+                            <p class="lead">A service-disabled veteran-owned distributor with a 1946 military precision legacy — now El Paso's mission-critical partner for industrial MRO and power transmission.</p>
+                        </div>
+                    </div>
+
+                    <!-- Hero Band -->
+                    <section class="hero-band">
+                        <div class="container">
+                            <h1>From Military Precision to <span class="gold">Mission-Critical Industry.</span></h1>
+                            <p>RBC Industrial LLC, 3950 Doniphan Dr. Ste P, El Paso, Texas 79922 · Phone 915-845-8188 · Sales@rbc-industrial.com</p>
+                        </div>
+                    </section>
+
+                    <!-- Company Story -->
+                    <section class="section">
+                        <div class="container">
+                            <div class="story">
+                                <div class="story-copy">
+                                    <div class="section-head" style="margin-bottom:1.25rem;">
+                                        <span class="kicker">Our Story</span>
+                                        <h2>A Legacy of Precision Since 1946</h2>
+                                    </div>
+                                    <p>RBC Industrial traces its roots to <strong>1946</strong>, when a U.S. Navy Naval Engineering Officer founded the original firm on a simple but demanding standard: <strong>military precision</strong>. What began as the Roger Brown Co. legacy of exacting quality and disciplined delivery has evolved into today's RBC Industrial — a modern, service-disabled veteran-owned distributor serving heavy industry across the border region.</p>
+                                    <p>We carry that founding discipline into every bearing, gear reducer, seal, and motor we source. Our team of <strong>trained engineers</strong> applies the same rigor a naval engineer would to a ship's drivetrain — because an idled production line has the same cost as an idled mission.</p>
+                                    <p>Based in El Paso at <strong>3950 Doniphan Dr. Ste P</strong>, we operate as a <strong>brand-agnostic sourcing partner</strong>: no captive brand quotas, no sales scripts — just the right part, cross-referenced and delivered at the right time. Our five-minute proximity to the Juárez border makes us the natural supply link for the maquiladora corridor, and our same-day emergency response keeps lines running on both sides of the bridge.</p>
+                                    <p>Delivering the right product at the right time, every time.</p>
+                                </div>
+                                <aside class="story-card">
+                                    <h3>Company Timeline</h3>
+                                    <ul class="timeline">
+                                        <li>
+                                            <div class="year">1946</div>
+                                            <div class="desc">Founded by a U.S. Navy Naval Engineering Officer on a standard of military precision.</div>
+                                        </li>
+                                        <li>
+                                            <div class="year">Roger Brown Co. Legacy</div>
+                                            <div class="desc">The founding firm's exacting quality and delivery discipline carries forward.</div>
+                                        </li>
+                                        <li>
+                                            <div class="year">Today — RBC Industrial LLC</div>
+                                            <div class="desc">SDVOSB distributor in El Paso serving industrial plants and Juárez maquiladoras.</div>
+                                        </li>
+                                        <li>
+                                            <div class="year">Every Day</div>
+                                            <div class="desc">Engineer-led sales, brand-agnostic sourcing, same-day line-down response.</div>
+                                        </li>
+                                    </ul>
+                                </aside>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Mission Band -->
+                    <section class="mission-band section">
+                        <div class="container">
+                            <blockquote>"Delivering the right product at the right time, every time!"</blockquote>
+                            <div class="attr">The RBC Industrial Mission</div>
+                        </div>
+                    </section>
+
+                    <!-- Engineer-Led Differentiator -->
+                    <section class="section">
+                        <div class="container">
+                            <div class="section-head">
+                                <span class="kicker">The Difference</span>
+                                <h2>Engineer-Led, Not Order-Taking</h2>
+                                <p class="lead">When you call RBC, you reach someone who can read your spec sheet back to you — and challenge it if it's wrong for the application.</p>
+                            </div>
+                            <div class="diff-grid">
+                                <div class="card">
+                                    <div class="icon">EN</div>
+                                    <h3>Engineers on the Phone</h3>
+                                    <p>Our sales team is made of trained engineers. Torque curves, bearing preload, seal chemistry — they speak your language.</p>
+                                </div>
+                                <div class="card">
+                                    <div class="icon">XR</div>
+                                    <h3>Cross-Reference Expertise</h3>
+                                    <p>We identify equivalent parts across manufacturers so you are never locked into a single brand or forced to wait on a sole-source lead time.</p>
+                                </div>
+                                <div class="card">
+                                    <div class="icon">UP</div>
+                                    <h3>Uptime-First Mentality</h3>
+                                    <p>Every recommendation is measured against one metric: keeping your production line running. If it won't run, we won't sell it.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Certifications -->
+                    <section class="section" style="padding-top:0;">
+                        <div class="container">
+                            <div class="section-head">
+                                <span class="kicker">Certifications</span>
+                                <h2>Certified for Government &amp; Prime Contractors</h2>
+                                <p class="lead">RBC Industrial's certifications remove barriers for buyers in the public and private sector alike.</p>
+                            </div>
+                            <div class="cert-grid">
+                                <div class="cert-card card p-4">
+                                    <div class="seal fw-bold text-primary mb-2">SDVOSB</div>
+                                    <h3>Service-Disabled Veteran-Owned</h3>
+                                    <p>Federally recognized SDVOSB certification supporting set-aside opportunities for government and prime contractors.</p>
+                                </div>
+                                <div class="cert-card card p-4">
+                                    <div class="seal fw-bold text-primary mb-2">TX HUB</div>
+                                    <h3>Texas Historically Underutilized Business</h3>
+                                    <p>State of Texas HUB certification enabling participation in state procurement and cooperative contracts.</p>
+                                </div>
+                                <div class="cert-card card p-4">
+                                    <div class="seal fw-bold text-primary mb-2">MIL</div>
+                                    <h3>Military Precision Legacy</h3>
+                                    <p>Founded on the exacting standards of a U.S. Navy Naval Engineering Officer in 1946 — quality, not just compliance.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

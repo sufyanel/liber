@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Product Page Enhancements -->
+    <template id="product_rbc_ctas" inherit_id="website_sale.product" name="RBC Product CTAs &amp; Emergency Banner" priority="50">
+        <!-- Emergency Alert Banner above product details -->
+        <xpath expr="//*[@id='product_detail']" position="before">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div class="rbc-emergency-alert bg-primary text-white p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between container mt-3">
+                    <div>
+                        <span class="pulse d-inline-block bg-danger rounded-circle me-2" style="width:10px; height:10px;"></span>
+                        <strong class="text-warning text-uppercase me-2">LINE DOWN EMERGENCY?</strong>
+                        <span class="small">Need this exact part dispatched today from El Paso? Call 915-845-8188 immediately.</span>
+                    </div>
+                    <div>
+                        <a href="tel:9158458188" class="btn btn-warning btn-sm fw-bold text-dark text-nowrap">Call 24/7 Desk</a>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Custom CTAs inside product CTA wrapper -->
+        <xpath expr="//*[@id='o_wsale_cta_wrapper']" position="inside">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <t t-set="show_quote" t-value="product._liber_show_request_quote()"/>
+                    <t t-set="show_sign_in" t-value="product._liber_show_sign_in_to_buy()"/>
+                    <a t-if="show_sign_in"
+                       t-att-href="product._liber_signin_buy_url()"
+                       class="btn btn-warning btn-gold fw-bold px-4 py-2">
+                        Sign in to Buy
+                    </a>
+                    <a t-if="show_quote"
+                       t-att-href="'/quote?product_id=%s' % product.id"
+                       class="btn btn-outline-warning btn-outline-gold fw-bold px-4 py-2">
+                        Request Rapid Quote
+                    </a>
+                </div>
+
+                <!-- SDVOSB & HUB Compliance Box under CTAs -->
+                <div class="p-3 bg-light border rounded-3 mt-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="fw-bold small text-dark">Supplier Diversity Compliant</span>
+                        <div class="d-flex gap-1">
+                            <span class="badge bg-primary text-warning">SDVOSB</span>
+                            <span class="badge bg-primary text-warning">TX HUB</span>
+                        </div>
+                    </div>
+                    <div class="text-muted small">100% Genuine OEM factory certified component. Ships from El Paso, TX.</div>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
