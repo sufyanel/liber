@@ -138,14 +138,14 @@
                         <table class="table align-middle m-0 rbc-catalog-table" style="background-color: #ffffff;">
                             <thead style="background-color: #181818; color: #FED37E !important;">
                                 <tr class="text-uppercase fw-bold" style="letter-spacing: 0.8px; font-size: 0.78rem;">
-                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 18%; color: #FED37E !important;">
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 14%; color: #FED37E !important;">
                                         PART NO <span class="text-warning small ms-1">▲</span>
                                     </th>
-                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 28%; color: #FED37E !important;">PRODUCT</th>
-                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 18%; color: #FED37E !important;">CATEGORY</th>
-                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 18%; color: #FED37E !important;">SPEC</th>
-                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 10%; color: #FED37E !important;">STOCK</th>
-                                    <th scope="col" class="py-3 px-3 text-center" style="background-color: #181818; width: 10%; color: #FED37E !important;">
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 25%; color: #FED37E !important;">DESCRIPTION</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 11%; color: #FED37E !important;">CATEGORY</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 32%; color: #FED37E !important;">SPEC</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 9%; color: #FED37E !important;">STOCK</th>
+                                    <th scope="col" class="py-3 px-3 text-center" style="background-color: #181818; width: 9%; color: #FED37E !important;">
                                         <t t-if="not request.session.uid">QUOTE</t>
                                         <t t-else="">ACTION</t>
                                     </th>
@@ -154,17 +154,23 @@
                             <tbody>
                                 <t t-foreach="products" t-as="product">
                                     <tr t-attf-class="rbc-product-row border-bottom #{'bg-light bg-opacity-50' if product_index % 2 == 1 else ''}">
-                                        <!-- PART NO -->
-                                        <td class="py-3 px-3 text-nowrap">
-                                            <a t-att-href="product.website_url" class="text-decoration-none fw-bold text-dark fs-20">
-                                                <t t-esc="product.default_code or ('SKF ' + str(product.id))"/>
-                                            </a>
-                                        </td>
-                                        <!-- PRODUCT NAME -->
+                                        <!-- PART NO: Compact font size & tight width -->
                                         <td class="py-3 px-3">
-                                            <a t-att-href="product.website_url" class="text-decoration-none fw-bold text-dark d-block mb-0">
+                                            <a t-att-href="product.website_url" class="text-decoration-none fw-bold text-dark d-inline-block" style="font-size: 0.85rem; line-height: 1.3; word-break: break-word;">
                                                 <t t-esc="product.name"/>
                                             </a>
+                                        </td>
+                                        <!-- DESCRIPTION: Sales Description truncated with continuation notation (...) -->
+                                        <td class="py-3 px-3">
+                                            <t t-if="product.description_sale">
+                                                <t t-set="desc_val" t-value="product.description_sale.strip()"/>
+                                                <span t-att-title="desc_val" class="text-dark" style="font-size: 0.82rem;">
+                                                    <t t-esc="desc_val[:65] + ('...' if len(desc_val) > 65 else '')"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted">—</span>
+                                            </t>
                                         </td>
                                         <!-- CATEGORY -->
                                         <td class="py-3 px-3">
@@ -173,17 +179,24 @@
                                                 <t t-esc="p_cat"/>
                                             </span>
                                         </td>
-                                        <!-- SPEC -->
-                                        <td class="py-3 px-3 text-secondary" style="font-size: 0.8rem;">
-                                            <t t-set="specs" t-value="[ptav.name for ptav in product.attribute_line_ids.product_template_value_ids[:3]]"/>
-                                            <t t-if="specs">
-                                                <t t-esc="' · '.join(specs)"/>
-                                            </t>
-                                            <t t-elif="product.description_sale">
-                                                <t t-esc="product.description_sale[:35]"/>
+                                        <!-- SPEC: Expanded column with modern attribute pill badges -->
+                                        <td class="py-3 px-3">
+                                            <t t-if="product.attribute_line_ids">
+                                                <div class="d-flex flex-wrap gap-1 align-items-center">
+                                                    <t t-foreach="product.attribute_line_ids[:4]" t-as="aline">
+                                                        <t t-set="v_names" t-value="', '.join(aline.value_ids.mapped('name'))"/>
+                                                        <t t-if="v_names">
+                                                            <span class="badge bg-light text-dark border border-secondary border-opacity-25 py-1 px-2" 
+                                                                  style="font-size: 0.72rem; font-weight: 500; border-radius: 4px; background-color: #f8f9fa;">
+                                                                <span class="text-secondary fw-semibold" style="color: #555 !important;"><t t-esc="aline.attribute_id.name"/>:</span> 
+                                                                <span class="fw-bold text-dark"><t t-esc="v_names"/></span>
+                                                            </span>
+                                                        </t>
+                                                    </t>
+                                                </div>
                                             </t>
                                             <t t-else="">
-                                                <span class="text-muted">Standard Industrial Spec</span>
+                                                <span class="text-muted" style="font-size: 0.8rem;">—</span>
                                             </t>
                                         </td>
                                         <!-- STOCK STATUS -->
@@ -198,7 +211,7 @@
                                                 <span class="text-danger" style="color: #dc2626;"><i class="fa fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle; color: #ef4444;"></i> LEAD TIME</span>
                                             </t>
                                         </td>
-                                        <!-- QUOTE / ACTION (Standard Odoo AJAX Add-To-Cart without redirect) -->
+                                        <!-- QUOTE / ACTION -->
                                         <td class="py-3 px-3 text-center text-nowrap">
                                             <t t-if="not request.session.uid">
                                                 <a t-attf-href="/contactus?product_id=#{product.id}" 
@@ -248,9 +261,11 @@
                                         <h6 class="card-title fw-bold text-dark mb-1 text-truncate" style="font-size: 0.85rem;">
                                             <a t-att-href="product.website_url" class="text-decoration-none text-dark"><t t-esc="product.name"/></a>
                                         </h6>
-                                        <div class="small text-muted mb-2" style="font-size: 0.75rem;">
-                                            <t t-esc="product.default_code or ('SKF ' + str(product.id))"/>
-                                        </div>
+                                        <t t-if="product.description_sale">
+                                            <div class="small text-muted mb-2 text-truncate" style="font-size: 0.75rem;" t-att-title="product.description_sale">
+                                                <t t-esc="product.description_sale"/>
+                                            </div>
+                                        </t>
                                         <div class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between">
                                             <t t-if="not request.session.uid">
                                                 <a t-attf-href="/contactus?product_id=#{product.id}" class="btn btn-warning btn-gold btn-sm fw-bold w-100 text-dark border-0 shadow-sm" style="background-color: #ffc107; font-size: 0.8rem;">RFQ</a>

@@ -13,7 +13,10 @@
                         <div class="container">
                             <div class="footer-grid d-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
                                 <div>
-                                    <h4 style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0.75rem;">RBC Industrial LLC</h4>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <img src="/rbc_industrial_theme/static/image/rbc_logo.png" alt="RBC Industrial" style="max-height: 38px; width: auto; object-fit: contain;"/>
+                                        <h4 style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 0;">RBC Industrial LLC</h4>
+                                    </div>
                                     <p style="color: #B2ADAC !important; margin-bottom: 0.5rem;">Service-disabled veteran-owned distributor of mechanical power transmission equipment, bearings, and MRO supplies. Founded 1946 — delivering the right product at the right time, every time.</p>
                                     <p style="color: #B2ADAC !important; margin-top: 0.75rem;">3950 Doniphan Dr. Ste P, El Paso, Texas 79922<br/>Phone: 915-845-8188 | Fax: 915-845-8183<br/>Sales@rbc-industrial.com</p>
                                     <div class="cert-line d-flex gap-2" style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid rgba(254,211,126,0.15);">

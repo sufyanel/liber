@@ -18,130 +18,142 @@
                     </div>
 
                     <!-- Page Header -->
-                    <div class="container">
+                    <div class="container mb-4">
                         <div class="page-header">
-                            <h1>Contact RBC Industrial</h1>
-                            <p class="lead">Reach our engineer-led sales team for quotes, cross-references, and line-down emergencies. Same-day response from El Paso — guaranteed.</p>
+                            <h1 class="fw-bold mb-2">Contact RBC Industrial</h1>
+                            <p class="lead text-secondary fs-5" style="max-width: 680px;">Reach our engineer-led sales team for quotes, cross-references, and line-down emergencies. Same-day response from El Paso — guaranteed.</p>
                         </div>
                     </div>
 
-                    <!-- Contact Layout -->
-                    <section class="contact-layout container">
-                        <!-- Left: contact methods -->
-                        <div class="contact-methods">
-                            <div class="method-card">
-                                <div class="method-label">Phone — Line Down Emergencies</div>
-                                <div class="method-value"><a href="tel:9158458188">915-845-8188</a></div>
-                                <div class="method-note">Same-day delivery from El Paso. Emergency calls jump the queue.</div>
+                    <!-- Contact Layout: Side-by-Side Bootstrap Grid -->
+                    <section class="container pb-5">
+                        <div class="row align-items-start g-4">
+                            <!-- Left Column: Contact Methods (5 / 12 cols = 41.6%) -->
+                            <div class="col-12 col-lg-5">
+                                <div class="contact-methods d-flex flex-column gap-3">
+                                    <div class="method-card bg-white border rounded-3 p-3 shadow-sm">
+                                        <div class="method-label text-uppercase fw-bold text-primary small mb-1" style="letter-spacing: 0.1em; color: #4A352C !important;">Phone — Line Down Emergencies</div>
+                                        <div class="method-value fw-bold fs-5 text-dark"><a href="tel:9158458188" class="text-dark text-decoration-none">915-845-8188</a></div>
+                                        <div class="method-note text-secondary small mt-1">Same-day delivery from El Paso. Emergency calls jump the queue.</div>
+                                    </div>
+                                    <div class="method-card bg-white border rounded-3 p-3 shadow-sm">
+                                        <div class="method-label text-uppercase fw-bold text-primary small mb-1" style="letter-spacing: 0.1em; color: #4A352C !important;">Fax</div>
+                                        <div class="method-value fw-bold fs-5 text-dark">915-845-8183</div>
+                                        <div class="method-note text-secondary small mt-1">For PO confirmation and legacy purchase orders.</div>
+                                    </div>
+                                    <div class="method-card bg-white border rounded-3 p-3 shadow-sm">
+                                        <div class="method-label text-uppercase fw-bold text-primary small mb-1" style="letter-spacing: 0.1em; color: #4A352C !important;">Email — Sales &amp; Quotes</div>
+                                        <div class="method-value fw-bold fs-5 text-dark"><a href="mailto:Sales@rbc-industrial.com" class="text-dark text-decoration-none">Sales@rbc-industrial.com</a></div>
+                                        <div class="method-note text-secondary small mt-1">Include part numbers and quantities for fastest turnaround.</div>
+                                    </div>
+                                    <div class="method-card bg-white border rounded-3 p-3 shadow-sm">
+                                        <div class="method-label text-uppercase fw-bold text-primary small mb-1" style="letter-spacing: 0.1em; color: #4A352C !important;">Address — Warehouse &amp; Office</div>
+                                        <div class="method-value fw-bold fs-5 text-dark">RBC Industrial LLC</div>
+                                        <div class="method-note text-secondary small mt-1">3950 Doniphan Dr. Ste P, El Paso, Texas 79922</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="method-card">
-                                <div class="method-label">Fax</div>
-                                <div class="method-value">915-845-8183</div>
-                                <div class="method-note">For PO confirmation and legacy purchase orders.</div>
-                            </div>
-                            <div class="method-card">
-                                <div class="method-label">Email — Sales &amp; Quotes</div>
-                                <div class="method-value"><a href="mailto:Sales@rbc-industrial.com">Sales@rbc-industrial.com</a></div>
-                                <div class="method-note">Include part numbers and quantities for fastest turnaround.</div>
-                            </div>
-                            <div class="method-card">
-                                <div class="method-label">Address — Warehouse &amp; Office</div>
-                                <div class="method-value">RBC Industrial LLC</div>
-                                <div class="method-note">3950 Doniphan Dr. Ste P, El Paso, Texas 79922</div>
-                            </div>
-                        </div>
 
-                        <!-- Right: Request a Quote form -->
-                        <div class="rfq-form">
-                            <h2>Request a Quote</h2>
-                            <p class="form-sub">Line down? Select "Emergency" for priority handling. Otherwise we respond same business day.</p>
-                            
-                            <form action="/website/form/" method="post" enctype="multipart/form-data" class="s_website_form" data-model_name="crm.lead" data-success_page="/contactus-thank-you">
-                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-                                
-                                <div class="form-row">
-                                    <div class="form-field">
-                                        <label for="f-name">Name *</label>
-                                        <input type="text" id="f-name" name="contact_name" required="required" placeholder="Your full name"/>
-                                    </div>
-                                    <div class="form-field">
-                                        <label for="f-company">Company</label>
-                                        <input type="text" id="f-company" name="partner_name" placeholder="Company name"/>
-                                    </div>
+                            <!-- Right Column: Request a Quote Form (7 / 12 cols = 58.3%) -->
+                            <div class="col-12 col-lg-7">
+                                <div class="rfq-form bg-white border rounded-3 p-4 shadow-sm">
+                                    <h2 class="fw-bold h3 mb-1">Request a Quote</h2>
+                                    <p class="form-sub text-secondary small mb-4">Line down? Select "Emergency" for priority handling. Otherwise we respond same business day.</p>
+                                    
+                                    <form action="/website/form/" method="post" enctype="multipart/form-data" class="s_website_form" data-model_name="crm.lead" data-success_page="/contactus-thank-you">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-name" class="form-label fw-semibold small text-dark mb-1">Name *</label>
+                                                <input type="text" id="f-name" name="contact_name" required="required" placeholder="Your full name" class="form-control bg-white"/>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-company" class="form-label fw-semibold small text-dark mb-1">Company</label>
+                                                <input type="text" id="f-company" name="partner_name" placeholder="Company name" class="form-control bg-white"/>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-email" class="form-label fw-semibold small text-dark mb-1">Email *</label>
+                                                <input type="email" id="f-email" name="email_from" required="required" placeholder="you@company.com" class="form-control bg-white"/>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-phone" class="form-label fw-semibold small text-dark mb-1">Phone *</label>
+                                                <input type="tel" id="f-phone" name="phone" required="required" placeholder="(915) 555-0100" class="form-control bg-white"/>
+                                            </div>
+                                        </div>
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-part" class="form-label fw-semibold small text-dark mb-1">Part Number or Need</label>
+                                                <input type="text" id="f-part" name="part_number" placeholder="e.g. SKF 6205-2RS / or describe application" class="form-control bg-white"/>
+                                            </div>
+                                            <div class="col-12 col-sm-6">
+                                                <label for="f-urgency" class="form-label fw-semibold small text-dark mb-1">Urgency</label>
+                                                <select id="f-urgency" name="priority_level" class="form-select bg-white">
+                                                    <option value="normal">Standard — same business day</option>
+                                                    <option value="urgent">Expedited — 24 hours</option>
+                                                    <option value="line_down">Emergency — line down, call now</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="f-message" class="form-label fw-semibold small text-dark mb-1">Message</label>
+                                            <textarea id="f-message" name="description" placeholder="Application, quantities, required specs, cross-reference info…" class="form-control bg-white" rows="4"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning fw-bold text-dark px-4 py-2" style="background-color: #FED37E !important; border: none !important;">Submit Quote Request</button>
+                                        <p class="form-note mt-2 small text-muted">For immediate line-down emergencies, call 915-845-8188 instead of waiting on this form.</p>
+                                    </form>
                                 </div>
-                                <div class="form-row">
-                                    <div class="form-field">
-                                        <label for="f-email">Email *</label>
-                                        <input type="email" id="f-email" name="email_from" required="required" placeholder="you@company.com"/>
-                                    </div>
-                                    <div class="form-field">
-                                        <label for="f-phone">Phone *</label>
-                                        <input type="tel" id="f-phone" name="phone" required="required" placeholder="(915) 555-0100"/>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-field">
-                                        <label for="f-part">Part Number or Need</label>
-                                        <input type="text" id="f-part" name="part_number" placeholder="e.g. SKF 6205-2RS / or describe application"/>
-                                    </div>
-                                    <div class="form-field">
-                                        <label for="f-urgency">Urgency</label>
-                                        <select id="f-urgency" name="priority_level">
-                                            <option value="normal">Standard — same business day</option>
-                                            <option value="urgent">Expedited — 24 hours</option>
-                                            <option value="line_down">Emergency — line down, call now</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="form-field" style="margin-bottom:1rem;">
-                                    <label for="f-message">Message</label>
-                                    <textarea id="f-message" name="description" placeholder="Application, quantities, required specs, cross-reference info…"></textarea>
-                                </div>
-                                <button type="submit" class="btn-gold">Submit Quote Request</button>
-                                <p class="form-note mt-2 small text-muted">For immediate line-down emergencies, call 915-845-8188 instead of waiting on this form.</p>
-                            </form>
+                            </div>
                         </div>
                     </section>
 
                     <!-- Promise Band -->
-                    <section class="promise-band section">
+                    <section class="promise-band section py-5 my-4" style="background-color: #4A352C !important; color: #FFFFFF !important;">
                         <div class="container">
-                            <div class="promise-inner">
-                                <div class="promise-item">
-                                    <div class="big">Same Business Day</div>
-                                    <div class="small">Quote response on standard requests from El Paso</div>
+                            <div class="row text-center g-4">
+                                <div class="col-12 col-md-4">
+                                    <div class="big fw-bold fs-3" style="color: #FED37E !important;">Same Business Day</div>
+                                    <div class="small mt-1" style="color: #B2ADAC !important; font-size: 0.85rem;">Quote response on standard requests from El Paso</div>
                                 </div>
-                                <div class="promise-item">
-                                    <div class="big">24/7</div>
-                                    <div class="small">Line-down emergency line — call 915-845-8188</div>
+                                <div class="col-12 col-md-4">
+                                    <div class="big fw-bold fs-3" style="color: #FED37E !important;">24/7</div>
+                                    <div class="small mt-1" style="color: #B2ADAC !important; font-size: 0.85rem;">Line-down emergency line — call 915-845-8188</div>
                                 </div>
-                                <div class="promise-item">
-                                    <div class="big">Engineers</div>
-                                    <div class="small">Your request is handled by trained engineers, not order-takers</div>
+                                <div class="col-12 col-md-4">
+                                    <div class="big fw-bold fs-3" style="color: #FED37E !important;">Engineers</div>
+                                    <div class="small mt-1" style="color: #B2ADAC !important; font-size: 0.85rem;">Your request is handled by trained engineers, not order-takers</div>
                                 </div>
                             </div>
                         </div>
                     </section>
 
                     <!-- Info Grid: Hours & Cross-Border -->
-                    <section class="section">
+                    <section class="section py-5">
                         <div class="container">
-                            <div class="section-head">
-                                <span class="kicker">Good To Know</span>
-                                <h2>Hours &amp; Cross-Border Logistics</h2>
+                            <div class="section-head mb-4">
+                                <span class="kicker text-uppercase fw-bold small" style="letter-spacing: 0.12em; color: #4A352C !important;">Good To Know</span>
+                                <h2 class="fw-bold h2">Hours &amp; Cross-Border Logistics</h2>
                             </div>
-                            <div class="diff-grid">
-                                <div class="card p-4">
-                                    <h3 class="h5 fw-bold mb-2">Business Hours</h3>
-                                    <p class="text-secondary small mb-0">Monday – Friday: 7:00 AM – 5:00 PM MT<br/>Saturday: By appointment<br/>Emergency line: 915-845-8188</p>
+                            <div class="row g-4">
+                                <div class="col-12 col-md-4">
+                                    <div class="info-card bg-white border rounded-3 p-4 shadow-sm h-100">
+                                        <h3 class="fw-bold h5 mb-2">Business Hours</h3>
+                                        <p class="text-secondary small mb-0" style="line-height: 1.6;">Monday – Friday: 7:00 AM – 5:00 PM MT<br/>Saturday: By appointment<br/>Emergency line: 915-845-8188</p>
+                                    </div>
                                 </div>
-                                <div class="card p-4">
-                                    <h3 class="h5 fw-bold mb-2">Juárez Cross-Border Supply</h3>
-                                    <p class="text-secondary small mb-0">Located 5 minutes from the border, we serve the Juárez maquiladora corridor with expedited crossing and same-day delivery to all major industrial parks.</p>
+                                <div class="col-12 col-md-4">
+                                    <div class="info-card bg-white border rounded-3 p-4 shadow-sm h-100">
+                                        <h3 class="fw-bold h5 mb-2">Juárez Cross-Border Supply</h3>
+                                        <p class="text-secondary small mb-0" style="line-height: 1.6;">Located 5 minutes from the border, we serve the Juárez maquiladora corridor with expedited crossing and same-day delivery to all major industrial parks.</p>
+                                    </div>
                                 </div>
-                                <div class="card p-4">
-                                    <h3 class="h5 fw-bold mb-2">Brand-Agnostic Sourcing</h3>
-                                    <p class="text-secondary small mb-0">SKF, Timken, Parker, Baldor-Reliance, Bonfiglioli, SEW — we cross-reference and source the right part from any manufacturer to keep your line running.</p>
+                                <div class="col-12 col-md-4">
+                                    <div class="info-card bg-white border rounded-3 p-4 shadow-sm h-100">
+                                        <h3 class="fw-bold h5 mb-2">Brand-Agnostic Sourcing</h3>
+                                        <p class="text-secondary small mb-0" style="line-height: 1.6;">SKF, Timken, Parker, Baldor-Reliance, Bonfiglioli, SEW — we cross-reference and source the right part from any manufacturer to keep your line running.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -152,3 +164,5 @@
     </template>
 
 </odoo>
+
+

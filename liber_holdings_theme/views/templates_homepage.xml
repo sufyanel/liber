@@ -105,7 +105,7 @@
 
     <template id="homepage_liber" inherit_id="website.homepage" name="Liber Homepage Override" priority="99">
         <xpath expr="//div[@id='wrap']" position="replace">
-            <t t-if="request and request.website and request.website.theme_id and request.website.theme_id.name == 'liber_holdings_theme'">
+            <t t-if="request and request.website and (request.website.name == 'Liber Holdings' or request.website.id == 1)">
                 <t t-call="liber_holdings_theme.liber_homepage_body"/>
             </t>
             <t t-else="">

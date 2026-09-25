@@ -18,9 +18,9 @@
                     <!-- Signature RBC Navigation Header matching Screenshot 1 -->
                     <nav class="navbar navbar-expand-lg navbar-dark py-2" style="background-color: #181818 !important; border-bottom: 1px solid rgba(254,211,126,0.2) !important;">
                         <div class="container-fluid container-xl d-flex align-items-center justify-content-between">
-                            <!-- Brand Text Logo: RBC Industrial -->
+                            <!-- Brand Logo: RBC Industrial -->
                             <a href="/" class="navbar-brand me-4 text-decoration-none d-flex align-items-center">
-                                <span class="rbc-brand-logo fs-3 fw-bold" style="color: #FED37E !important; font-family: 'Montserrat', sans-serif; letter-spacing: -0.01em;">RBC Industrial</span>
+                                <img src="/rbc_industrial_theme/static/image/rbc_logo.png" alt="RBC Industrial" class="rbc-header-logo img-fluid" style="max-height: 48px; width: auto; object-fit: contain;"/>
                             </a>
 
                             <!-- Mobile Toggle Button -->
