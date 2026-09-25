@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_x_threshold_dashboard" model="ir.actions.act_window">
+        <field name="name">Threshold Dashboards</field>
+        <field name="res_model">x_threshold_dashboard</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a Threshold dashboard</p>
+            <p>One dashboard per company and year, e.g. RBC Industrial 2026 and Tooling Components 2026.</p>
+        </field>
+    </record>
+
+    <record id="action_threshold_dashboard_client" model="ir.actions.client">
+        <field name="name">Threshold Dashboard</field>
+        <field name="tag">x_threshold_dashboard</field>
+        <field name="params" eval="{
+            'refresh_action_id': ref('threshold_report_dashboard.action_dashboard_refresh'),
+            'report_action_id': ref('threshold_report.threshold_report_wizard_action'),
+            'ap_action_id': ref('threshold_report_ap_import.action_x_threshold_ap_preview'),
+            'settings_action_id': ref('threshold_report_dashboard.action_x_threshold_dashboard'),
+            'ap_compute_action_id': ref('threshold_report_ap_import.action_ap_preview_compute'),
+        }"/>
+    </record>
+
+    <record id="view_x_threshold_dashboard_tree" model="ir.ui.view">
+        <field name="name">x_threshold_dashboard.tree</field>
+        <field name="model">x_threshold_dashboard</field>
+        <field name="arch" type="xml">
+            <tree string="Threshold Dashboards">
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <field name="x_year" options="{'enable_formatting': false}"/>
+                <field name="x_employee_share"/>
+                <field name="x_refreshed"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_dashboard_form" model="ir.ui.view">
+        <field name="name">x_threshold_dashboard.form</field>
+        <field name="model">x_threshold_dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Threshold Dashboard">
+                <header>
+                    <button name="%(threshold_report_dashboard.action_dashboard_refresh)d" type="action"
+                            string="Refresh Data" class="btn-primary" invisible="not id"/>
+                    <button name="%(threshold_report_dashboard.action_threshold_dashboard_client)d" type="action"
+                            string="Open Dashboard" invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="x_name"/>
+                        <h1><field name="x_name" placeholder="e.g. RBC Industrial 2026"/></h1>
+                    </div>
+                    <group>
+                        <group string="Scope">
+                            <field name="x_company_id" options="{'no_create': True}"/>
+                            <field name="x_year" options="{'enable_formatting': false}"/>
+                            <field name="x_active" invisible="1"/>
+                        </group>
+                        <group string="Gain Share">
+                            <field name="x_employee_share"/>
+                            <field name="x_payout_schedule" placeholder="10,20,30,40"/>
+                        </group>
+                        <group string="Custom Range (optional)">
+                            <field name="x_custom_from"/>
+                            <field name="x_custom_to"/>
+                        </group>
+                    </group>
+                    <group string="Manual Values (used only when the row has no Threshold Report account mapping)">
+                        <group>
+                            <field name="x_capex_annual"/>
+                            <field name="x_savings_annual"/>
+                        </group>
+                        <group>
+                            <field name="x_investor_annual"/>
+                            <field name="x_tax_annual"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">Annual amounts are spread evenly: one quarter per quarter, the full amount
+                        for the year. The payout schedule is the share of the year-to-date pool released each quarter.</div>
+                    <group>
+                        <field name="x_refreshed" readonly="1"/>
+                        <field name="x_note" placeholder="Notes..."/>
+                    </group>
+                    <notebook>
+                        <page string="Period Figures" name="periods">
+                            <field name="x_period_ids" readonly="1">
+                                <tree>
+                                    <field name="x_name"/>
+                                    <field name="x_net_profit"/>
+                                    <field name="x_change_ar" optional="show"/>
+                                    <field name="x_change_ap" optional="show"/>
+                                    <field name="x_net_change" optional="show"/>
+                                    <field name="x_threshold"/>
+                                    <field name="x_headroom"/>
+                                    <field name="x_pool" optional="show"/>
+                                    <field name="x_payout_period" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_dashboard_period_form" model="ir.ui.view">
+        <field name="name">x_threshold_dashboard_period.form</field>
+        <field name="model">x_threshold_dashboard_period</field>
+        <field name="arch" type="xml">
+            <form string="Threshold Period" create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title"><h1><field name="x_name" readonly="1"/></h1></div>
+                    <group>
+                        <group string="Period">
+                            <field name="x_dashboard_id" readonly="1"/>
+                            <field name="x_date_from" readonly="1"/>
+                            <field name="x_date_to" readonly="1"/>
+                        </group>
+                        <group string="Result">
+                            <field name="x_net_profit" readonly="1"/>
+                            <field name="x_threshold" readonly="1"/>
+                            <field name="x_headroom" readonly="1"/>
+                            <field name="x_pool" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Threshold Lines">
+                            <field name="x_taxes" readonly="1"/>
+                            <field name="x_depreciation" readonly="1"/>
+                            <field name="x_capex" readonly="1"/>
+                            <field name="x_change_ar" readonly="1"/>
+                            <field name="x_change_ap" readonly="1"/>
+                            <field name="x_net_change" readonly="1"/>
+                            <field name="x_change_inventory" readonly="1"/>
+                            <field name="x_debt" readonly="1"/>
+                            <field name="x_investor" readonly="1"/>
+                            <field name="x_savings" readonly="1"/>
+                        </group>
+                        <group string="Gain Share &amp; Payables">
+                            <field name="x_ytd_headroom" readonly="1"/>
+                            <field name="x_ytd_pool" readonly="1"/>
+                            <field name="x_payout_cum" readonly="1"/>
+                            <field name="x_payout_period" readonly="1"/>
+                            <field name="x_ap_opening" readonly="1"/>
+                            <field name="x_ap_closing" readonly="1"/>
+                            <field name="x_source_ap_closing" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">Threshold = &#8722;Taxes + Depreciation &#8722; Capital Investments + Net Change in A/R and A/P + Change in Inventory &#8722; Debt Retirement &#8722; Investor Return &#8722; Savings. Headroom = Net Profit + Threshold.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <menuitem id="menu_threshold_dashboard_client"
+              name="Threshold Dashboard"
+              parent="account.menu_finance_reports"
+              action="action_threshold_dashboard_client"
+              sequence="99"/>
+    <menuitem id="menu_x_threshold_dashboard"
+              name="Threshold Dashboards"
+              parent="account.account_account_menu"
+              action="action_x_threshold_dashboard"
+              groups="account.group_account_manager"
+              sequence="123"/>
+</odoo>

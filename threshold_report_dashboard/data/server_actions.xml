@@ -1,0 +1,456 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_dashboard_refresh" model="ir.actions.server">
+        <field name="name">Refresh Threshold Dashboard</field>
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="binding_model_id" ref="model_x_threshold_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Refresh Threshold Dashboard(s). Rebuilds Q1-Q4 and the full year for each
+# selected dashboard from the Threshold Report account mappings (same rules as
+# the report), the AP allocation engine, and the P&L accounts.
+# Sandbox-safe: no imports, no underscore methods, no closures.
+
+# ---- AP allocation core (bulk version). Sandbox-safe: no imports, no
+# underscore methods, no closures (helpers use only arguments and globals).
+
+def ap_owed_by_dates(account_ids, dates, currency):
+    """{date: {move_id: owed}} for several dates from ONE read of the payable
+    lines and ONE read of their reconciliations."""
+    result = {}
+    for d in dates:
+        result[d] = {}
+    if not account_ids or not dates:
+        return result
+    max_d = max(dates)
+    min_d = min(dates)
+    lines = env['account.move.line'].sudo().search_read([
+        ('account_id', 'in', account_ids), ('parent_state', '=', 'posted'), ('date', '<=', max_d),
+        '|', '|', ('reconciled', '=', False),
+        ('matched_debit_ids.max_date', '>', min_d), ('matched_credit_ids.max_date', '>', min_d),
+    ], ['balance', 'move_id', 'date'])
+    if not lines:
+        return result
+    line_ids = []
+    for line in lines:
+        line_ids.append(line['id'])
+    partials = env['account.partial.reconcile'].sudo().search_read([
+        '|', ('debit_move_id', 'in', line_ids), ('credit_move_id', 'in', line_ids), ('max_date', '<=', max_d),
+    ], ['debit_move_id', 'credit_move_id', 'amount', 'max_date'])
+    adjust = {}
+    for p in partials:
+        adjust.setdefault(p['credit_move_id'][0], []).append((p['max_date'], p['amount']))
+        adjust.setdefault(p['debit_move_id'][0], []).append((p['max_date'], -p['amount']))
+    for line in lines:
+        move_id = line['move_id'][0]
+        items = adjust.get(line['id'], [])
+        for d in dates:
+            if line['date'] > d:
+                continue
+            residual = line['balance']
+            for item in items:
+                if item[0] <= d:
+                    residual += item[1]
+            if residual:
+                result[d][move_id] = result[d].get(move_id, 0.0) - residual
+    for d in dates:
+        clean = {}
+        for move_id in result[d]:
+            if not currency.is_zero(result[d][move_id]):
+                clean[move_id] = result[d][move_id]
+        result[d] = clean
+    return result
+
+
+def ap_owner_ids(rule):
+    partners = (rule.x_owner_partner_ids | rule.x_company_id.partner_id).sudo()
+    return set(partners.ids) | set(partners.mapped('commercial_partner_id').ids)
+
+
+def ap_classify(move_ids, rule, owner_ids):
+    """Owner / other / unlinked split of every move, using a handful of bulk reads."""
+    info = {}
+    if not move_ids:
+        return info
+    moves = env['account.move'].sudo().browse(move_ids).read(['move_type'])
+    move_type = {}
+    for m in moves:
+        move_type[m['id']] = m['move_type']
+    inv_lines = env['account.move.line'].sudo().search_read(
+        [('move_id', 'in', move_ids), ('display_type', '=', 'product')], ['move_id', 'price_total', 'purchase_line_id'])
+    pol_ids = set()
+    for l in inv_lines:
+        if l['purchase_line_id']:
+            pol_ids.add(l['purchase_line_id'][0])
+    pols = {}
+    po_ids = set()
+    sol_ids = set()
+    if pol_ids:
+        for r in env['purchase.order.line'].sudo().browse(list(pol_ids)).read(['order_id', 'sale_line_id']):
+            pols[r['id']] = r
+            po_ids.add(r['order_id'][0])
+            if r['sale_line_id']:
+                sol_ids.add(r['sale_line_id'][0])
+    pos = {}
+    origin_names = set()
+    if po_ids:
+        for r in env['purchase.order'].sudo().browse(list(po_ids)).read(['name', 'dest_address_id', 'origin']):
+            pos[r['id']] = r
+            if r['origin']:
+                for part in r['origin'].split(','):
+                    if part.strip():
+                        origin_names.add(part.strip())
+    sol_order = {}
+    so_ids = set()
+    if sol_ids:
+        for r in env['sale.order.line'].sudo().browse(list(sol_ids)).read(['order_id']):
+            sol_order[r['id']] = r['order_id'][0]
+            so_ids.add(r['order_id'][0])
+    sos = {}
+    so_by_name = {}
+    if so_ids or origin_names:
+        for r in env['sale.order'].sudo().search_read(
+                ['|', ('id', 'in', list(so_ids)), ('name', 'in', list(origin_names))],
+                ['name', 'partner_id', 'partner_invoice_id']):
+            sos[r['id']] = r
+            so_by_name[r['name']] = r
+    partner_ids = set()
+    for so in sos.values():
+        if so['partner_id']:
+            partner_ids.add(so['partner_id'][0])
+        if so['partner_invoice_id']:
+            partner_ids.add(so['partner_invoice_id'][0])
+    for po in pos.values():
+        if po['dest_address_id']:
+            partner_ids.add(po['dest_address_id'][0])
+    commercial = {}
+    if partner_ids:
+        for r in env['res.partner'].sudo().browse(list(partner_ids)).read(['commercial_partner_id']):
+            commercial[r['id']] = r['commercial_partner_id'] and r['commercial_partner_id'][0]
+    # owner of each sale order
+    so_owner = {}
+    for so in sos.values():
+        hit = False
+        for key in ('partner_id', 'partner_invoice_id'):
+            if so[key] and (so[key][0] in owner_ids or commercial.get(so[key][0]) in owner_ids):
+                hit = True
+        so_owner[so['id']] = hit
+    pol_owner = {}
+    for pol_id in pols:
+        pol = pols[pol_id]
+        po = pos[pol['order_id'][0]]
+        result = ['other', '', '']
+        dest = po['dest_address_id'] and po['dest_address_id'][0]
+        so_id = pol['sale_line_id'] and sol_order.get(pol['sale_line_id'][0])
+        if so_id:
+            result[2] = sos[so_id]['name'] if so_id in sos else ''
+        if rule.x_match_dropship and dest and (dest in owner_ids or commercial.get(dest) in owner_ids):
+            result[0] = 'owner'
+            result[1] = 'Drop-ship address'
+        elif rule.x_match_sale and so_id:
+            if so_owner.get(so_id):
+                result[0] = 'owner'
+                result[1] = 'Sales order customer'
+        elif rule.x_match_sale and po['origin']:
+            names = []
+            owners = set()
+            for part in po['origin'].split(','):
+                so = so_by_name.get(part.strip())
+                if so:
+                    names.append(so['name'])
+                    owners.add(so_owner.get(so['id']))
+            if names and owners == {True}:
+                result[0] = 'owner'
+                result[1] = 'PO source document'
+                result[2] = ', '.join(names)
+        pol_owner[pol_id] = result
+    weights = {}
+    extra = {}
+    for mid in move_ids:
+        weights[mid] = {'owner': 0.0, 'other': 0.0, 'unlinked': 0.0}
+        extra[mid] = {'reasons': set(), 'pos': set(), 'sos': set()}
+    for l in inv_lines:
+        mid = l['move_id'][0]
+        if move_type.get(mid) not in ('in_invoice', 'in_refund'):
+            continue
+        w = abs(l['price_total'] or 0.0)
+        if not l['purchase_line_id']:
+            weights[mid]['unlinked'] += w
+            continue
+        owner = pol_owner.get(l['purchase_line_id'][0], ['other', '', ''])
+        weights[mid][owner[0]] += w
+        po = pos.get(pols[l['purchase_line_id'][0]]['order_id'][0]) if l['purchase_line_id'][0] in pols else None
+        if po:
+            extra[mid]['pos'].add(po['name'])
+        if owner[2]:
+            extra[mid]['sos'].add(owner[2])
+        if owner[1]:
+            extra[mid]['reasons'].add(owner[1])
+    for mid in move_ids:
+        w = weights[mid]
+        total = w['owner'] + w['other'] + w['unlinked']
+        if not total:
+            w = {'owner': 0.0, 'other': 0.0, 'unlinked': 1.0}
+            total = 1.0
+        info[mid] = {
+            'owner': w['owner'] / total, 'other': w['other'] / total, 'unlinked': w['unlinked'] / total,
+            'reason': ', '.join(sorted(extra[mid]['reasons'])),
+            'purchase_orders': ', '.join(sorted(extra[mid]['pos'])),
+            'sale_orders': ', '.join(sorted(extra[mid]['sos'])),
+        }
+    return info
+
+
+def ap_allocate(rule, owed, info, currency):
+    """Aggregate one date's owed amounts into the allocation figures."""
+    totals = {'owner': 0.0, 'other': 0.0, 'unlinked': 0.0}
+    detail = {}
+    for mid in owed:
+        amount = owed[mid]
+        i = info[mid]
+        detail[mid] = {'owed': amount, 'owner': amount * i['owner'], 'unlinked': amount * i['unlinked']}
+        totals['owner'] += amount * i['owner']
+        totals['other'] += amount * i['other']
+        totals['unlinked'] += amount * i['unlinked']
+    linked_total = totals['owner'] + totals['other']
+    ratio = 0.0
+    if linked_total > 0 and not currency.is_zero(linked_total):
+        ratio = min(max(totals['owner'] / linked_total, 0.0), 1.0)
+    share = rule.x_unlinked_policy == 'allocate'
+    allocated = totals['unlinked'] * ratio if share else 0.0
+    for mid in detail:
+        row = detail[mid]
+        row['allocated'] = row['unlinked'] * ratio if share else 0.0
+        row['company'] = row['owner'] + row['allocated']
+    return {'totals': totals, 'ratio': ratio, 'allocated': allocated, 'moves': detail,
+            'item_total': totals['owner'] + totals['other'] + totals['unlinked']}
+
+
+def ap_gl_owed(account_ids, as_of):
+    if not account_ids:
+        return 0.0
+    groups = env['account.move.line'].sudo().read_group(
+        [('account_id', 'in', account_ids), ('parent_state', '=', 'posted'), ('date', '<=', as_of)], ['balance:sum'], [])
+    if not groups or not groups[0].get('balance'):
+        return 0.0
+    return -groups[0]['balance']
+
+
+PL_TYPES = ['income', 'income_other', 'expense', 'expense_depreciation', 'expense_direct_cost']
+
+
+def balances_by_account(account_ids, date_from, date_to):
+    domain = [('account_id', 'in', account_ids), ('parent_state', '=', 'posted'), ('date', '<=', date_to)]
+    if date_from:
+        domain.append(('date', '>=', date_from))
+    result = {}
+    for group in env['account.move.line'].sudo().read_group(domain, ['balance:sum'], ['account_id']):
+        result[group['account_id'][0]] = group['balance'] or 0.0
+    return result
+
+
+def mapping_value(company, row_key, date_from, date_to, default):
+    """Same rules as the Threshold Report wizard."""
+    mapping = env['threshold.report.account.mapping'].sudo().search(
+        [('company_id', '=', company.id), ('row_key', '=', row_key)], limit=1)
+    if not mapping:
+        return default
+    if not mapping.line_ids:
+        return mapping.amount or 0.0
+    account_ids = mapping.line_ids.mapped('account_id').ids
+    total = 0.0
+    if mapping.use_balance_change:
+        opening = balances_by_account(account_ids, False, date_from - datetime.timedelta(days=1))
+        closing = balances_by_account(account_ids, False, date_to)
+        for line in mapping.line_ids:
+            change = closing.get(line.account_id.id, 0.0) - opening.get(line.account_id.id, 0.0)
+            total += change * (line.percentage or 0.0) / 100.0
+        return total
+    period = balances_by_account(account_ids, date_from, date_to)
+    for line in mapping.line_ids:
+        total += period.get(line.account_id.id, 0.0) * (line.percentage or 0.0) / 100.0
+    return total
+
+
+def net_profit(company, date_from, date_to):
+    groups = env['account.move.line'].sudo().read_group([
+        ('company_id', '=', company.id),
+        ('account_id.account_type', 'in', PL_TYPES),
+        ('parent_state', '=', 'posted'),
+        ('date', '>=', date_from),
+        ('date', '<=', date_to),
+    ], ['balance:sum'], [])
+    if not groups or not groups[0].get('balance'):
+        return 0.0
+    return -groups[0]['balance']
+
+
+def parse_schedule(text):
+    values = []
+    for part in (text or '10,20,30,40').split(','):
+        part = part.strip()
+        if part:
+            values.append(float(part))
+    while len(values) < 4:
+        values.append(0.0)
+    return values[:4]
+
+
+today = datetime.date.today()
+custom_only = env.context.get('threshold_custom_only')
+targets = records or (record and [record]) or []
+for dashboard in targets:
+    dashboard = dashboard.sudo()
+    company = dashboard.x_company_id
+    year = dashboard.x_year
+    if not company or not year or year < 2000 or year > 2100:
+        raise UserError("Set a company and a valid year on the dashboard.")
+    share = dashboard.x_employee_share or 0.0
+    schedule = parse_schedule(dashboard.x_payout_schedule)
+    rule = env['x_threshold_ap_rule'].sudo().search([('x_company_id', '=', company.id)], limit=1)
+
+    periods = []
+    quarter_list = [] if custom_only else [1, 2, 3, 4]
+    for quarter in quarter_list:
+        start = datetime.date(year, quarter * 3 - 2, 1)
+        periods.append({'code': 'Q%d' % quarter, 'name': 'Q%d %d' % (quarter, year), 'from': start,
+                        'to': start + dateutil.relativedelta.relativedelta(months=3, days=-1), 'factor': 0.25, 'year': False,
+                        'seq': quarter})
+    if not custom_only:
+        periods.append({'code': 'FY', 'name': 'FY %d' % year, 'from': datetime.date(year, 1, 1),
+                        'to': datetime.date(year, 12, 31), 'factor': 1.0, 'year': True, 'seq': 5})
+    c_from = dashboard.x_custom_from
+    c_to = dashboard.x_custom_to
+    if custom_only and (not c_from or not c_to or c_from > c_to):
+        raise UserError("Choose a custom start date on or before the end date.")
+    if c_from and c_to and c_from <= c_to:
+        days = (c_to - c_from).days + 1
+        # Stored as a 'year-like' row so it never enters quarter totals or the Dashboards app sums
+        periods.append({'code': 'CUSTOM', 'name': '%s to %s' % (c_from.strftime('%m/%d/%Y'), c_to.strftime('%m/%d/%Y')),
+                        'from': c_from, 'to': c_to, 'factor': days / 365.0, 'year': True, 'custom': True, 'seq': 6})
+
+    # ---- AP allocation for every boundary date in ONE pass (no temporary records)
+    ap_by_date = {}
+    if rule:
+        currency = rule.x_source_company_id.currency_id
+        dates = set()
+        for period in periods:
+            if period['from'] <= today:
+                dates.add(period['from'] - datetime.timedelta(days=1))
+                dates.add(period['to'])
+        dates = sorted(dates)
+        owed = ap_owed_by_dates(rule.x_payable_account_ids.ids, dates, currency)
+        moves_needed = set()
+        for d in dates:
+            moves_needed |= set(owed[d].keys())
+        info = ap_classify(list(moves_needed), rule, ap_owner_ids(rule))
+        for d in dates:
+            alloc = ap_allocate(rule, owed[d], info, currency)
+            own = ap_gl_owed(rule.x_own_account_ids.ids, d)
+            ap_by_date[d] = {'total': alloc['totals']['owner'] + alloc['allocated'] + own,
+                             'source': alloc['item_total'], 'moves': alloc['moves']}
+
+    rows = []
+    vendor_source = None
+    vendor_as_of = False
+    ytd_headroom = 0.0
+    previous_payout = 0.0
+    cumulative_pct = 0.0
+    for period in periods:
+        future = period['from'] > today
+        values = {
+            'x_dashboard_id': dashboard.id, 'x_name': period['name'], 'x_code': period['code'],
+            'x_sequence': period['seq'], 'x_date_from': period['from'], 'x_date_to': period['to'],
+            'x_is_future': future, 'x_is_year': period['year'], 'x_is_custom': period.get('custom', False),
+        }
+        if not future:
+            a = period['from']
+            b = period['to']
+            f = period['factor']
+            np_value = net_profit(company, a, b)
+            taxes = mapping_value(company, 'taxes', a, b, (dashboard.x_tax_annual or 0.0) * f)
+            depreciation = mapping_value(company, 'depreciation', a, b, 0.0)
+            capex = mapping_value(company, 'capital_investments', a, b, (dashboard.x_capex_annual or 0.0) * f)
+            change_ar = mapping_value(company, 'change_ar', a, b, 0.0)
+            change_inventory = mapping_value(company, 'change_inventory', a, b, 0.0)
+            debt = mapping_value(company, 'debt_retirement', a, b, 0.0)
+            investor = mapping_value(company, 'investor_return', a, b, (dashboard.x_investor_annual or 0.0) * f)
+            savings = mapping_value(company, 'savings', a, b, (dashboard.x_savings_annual or 0.0) * f)
+            salary = mapping_value(company, 'salary', a, b, 0.0)
+            ap_opening = ap_closing = source_closing = 0.0
+            if rule:
+                ap_open = ap_by_date[a - datetime.timedelta(days=1)]
+                ap_close = ap_by_date[b]
+                change_ap = ap_close['total'] - ap_open['total']
+                ap_opening = ap_open['total']
+                ap_closing = ap_close['total']
+                source_closing = ap_close['source']
+                if rule.x_net_change_mode == 'ar_minus_ap':
+                    net_change = change_ar - change_ap
+                else:
+                    net_change = change_ar + change_ap
+                if not period['year']:
+                    vendor_source = ap_close
+                    vendor_as_of = min(b, today)
+            else:
+                change_ap = mapping_value(company, 'change_payables', a, b, 0.0)
+                net_change = change_ar + change_ap
+            # Same formula as the Threshold Report
+            threshold = (-taxes + depreciation - capex + net_change + change_inventory
+                         - debt - investor - savings)
+            headroom = np_value + threshold
+            values.update({
+                'x_net_profit': np_value, 'x_salary': salary, 'x_taxes': taxes, 'x_depreciation': depreciation,
+                'x_capex': capex, 'x_change_ar': change_ar, 'x_change_ap': change_ap, 'x_net_change': net_change,
+                'x_change_inventory': change_inventory, 'x_debt': debt, 'x_investor': investor, 'x_savings': savings,
+                'x_threshold': threshold, 'x_headroom': headroom, 'x_pool': max(headroom, 0.0) * share / 100.0,
+                'x_ap_opening': ap_opening, 'x_ap_closing': ap_closing, 'x_source_ap_closing': source_closing,
+            })
+            if not period['year']:
+                ytd_headroom += headroom
+                cumulative_pct += schedule[period['seq'] - 1]
+                ytd_pool = max(ytd_headroom, 0.0) * share / 100.0
+                payout_cum = ytd_pool * min(cumulative_pct, 100.0) / 100.0
+                values.update({
+                    'x_ytd_headroom': ytd_headroom, 'x_ytd_pool': ytd_pool, 'x_payout_pct': cumulative_pct,
+                    'x_payout_cum': payout_cum, 'x_payout_period': payout_cum - previous_payout,
+                })
+                previous_payout = payout_cum
+        rows.append(values)
+
+    if custom_only:
+        dashboard.x_period_ids.filtered(lambda p: p.x_is_custom).unlink()
+        env['x_threshold_dashboard_period'].sudo().create(rows)
+        continue
+    dashboard.x_period_ids.unlink()
+    env['x_threshold_dashboard_period'].sudo().create(rows)
+    dashboard.x_vendor_ids.unlink()
+    vendor_rows = []
+    if vendor_source:
+        share_moves = []
+        for mid in vendor_source['moves']:
+            if vendor_source['moves'][mid]['company']:
+                share_moves.append(mid)
+        totals_by_vendor = {}
+        docs_by_vendor = {}
+        for m in env['account.move'].sudo().browse(share_moves).read(['partner_id']):
+            vendor = m['partner_id'] and m['partner_id'][1] or 'Unknown vendor'
+            totals_by_vendor[vendor] = totals_by_vendor.get(vendor, 0.0) + vendor_source['moves'][m['id']]['company']
+            docs_by_vendor[vendor] = docs_by_vendor.get(vendor, 0) + 1
+        items = sorted(totals_by_vendor.items(), key=lambda kv: -kv[1])
+        for item in items[:10]:
+            if item[1] > 0:
+                vendor_rows.append({'x_dashboard_id': dashboard.id, 'x_name': item[0], 'x_amount': item[1],
+                                    'x_documents': docs_by_vendor.get(item[0], 0)})
+    if vendor_rows:
+        env['x_threshold_dashboard_vendor'].sudo().create(vendor_rows)
+    dashboard.write({
+        'x_refreshed': datetime.datetime.now(),
+        'x_currency_code': company.currency_id.name,
+        'x_vendor_as_of': vendor_as_of,
+        'x_has_ap_rule': bool(rule),
+        'x_name': dashboard.x_name or '%s %s' % (company.name, year),
+    })
+]]></field>
+    </record>
+</odoo>

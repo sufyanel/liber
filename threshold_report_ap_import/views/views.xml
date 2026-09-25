@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Allocation rule ============ -->
+    <record id="view_x_threshold_ap_rule_tree" model="ir.ui.view">
+        <field name="name">x_threshold_ap_rule.tree</field>
+        <field name="model">x_threshold_ap_rule</field>
+        <field name="arch" type="xml">
+            <tree string="AP Allocation Rules">
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <field name="x_source_company_id"/>
+                <field name="x_payable_account_ids" widget="many2many_tags"/>
+                <field name="x_unlinked_policy"/>
+                <field name="x_net_change_mode"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_ap_rule_form" model="ir.ui.view">
+        <field name="name">x_threshold_ap_rule.form</field>
+        <field name="model">x_threshold_ap_rule</field>
+        <field name="arch" type="xml">
+            <form string="AP Allocation Rule">
+                <header>
+                    <button name="%(threshold_report_ap_import.action_ap_open_preview)d" type="action"
+                            string="Preview Allocation" class="btn-primary" invisible="not id"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="x_active"/>
+                    <div class="oe_title">
+                        <label for="x_name"/>
+                        <h1><field name="x_name" placeholder="e.g. RBC Industrial from Liber Holdings AP"/></h1>
+                    </div>
+                    <group>
+                        <group string="Companies">
+                            <field name="x_company_id" options="{'no_create': True}"/>
+                            <field name="x_source_company_id" options="{'no_create': True}"/>
+                            <field name="x_active" invisible="1"/>
+                        </group>
+                        <group string="Calculation">
+                            <field name="x_unlinked_policy"/>
+                            <field name="x_net_change_mode"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Accounts &amp; Matching" name="setup">
+                            <group>
+                                <group string="Payables to Split">
+                                    <field name="x_payable_account_ids" widget="many2many_tags" options="{'no_create': True}"
+                                           domain="[('company_id', '=', x_source_company_id), ('account_type', '=', 'liability_payable')]"/>
+                                    <field name="x_own_account_ids" widget="many2many_tags" options="{'no_create': True}"
+                                           domain="[('company_id', '=', x_company_id), ('account_type', '=', 'liability_payable')]"/>
+                                </group>
+                                <group string="How a Purchase Line Is Recognised">
+                                    <field name="x_match_sale"/>
+                                    <field name="x_match_dropship"/>
+                                    <field name="x_owner_partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                            <field name="x_note" placeholder="Internal notes, e.g. what was agreed with the client..."/>
+                        </page>
+                        <page string="How It Works" name="help">
+                            <table class="table table-sm table-bordered">
+                                <thead><tr><th>Step</th><th>What happens</th></tr></thead>
+                                <tbody>
+                                    <tr><td>1. Amount owed on a date</td>
+                                        <td>Every open item on the purchasing company's payable accounts: posted amount minus
+                                            payments and credit notes reconciled with it on or before that date. A bill paid
+                                            after the date still counts as owed on it. The items add up to the GL balance.</td></tr>
+                                    <tr><td>2. Who the bill belongs to</td>
+                                        <td>Each bill line is followed to its purchase order. It belongs to the report company
+                                            when the sales order behind it (drop-ship flow) is addressed to it, or the PO is
+                                            delivered to its address. Mixed bills are split by line amount.</td></tr>
+                                    <tr><td>3. Items without a PO link</td>
+                                        <td>Freight, services, manual bills, journal entries and opening balances are ignored or
+                                            shared by the report company's ratio of linked payables.</td></tr>
+                                    <tr><td>4. Allocated AP</td>
+                                        <td>Direct share + allocated share (+ own payable accounts, if set).</td></tr>
+                                    <tr><td>5. Change in A/P</td>
+                                        <td>Closing allocated AP (period end) - opening allocated AP (day before period start).</td></tr>
+                                    <tr><td>6. Threshold Report</td>
+                                        <td>When you click <b>Download Excel Report</b>, the change is written as the manual amount
+                                            of the company's "Change in Accounts Payable" row (as a negative figure when
+                                            "A/R - A/P" is selected, because the report adds that row to Change in A/R). A
+                                            preview record named after the report period is kept under Threshold AP Breakdown
+                                            as the audit trail.</td></tr>
+                                </tbody>
+                            </table>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_ap_rule_search" model="ir.ui.view">
+        <field name="name">x_threshold_ap_rule.search</field>
+        <field name="model">x_threshold_ap_rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <filter name="archived" string="Archived" domain="[('x_active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_x_threshold_ap_rule" model="ir.actions.act_window">
+        <field name="name">Threshold AP Allocation</field>
+        <field name="res_model">x_threshold_ap_rule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an AP allocation rule</p>
+            <p>One rule per report company, e.g. RBC Industrial and Tooling Components, both taking their share
+                of Liber Holdings' vendor bills.</p>
+        </field>
+    </record>
+
+    <!-- ============ Preview ============ -->
+    <record id="view_x_threshold_ap_preview_tree" model="ir.ui.view">
+        <field name="name">x_threshold_ap_preview.tree</field>
+        <field name="model">x_threshold_ap_preview</field>
+        <field name="arch" type="xml">
+            <tree string="AP Allocation Previews">
+                <field name="x_name"/>
+                <field name="x_rule_id"/>
+                <field name="x_date_from"/>
+                <field name="x_date_to"/>
+                <field name="x_opening_total"/>
+                <field name="x_closing_total"/>
+                <field name="x_change"/>
+                <field name="x_source" optional="show"/>
+                <field name="create_date" string="Computed On" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_ap_preview_form" model="ir.ui.view">
+        <field name="name">x_threshold_ap_preview.form</field>
+        <field name="model">x_threshold_ap_preview</field>
+        <field name="arch" type="xml">
+            <form string="AP Allocation Preview">
+                <header>
+                    <button name="%(threshold_report_ap_import.action_ap_preview_compute)d" type="action"
+                            string="Compute" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="x_name" placeholder="e.g. RBC Q3 2026"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="x_rule_id" options="{'no_create': True}"/>
+                            <field name="x_source" readonly="1" invisible="not x_source"/>
+                            <field name="x_computed" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="x_date_from"/>
+                            <field name="x_date_to"/>
+                        </group>
+                    </group>
+                    <group invisible="not x_computed">
+                        <group>
+                            <field name="x_opening_total" readonly="1"/>
+                            <field name="x_closing_total" readonly="1"/>
+                            <field name="x_change" readonly="1" class="fw-bold"/>
+                        </group>
+                    </group>
+                    <field name="x_summary" readonly="1" nolabel="1" invisible="not x_computed"/>
+                    <div invisible="x_computed" class="text-muted">Choose the rule and period, save, then click <b>Compute</b>.</div>
+                    <notebook invisible="not x_computed">
+                        <page string="Documents" name="lines">
+                            <field name="x_line_ids" readonly="1" nolabel="1">
+                                <tree decoration-muted="x_category == 'other'" decoration-info="x_category == 'unlinked'"
+                                      decoration-success="x_category == 'owner'" decoration-warning="x_category == 'mixed'">
+                                    <field name="x_sequence" column_invisible="1"/>
+                                    <field name="x_category"/>
+                                    <field name="x_move_id"/>
+                                    <field name="x_partner"/>
+                                    <field name="x_date"/>
+                                    <field name="x_purchase_orders" optional="show"/>
+                                    <field name="x_sale_orders" optional="show"/>
+                                    <field name="x_reason" optional="hide"/>
+                                    <field name="x_owner_pct" optional="show"/>
+                                    <field name="x_owed_opening" sum="Total" optional="show"/>
+                                    <field name="x_owed_closing" sum="Total" optional="show"/>
+                                    <field name="x_company_opening" sum="Total"/>
+                                    <field name="x_company_closing" sum="Total"/>
+                                    <field name="x_company_change" sum="Total"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_x_threshold_ap_preview" model="ir.actions.act_window">
+        <field name="name">Threshold AP Breakdown</field>
+        <field name="res_model">x_threshold_ap_preview</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an AP allocation preview</p>
+            <p>Pick a rule and a period and click Compute to see every document behind the Change in A/P.
+                Each Threshold Report download also leaves a preview here.</p>
+        </field>
+    </record>
+
+    <!-- ============ Preview lines (full list: filter, group, export) ============ -->
+    <record id="view_x_threshold_ap_preview_line_tree" model="ir.ui.view">
+        <field name="name">x_threshold_ap_preview_line.tree</field>
+        <field name="model">x_threshold_ap_preview_line</field>
+        <field name="arch" type="xml">
+            <tree string="AP Allocation Detail" create="0" edit="0"
+                  decoration-muted="x_category == 'other'" decoration-info="x_category == 'unlinked'"
+                  decoration-success="x_category == 'owner'" decoration-warning="x_category == 'mixed'">
+                <field name="x_preview_id"/>
+                <field name="x_category"/>
+                <field name="x_move_id"/>
+                <field name="x_partner"/>
+                <field name="x_date"/>
+                <field name="x_purchase_orders"/>
+                <field name="x_sale_orders"/>
+                <field name="x_reason" optional="show"/>
+                <field name="x_owner_pct"/>
+                <field name="x_owed_opening" sum="Total"/>
+                <field name="x_owed_closing" sum="Total"/>
+                <field name="x_company_opening" sum="Total"/>
+                <field name="x_company_closing" sum="Total"/>
+                <field name="x_company_change" sum="Total"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_threshold_ap_preview_line_search" model="ir.ui.view">
+        <field name="name">x_threshold_ap_preview_line.search</field>
+        <field name="model">x_threshold_ap_preview_line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="x_preview_id"/>
+                <field name="x_name"/>
+                <field name="x_partner"/>
+                <field name="x_purchase_orders"/>
+                <field name="x_sale_orders"/>
+                <filter name="cat_owner" string="Report Company" domain="[('x_category', '=', 'owner')]"/>
+                <filter name="cat_mixed" string="Mixed" domain="[('x_category', '=', 'mixed')]"/>
+                <filter name="cat_unlinked" string="No PO Link" domain="[('x_category', '=', 'unlinked')]"/>
+                <filter name="cat_other" string="Other Companies" domain="[('x_category', '=', 'other')]"/>
+                <group expand="0" string="Group By">
+                    <filter name="group_preview" string="Preview" context="{'group_by': 'x_preview_id'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'x_category'}"/>
+                    <filter name="group_partner" string="Vendor" context="{'group_by': 'x_partner'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_x_threshold_ap_preview_line" model="ir.actions.act_window">
+        <field name="name">Threshold AP Detail</field>
+        <field name="res_model">x_threshold_ap_preview_line</field>
+        <field name="view_mode">tree</field>
+        <field name="context">{'search_default_group_preview': 1, 'search_default_group_category': 1}</field>
+    </record>
+
+    <!-- ============ Threshold Report wizard: route the download through the AP allocation ============ -->
+    <record id="view_threshold_report_wizard_form_ap" model="ir.ui.view">
+        <field name="name">threshold.report.wizard.form.ap.allocation</field>
+        <field name="model">threshold.report.wizard</field>
+        <field name="inherit_id" ref="threshold_report.threshold_report_wizard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_download_excel']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_download_excel']" position="before">
+                <button name="%(threshold_report_ap_import.action_ap_print_report)d" type="action"
+                        string="Download Excel Report" class="btn-primary"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- ============ Menus ============ -->
+    <menuitem id="menu_x_threshold_ap_rule"
+              name="Threshold AP Allocation"
+              parent="account.account_account_menu"
+              action="action_x_threshold_ap_rule"
+              groups="account.group_account_manager"
+              sequence="122"/>
+    <menuitem id="menu_x_threshold_ap_preview"
+              name="Threshold AP Breakdown"
+              parent="account.menu_finance_reports"
+              action="action_x_threshold_ap_preview"
+              sequence="101"/>
+    <menuitem id="menu_x_threshold_ap_preview_line"
+              name="Threshold AP Detail"
+              parent="account.menu_finance_reports"
+              action="action_x_threshold_ap_preview_line"
+              sequence="102"/>
+</odoo>
