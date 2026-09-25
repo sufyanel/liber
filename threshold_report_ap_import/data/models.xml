@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="model_x_threshold_ap_rule" model="ir.model">
+        <field name="name">Threshold AP Allocation Rule</field>
+        <field name="model">x_threshold_ap_rule</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_threshold_ap_preview" model="ir.model">
+        <field name="name">Threshold AP Allocation Preview</field>
+        <field name="model">x_threshold_ap_preview</field>
+        <field name="order">id desc</field>
+    </record>
+    <record id="model_x_threshold_ap_preview_line" model="ir.model">
+        <field name="name">Threshold AP Allocation Preview Line</field>
+        <field name="model">x_threshold_ap_preview_line</field>
+        <field name="order">id</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Rule Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_active" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_active</field>
+        <field name="field_description">Active</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_company_id</field>
+        <field name="on_delete">restrict</field>
+        <field name="field_description">Report Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_source_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_source_company_id</field>
+        <field name="on_delete">restrict</field>
+        <field name="field_description">Purchasing Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_payable_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_payable_account_ids</field>
+        <field name="field_description">Purchasing Company Payable Accounts</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_threshold_ap_rule_payable_rel</field>
+        <field name="column1">rule_id</field>
+        <field name="column2">account_id</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_owner_partner_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_owner_partner_ids</field>
+        <field name="field_description">Additional Identifying Partners</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.partner</field>
+        <field name="relation_table">x_threshold_ap_rule_partner_rel</field>
+        <field name="column1">rule_id</field>
+        <field name="column2">partner_id</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_match_sale" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_match_sale</field>
+        <field name="field_description">Match by Sales Order Customer</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_match_dropship" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_match_dropship</field>
+        <field name="field_description">Match by Drop-ship Address</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_unlinked_policy" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_unlinked_policy</field>
+        <field name="field_description">Items Without PO Link</field>
+        <field name="ttype">selection</field>
+        <field name="selection">[('allocate', 'Share by linked-payables ratio'), ('ignore', 'Ignore')]</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_own_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_own_account_ids</field>
+        <field name="field_description">Report Company Own Payable Accounts</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_threshold_ap_rule_own_rel</field>
+        <field name="column1">rule_id</field>
+        <field name="column2">account_id</field>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_net_change_mode" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_net_change_mode</field>
+        <field name="field_description">Net Change in A/R and A/P</field>
+        <field name="ttype">selection</field>
+        <field name="selection">[('ar_minus_ap', 'Change in A/R - Change in A/P'), ('ar_plus_ap', 'Change in A/R + Change in A/P (previous behaviour)')]</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_rule__x_note" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_rule"/>
+        <field name="name">x_note</field>
+        <field name="field_description">Notes</field>
+        <field name="ttype">text</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_rule_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_rule_id</field>
+        <field name="field_description">Allocation Rule</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_threshold_ap_rule</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_date_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_date_from</field>
+        <field name="field_description">Date From</field>
+        <field name="ttype">date</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_date_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_date_to</field>
+        <field name="field_description">Date To</field>
+        <field name="ttype">date</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_computed" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_computed</field>
+        <field name="field_description">Computed</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_summary" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_summary</field>
+        <field name="field_description">Summary</field>
+        <field name="ttype">html</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_opening_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_opening_total</field>
+        <field name="field_description">Opening Allocated AP</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_closing_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_closing_total</field>
+        <field name="field_description">Closing Allocated AP</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_change" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_change</field>
+        <field name="field_description">Change in A/P</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_source" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_source</field>
+        <field name="field_description">Created From</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Number</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_preview_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_preview_id</field>
+        <field name="field_description">Preview</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_threshold_ap_preview</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_move_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_move_id</field>
+        <field name="field_description">Document</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">account.move</field>
+        <field name="on_delete">set null</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_partner" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_partner</field>
+        <field name="field_description">Vendor</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_date" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_date</field>
+        <field name="field_description">Date</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_purchase_orders" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_purchase_orders</field>
+        <field name="field_description">Purchase Orders</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_sale_orders" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_sale_orders</field>
+        <field name="field_description">Sales Orders</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_reason" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_reason</field>
+        <field name="field_description">Matched By</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_category" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_category</field>
+        <field name="field_description">Category</field>
+        <field name="ttype">selection</field>
+        <field name="selection">[('owner', 'Report company'), ('mixed', 'Mixed'), ('unlinked', 'No PO link'), ('other', 'Other companies')]</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_owner_pct" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_owner_pct</field>
+        <field name="field_description">Company %</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_owed_opening" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_owed_opening</field>
+        <field name="field_description">Owed Opening</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_owed_closing" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_owed_closing</field>
+        <field name="field_description">Owed Closing</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_company_opening" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_company_opening</field>
+        <field name="field_description">Company Share Opening</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_company_closing" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_company_closing</field>
+        <field name="field_description">Company Share Closing</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview_line__x_company_change" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview_line"/>
+        <field name="name">x_company_change</field>
+        <field name="field_description">Company Share Change</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_ap_preview__x_line_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_ap_preview"/>
+        <field name="name">x_line_ids</field>
+        <field name="field_description">Documents</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_threshold_ap_preview_line</field>
+        <field name="relation_field">x_preview_id</field>
+    </record>
+    <!-- Sort order can only reference fields once they exist -->
+    <record id="model_x_threshold_ap_preview_line" model="ir.model">
+        <field name="order">x_sequence, x_date, id</field>
+    </record>
+</odoo>

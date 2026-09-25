@@ -123,3 +123,16 @@ odoo-bin -c config/liber.cfg -d <db> -u website_blog_auto_translate \
 ```
 
 The suite stubs the provider, so it runs without network.
+
+## Changelog
+
+**17.0.2.0.2**
+
+* An old URL in another language (for example `/es_MX/blog/...`) now redirects to the same language instead of the default one.
+
+**17.0.2.0.1**
+
+* `blog_post` override now carries `@http.route()`. Without it Odoo wrapped the
+  method in a `functools.partial` and `/sitemap.xml` returned 500 on every website.
+* `blog_post` no longer assumes the page holds a post. An old URL naming the blog
+  a post was moved out of now gets Odoo's normal redirect instead of a 500.

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="default_rule_active" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_ap_rule__x_active"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_rule_match_sale" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_ap_rule__x_match_sale"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_rule_match_dropship" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_ap_rule__x_match_dropship"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_rule_unlinked_policy" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_ap_rule__x_unlinked_policy"/>
+        <field name="json_value">"allocate"</field>
+    </record>
+    <record id="default_rule_net_change_mode" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_ap_rule__x_net_change_mode"/>
+        <field name="json_value">"ar_minus_ap"</field>
+    </record>
+</odoo>
