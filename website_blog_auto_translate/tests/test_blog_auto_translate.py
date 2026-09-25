@@ -281,3 +281,40 @@ class TestBlogAutoTranslateRendering(HttpCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ejector Pins", response.text)
         self.assertNotIn("[es]", response.text)
+
+
+@tagged("post_install", "-at_install")
+class TestBlogRouting(HttpCase):
+    """The two production faults of 17.0.2.0.0 must never come back."""
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.old_blog = cls.env["blog.blog"].create({"name": "News", "website_id": False})
+        cls.new_blog = cls.env["blog.blog"].create({"name": "Knowledge", "website_id": False})
+        cls.post = cls.env["blog.post"].create({
+            "blog_id": cls.new_blog.id,
+            "name": "Ball and roller bearings",
+            "content": "<p>Bearings</p>",
+            "is_published": True,
+            "post_date": fields.Datetime.now() - timedelta(hours=1),
+        })
+
+    def test_sitemap_renders(self):
+        response = self.url_open("/sitemap.xml")
+        self.assertEqual(response.status_code, 200, "an undecorated route override breaks the sitemap")
+
+    def test_old_blog_url_is_not_a_server_error(self):
+        from odoo.addons.http_routing.models.ir_http import slug
+        url = "/blog/%s/%s" % (slug(self.old_blog), slug(self.post))
+        response = self.url_open(url, allow_redirects=False)
+        self.assertLess(response.status_code, 500, "a post moved to another blog must not 500")
+
+    def test_old_blog_url_keeps_the_language(self):
+        from odoo.addons.http_routing.models.ir_http import slug
+        lang = self.env["res.lang"]._activate_lang("es_MX")
+        self.env["website"].search([], limit=1).language_ids = [(4, lang.id)]
+        url = "/%s/blog/%s/%s" % (lang.url_code, slug(self.old_blog), slug(self.post))
+        response = self.url_open(url, allow_redirects=False)
+        self.assertEqual(response.status_code, 301)
+        self.assertIn("/%s/blog/" % lang.url_code, response.headers["Location"])
