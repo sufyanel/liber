@@ -38,7 +38,7 @@
         </xpath>
 
         <!-- Inject RBC Left Sidebar inside products_grid_before -->
-        <xpath expr="//aside[@id='products_grid_before']" position="inside">
+        <xpath expr="//*[@id='products_grid_before']" position="inside">
             <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
                 <div class="rbc-filter-products-card card border shadow-sm rounded-3 p-3 mb-4 bg-white">
                     <h5 class="fw-bold text-dark border-bottom pb-2 mb-3 fs-6" style="letter-spacing: 0.3px;">Filter Products</h5>

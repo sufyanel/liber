@@ -178,12 +178,12 @@
 
     <!-- Scoped Homepage Override for RBC Industrial Theme -->
     <template id="homepage_rbc" inherit_id="website.homepage" name="RBC Homepage Override" priority="99">
-        <xpath expr="//div[@id='wrap']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
-        </xpath>
-        <xpath expr="//div[@id='wrap']" position="after">
+        <xpath expr="//div[@id='wrap']" position="replace">
             <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
                 <t t-call="rbc_industrial_theme.rbc_homepage_body"/>
+            </t>
+            <t t-else="">
+                <div id="wrap" class="oe_structure oe_empty"/>
             </t>
         </xpath>
     </template>
