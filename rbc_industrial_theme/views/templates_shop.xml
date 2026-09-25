@@ -13,16 +13,6 @@
             </t>
         </xpath>
 
-        <!-- Hide filmstrip categories on RBC Industrial -->
-        <xpath expr="//t[@t-if='opt_wsale_categories_top']" position="replace">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
-                <!-- Filmstrip categories completely disabled on RBC Industrial -->
-            </t>
-            <t t-else="">
-                <t t-if="opt_wsale_categories_top" t-call="website_sale.filmstrip_categories"/>
-            </t>
-        </xpath>
-
         <!-- Inject RBC Industrial Top Catalog Header & Search inside products_grid before products_header -->
         <xpath expr="//div[@id='products_grid']//div[hasclass('products_header')]" position="before">
             <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
@@ -288,6 +278,13 @@
 
                 </div>
             </t>
+        </xpath>
+    </template>
+
+    <!-- Hide filmstrip categories on RBC Industrial -->
+    <template id="filmstrip_categories_rbc" inherit_id="website_sale.filmstrip_categories" name="Filmstrip Categories RBC" priority="99">
+        <xpath expr="//div[hasclass('o_wsale_filmstip_container')]" position="attributes">
+            <attribute name="t-if">entries and not (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4))</attribute>
         </xpath>
     </template>
 
