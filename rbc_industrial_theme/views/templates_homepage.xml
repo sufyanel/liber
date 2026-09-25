@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="rbc_homepage" name="RBC Industrial Homepage">
+        <t t-call="website.layout">
+            <t t-call="rbc_industrial_theme.rbc_homepage_body"/>
+        </t>
+    </template>
+
+    <template id="rbc_homepage_body" name="RBC Homepage Body">
+        <div id="wrap" class="oe_structure o_rbc_homepage">
+            
+            <!-- Hero -->
+            <header class="hero">
+                <div class="container">
+                    <h1>Eliminate Downtime.<br/><span class="gold">Deliver the Right Part, Every Time.</span></h1>
+                    <p class="subhead">RBC Industrial is your mission-critical partner for bearings, power transmission, fluid dynamics, and MRO supply — sourced brand-agnostically, shipped same-day from El Paso, and supported by a sales team of trained engineers.</p>
+                    <div class="hero-ctas">
+                        <a href="/contactus" class="btn-gold">Request a Quote</a>
+                        <a href="/contactus" class="btn-outline">Same-Day Support</a>
+                    </div>
+                    <div class="hero-meta">
+                        Service-Disabled Veteran-Owned (SDVOSB) · Texas HUB Certified · Founded 1946 — Delivering the right product at the right time, every time!
+                    </div>
+                </div>
+            </header>
+
+            <!-- Value Cards -->
+            <section class="section">
+                <div class="container">
+                    <div class="section-head">
+                        <span class="kicker">Why RBC Industrial</span>
+                        <h2>Built for Plants That Can't Afford to Stop</h2>
+                        <p class="lead">Every line down costs production, and every wrong part costs a second downtime. We engineer our supply chain around one metric: uptime.</p>
+                    </div>
+                    <div class="value-grid">
+                        <div class="card">
+                            <div class="icon">EN</div>
+                            <h3>Engineer-Led Sales Team</h3>
+                            <p>Your calls are answered by trained engineers who speak torque curves, bearing preload, and seal compatibility — not scripted order-takers.</p>
+                        </div>
+                        <div class="card">
+                            <div class="icon">BA</div>
+                            <h3>Brand-Agnostic Sourcing</h3>
+                            <p>No captive brand quotas. We cross-reference and source the right part from SKF, Timken, Parker, Baldor-Reliance, and beyond — whatever keeps your line running.</p>
+                        </div>
+                        <div class="card">
+                            <div class="icon">24</div>
+                            <h3>Same-Day Response from El Paso</h3>
+                            <p>Located at 3950 Doniphan Dr., our warehouse ships critical parts the same day you call. Line down emergencies jump the queue.</p>
+                        </div>
+                        <div class="card">
+                            <div class="icon">5M</div>
+                            <h3>5-Minute Border Proximity to Juárez</h3>
+                            <p>Unmatched cross-border supply to Juárez maquiladoras. Downtime stops at the border — parts keep moving.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Solutions Grid -->
+            <section class="section" style="padding-top:0;">
+                <div class="container">
+                    <div class="section-head">
+                        <span class="kicker">Solutions</span>
+                        <h2>Industrial Product Lines</h2>
+                        <p class="lead">Five integrated solution families covering the mechanical and electrical side of industrial uptime.</p>
+                    </div>
+                    <div class="solutions-grid">
+                        <div class="solution-card">
+                            <div class="solution-image">Precision Bearings</div>
+                            <div class="solution-body">
+                                <h3>Precision Bearings</h3>
+                                <p>Ball, roller, spherical, and ceramic-hybrid bearings with exacting tolerances for high-velocity rotation environments.</p>
+                                <a class="link" href="/shop">Browse catalog →</a>
+                            </div>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-image">Power Transmission</div>
+                            <div class="solution-body">
+                                <h3>Power Transmission</h3>
+                                <p>Gear reducers, couplings, belting, chains, and sprockets matched to your torque and service-factor demands.</p>
+                                <a class="link" href="/shop">Browse catalog →</a>
+                            </div>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-image">Fluid Dynamics</div>
+                            <div class="solution-body">
+                                <h3>Fluid Dynamics</h3>
+                                <p>Hydraulic seals, hoses, fittings, and pumps specified against chemical compatibility and extreme pressures.</p>
+                                <a class="link" href="/shop">Browse catalog →</a>
+                            </div>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-image">Motors &amp; Controls</div>
+                            <div class="solution-body">
+                                <h3>Motors &amp; Controls</h3>
+                                <p>AC/DC motors, VFDs, and control gear with harmonic-mitigation guidance for automated production lines.</p>
+                                <a class="link" href="/shop">Browse catalog →</a>
+                            </div>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-image">Line Down Support</div>
+                            <div class="solution-body">
+                                <h3>Line Down Support</h3>
+                                <p>Emergency response protocol: same-day delivery from El Paso, priority cross-border routing, and rapid cross-referencing.</p>
+                                <a class="link" href="/contactus">Call 915-845-8188 →</a>
+                            </div>
+                        </div>
+                        <div class="solution-card">
+                            <div class="solution-image">MRO Supply</div>
+                            <div class="solution-body">
+                                <h3>General MRO Supply</h3>
+                                <p>Indirect materials and consumables consolidated into a single, brand-agnostic sourcing relationship.</p>
+                                <a class="link" href="/contactus">Talk to a specialist →</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Trust / Certifications Band -->
+            <section class="trust-band section">
+                <div class="container">
+                    <div>
+                        <h2>Certified. Verified. Mission-Ready.</h2>
+                        <p>As a Service-Disabled Veteran-Owned small business, RBC Industrial carries federal and state certifications that open doors for prime contractors and government buyers alike.</p>
+                    </div>
+                    <div class="badges">
+                        <span class="big-badge">SDVOSB Certified</span>
+                        <span class="big-badge">Texas HUB</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Stats Strip -->
+            <section class="stats-strip">
+                <div class="container">
+                    <div class="stats-grid">
+                        <div class="stat"><div class="num">1946</div><div class="label">Founded</div></div>
+                        <div class="stat"><div class="num">80+</div><div class="label">Years of Legacy</div></div>
+                        <div class="stat"><div class="num">24hr</div><div class="label">Emergency Response</div></div>
+                        <div class="stat"><div class="num">5min</div><div class="label">To Juárez Border</div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Knowledge Base Teaser -->
+            <section class="section">
+                <div class="container">
+                    <div class="section-head">
+                        <span class="kicker">Knowledge Base</span>
+                        <h2>Engineering Intelligence, On Demand</h2>
+                        <p class="lead">Field-tested technical guidance from our team of trained engineers — the same people who answer your phones.</p>
+                    </div>
+                    <div class="kb-teaser">
+                        <div class="kb-item">
+                            <span class="tag">Bearings</span>
+                            <h3>Bearing Failure Analysis: 5 Root Causes</h3>
+                            <p>Lubrication starvation, misalignment, contamination, fatigue spalling, and electrical fluting — and how to prevent each.</p>
+                        </div>
+                        <div class="kb-item">
+                            <span class="tag">Power Transmission</span>
+                            <h3>Gear Reducer Selection by Torque Curve</h3>
+                            <p>Matching service factors and thermal ratings to application demands with Bonfiglioli and SEW Eurodrive.</p>
+                        </div>
+                        <div class="kb-item">
+                            <span class="tag">Juárez Logistics</span>
+                            <h3>Cross-Border MRO: A Procurement Guide</h3>
+                            <p>How 5-minute border proximity keeps maquiladora production lines running with same-day delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </template>
+
+    <!-- Scoped Homepage Override for RBC Industrial Theme -->
+    <template id="homepage_rbc" inherit_id="website.homepage" name="RBC Homepage Override" priority="99">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="after">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <t t-call="rbc_industrial_theme.rbc_homepage_body"/>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

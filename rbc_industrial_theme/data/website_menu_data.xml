@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Menu IA is applied in post_init / _liber_theme_setup via Python
+        so we do not fight COW menu IDs across databases.
+        This file keeps Resources + Contact menu records as stable xmlids
+        when the top menu exists.
+    -->
+    <function model="website" name="_liber_rebuild_holdings_menu"/>
+    <function model="website" name="_liber_rebuild_brands_page"/>
+    <function model="website" name="_liber_rebuild_news_page"/>
+    <function model="website" name="_liber_cleanup_about_page"/>
+    <function model="website" name="_liber_set_blog_post_views"/>
+    <function model="website" name="_liber_style_contact_page"/>
+</odoo>

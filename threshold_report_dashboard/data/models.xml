@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="model_x_threshold_dashboard" model="ir.model">
+        <field name="name">Threshold Dashboard</field>
+        <field name="model">x_threshold_dashboard</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_threshold_dashboard_period" model="ir.model">
+        <field name="name">Threshold Dashboard Period</field>
+        <field name="model">x_threshold_dashboard_period</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_threshold_dashboard_vendor" model="ir.model">
+        <field name="name">Threshold Dashboard Vendor</field>
+        <field name="model">x_threshold_dashboard_vendor</field>
+        <field name="order">id</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_active" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_active</field>
+        <field name="field_description">Active</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_threshold_dashboard__x_capex_annual" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_capex_annual</field>
+        <field name="field_description">Capital Investments (annual)</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_savings_annual" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_savings_annual</field>
+        <field name="field_description">Savings (annual)</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_investor_annual" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_investor_annual</field>
+        <field name="field_description">Investor Return (annual)</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_tax_annual" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_tax_annual</field>
+        <field name="field_description">Taxes (annual)</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_employee_share" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_employee_share</field>
+        <field name="field_description">Employee Share of Headroom (%)</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_payout_schedule" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_payout_schedule</field>
+        <field name="field_description">Quarterly Payout Schedule (%)</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_currency_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_currency_code</field>
+        <field name="field_description">Currency</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_refreshed" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_refreshed</field>
+        <field name="field_description">Last Refreshed</field>
+        <field name="ttype">datetime</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_vendor_as_of" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_vendor_as_of</field>
+        <field name="field_description">Vendor Figures As Of</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_has_ap_rule" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_has_ap_rule</field>
+        <field name="field_description">Has AP Allocation Rule</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_note" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_note</field>
+        <field name="field_description">Notes</field>
+        <field name="ttype">text</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_threshold_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_code</field>
+        <field name="field_description">Code</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_date_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_date_from</field>
+        <field name="field_description">Date From</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_date_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_date_to</field>
+        <field name="field_description">Date To</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_is_future" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_is_future</field>
+        <field name="field_description">Future Period</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_is_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_is_year</field>
+        <field name="field_description">Full Year</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_payout_pct" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_payout_pct</field>
+        <field name="field_description">Cumulative Payout %</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_net_profit" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_net_profit</field>
+        <field name="field_description">Net Profit</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_salary" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_salary</field>
+        <field name="field_description">Salary</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_taxes" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_taxes</field>
+        <field name="field_description">Taxes</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_depreciation" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_depreciation</field>
+        <field name="field_description">Depreciation</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_capex" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_capex</field>
+        <field name="field_description">Capital Investments</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_change_ar" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_change_ar</field>
+        <field name="field_description">Change in A/R</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_change_ap" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_change_ap</field>
+        <field name="field_description">Change in A/P</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_net_change" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_net_change</field>
+        <field name="field_description">Net Change in A/R and A/P</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_change_inventory" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_change_inventory</field>
+        <field name="field_description">Change in Inventory</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_debt" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_debt</field>
+        <field name="field_description">Debt Retirement</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_investor" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_investor</field>
+        <field name="field_description">Investor Return</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_savings" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_savings</field>
+        <field name="field_description">Savings</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_threshold" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_threshold</field>
+        <field name="field_description">Financial Security Threshold</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_headroom" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_headroom</field>
+        <field name="field_description">Headroom above Threshold</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_pool" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_pool</field>
+        <field name="field_description">Gain-share Pool</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_ytd_headroom" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_ytd_headroom</field>
+        <field name="field_description">YTD Headroom</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_ytd_pool" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_ytd_pool</field>
+        <field name="field_description">YTD Gain-share Pool</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_payout_cum" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_payout_cum</field>
+        <field name="field_description">Cumulative Scheduled Payout</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_payout_period" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_payout_period</field>
+        <field name="field_description">Scheduled Payout this Period</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_ap_opening" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_ap_opening</field>
+        <field name="field_description">Allocated AP Opening</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_ap_closing" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_ap_closing</field>
+        <field name="field_description">Allocated AP Closing</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_source_ap_closing" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_source_ap_closing</field>
+        <field name="field_description">Purchasing Company AP Closing</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_vendor__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_vendor"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Vendor</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_threshold_dashboard_vendor__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_vendor"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_threshold_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_threshold_dashboard_vendor__x_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_vendor"/>
+        <field name="name">x_amount</field>
+        <field name="field_description">Company Share of Payables</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_threshold_dashboard_vendor__x_documents" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_vendor"/>
+        <field name="name">x_documents</field>
+        <field name="field_description">Open Documents</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_period_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_period_ids</field>
+        <field name="field_description">Periods</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_threshold_dashboard_period</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_vendor_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_vendor_ids</field>
+        <field name="field_description">Top Vendors</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_threshold_dashboard_vendor</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_custom_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_custom_from</field>
+        <field name="field_description">Custom Range From</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_dashboard__x_custom_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard"/>
+        <field name="name">x_custom_to</field>
+        <field name="field_description">Custom Range To</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_threshold_dashboard_period__x_is_custom" model="ir.model.fields">
+        <field name="model_id" ref="model_x_threshold_dashboard_period"/>
+        <field name="name">x_is_custom</field>
+        <field name="field_description">Custom Range</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="model_x_threshold_dashboard_period" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_threshold_dashboard_vendor" model="ir.model"><field name="order">x_amount desc, id</field></record>
+    <record id="model_x_threshold_dashboard" model="ir.model"><field name="order">x_year desc, id</field></record>
+</odoo>

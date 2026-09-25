@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Shop Page Title & Banner Override -->
+    <template id="products_shop_meta_rbc" inherit_id="website_sale.products" name="RBC Shop Meta" priority="99">
+        <xpath expr="//t[@t-set='additional_title']" position="replace">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <t t-set="additional_title">RBC Industrial Product Catalog</t>
+                <t t-set="meta_description">Search and quote mission-critical bearings, power transmission, fluid dynamics, and MRO supplies from RBC Industrial with same-day El Paso &amp; Juárez availability.</t>
+            </t>
+            <t t-else="">
+                <t t-set="additional_title">Shop</t>
+            </t>
+        </xpath>
+
+        <!-- Hide filmstrip categories on RBC Industrial -->
+        <xpath expr="//t[@t-if='opt_wsale_categories_top']" position="replace">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <!-- Filmstrip categories completely disabled on RBC Industrial -->
+            </t>
+            <t t-else="">
+                <t t-if="opt_wsale_categories_top" t-call="website_sale.filmstrip_categories"/>
+            </t>
+        </xpath>
+
+        <!-- Inject RBC Industrial Top Catalog Header & Search inside products_grid before products_header -->
+        <xpath expr="//div[@id='products_grid']//div[hasclass('products_header')]" position="before">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div class="rbc-catalog-header mb-4 pt-2">
+                    <h1 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">Product Catalog</h1>
+                    <p class="text-secondary lead fs-6 mb-4" style="max-width: 900px; color: #555;">
+                        Engineers scan for part numbers — every row is cross-referenced, specified, and ready for quote. Stock status reflects our El Paso warehouse plus Juárez-crossing availability.
+                    </p>
+
+                    <form method="get" action="/shop" class="d-flex align-items-center gap-2 mb-2">
+                        <input type="hidden" name="category" t-att-value="category and category.id"/>
+                        <div class="input-group input-group-lg shadow-sm w-100">
+                            <input type="text" name="search" class="form-control bg-white border border-secondary border-opacity-25 px-3 fs-6" 
+                                   placeholder="Search by part number, brand, or spec — e.g. SKF 6205, Bonfiglioli, Parker..." 
+                                   t-att-value="search"/>
+                            <button class="btn btn-warning btn-gold fw-bold px-4 text-dark fs-6" type="submit" style="background-color: #fbc02d; border-color: #181818;">
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Inject RBC Left Sidebar inside products_grid_before -->
+        <xpath expr="//aside[@id='products_grid_before']" position="inside">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div class="rbc-filter-products-card card border shadow-sm rounded-3 p-3 mb-4 bg-white">
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3 fs-6" style="letter-spacing: 0.3px;">Filter Products</h5>
+                    
+                    <!-- CATEGORY SECTION (Collapsible Accordion with Uncheck support) -->
+                    <div class="filter-section mb-4">
+                        <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">CATEGORY</h6>
+                        <div class="rbc-category-accordion" id="rbcCategoryAccordion">
+                            <t t-set="all_top_cats" t-value="categories if categories else request.env['product.public.category'].search([('parent_id', '=', False)])"/>
+                            <t t-foreach="all_top_cats" t-as="c">
+                                <t t-if="not c.parent_id">
+                                    <t t-set="c_children" t-value="c.child_id"/>
+                                    <t t-set="is_c_active" t-value="category and (category.id == c.id or category.id in c_children.ids)"/>
+                                    <t t-set="c_href" t-value="'/shop' if (category and category.id == c.id) else ('/shop/category/' + slug(c))"/>
+                                    
+                                    <div class="rbc-cat-item mb-1">
+                                        <div class="d-flex align-items-center justify-content-between py-1 px-1 rounded">
+                                            <a t-att-href="c_href" 
+                                               t-attf-class="text-decoration-none small flex-grow-1 #{'text-dark fw-bold' if (category and category.id == c.id) else 'text-secondary'}">
+                                                <i t-attf-class="fa #{'fa-check-square-o text-dark' if (category and category.id == c.id) else 'fa-square-o text-muted'} me-2"></i>
+                                                <t t-esc="c.name"/>
+                                            </a>
+                                            <t t-if="c_children">
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-link text-muted p-0 ms-2 text-decoration-none shadow-none" 
+                                                        data-bs-toggle="collapse" 
+                                                        t-attf-data-bs-target="#rbc_cat_collapse_#{c.id}" 
+                                                        t-att-aria-expanded="is_c_active and 'true' or 'false'"
+                                                        style="font-size: 0.75rem;">
+                                                    <i t-attf-class="fa #{'fa-chevron-down' if is_c_active else 'fa-chevron-right'}"></i>
+                                                </button>
+                                            </t>
+                                        </div>
+                                        <t t-if="c_children">
+                                            <div t-attf-id="rbc_cat_collapse_#{c.id}" 
+                                                 t-attf-class="collapse ps-3 border-start ms-2 my-1 #{'show' if is_c_active else ''}">
+                                                <t t-foreach="c_children" t-as="sub_c">
+                                                    <t t-set="sub_c_href" t-value="'/shop' if (category and category.id == sub_c.id) else ('/shop/category/' + slug(sub_c))"/>
+                                                    <div class="py-1">
+                                                        <a t-att-href="sub_c_href" 
+                                                           t-attf-class="text-decoration-none small #{'text-dark fw-bold' if (category and category.id == sub_c.id) else 'text-muted'}">
+                                                            <i t-attf-class="fa #{'fa-check-square-o text-dark' if (category and category.id == sub_c.id) else 'fa-square-o text-muted'} me-2"></i>
+                                                            <t t-esc="sub_c.name"/>
+                                                        </a>
+                                                    </div>
+                                                </t>
+                                            </div>
+                                        </t>
+                                    </div>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- STOCK STATUS SECTION -->
+                    <div class="filter-section mb-2">
+                        <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">STOCK STATUS</h6>
+                        <div class="form-check mb-1 ms-1">
+                            <input class="form-check-input" type="checkbox" id="stockInStock" checked="checked"/>
+                            <label class="form-check-label small text-dark" for="stockInStock">In Stock</label>
+                        </div>
+                        <div class="form-check mb-1 ms-1">
+                            <input class="form-check-input" type="checkbox" id="stockLow"/>
+                            <label class="form-check-label small text-dark" for="stockLow">Low Stock</label>
+                        </div>
+                        <div class="form-check mb-3 ms-1">
+                            <input class="form-check-input" type="checkbox" id="stockLeadTime"/>
+                            <label class="form-check-label small text-dark" for="stockLeadTime">Lead Time</label>
+                        </div>
+                        <div class="stock-legend small d-flex flex-column gap-1 pt-2 border-top ms-1">
+                            <div class="fw-bold" style="color: #10b981; font-size: 0.8rem;">● IN STOCK</div>
+                            <div class="fw-bold" style="color: #f59e0b; font-size: 0.8rem;">● LOW</div>
+                            <div class="fw-bold" style="color: #ef4444; font-size: 0.8rem;">● LEAD TIME</div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Inject RBC Grid/List Container before standard grid container -->
+        <xpath expr="//div[@id='products_grid']//div[hasclass('o_wsale_products_grid_table_wrapper')]" position="before">
+            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+                <div t-if="products" class="o_wsale_products_grid_table_wrapper pt-3 pt-lg-0 rbc-custom-catalog-wrapper">
+                    
+                    <!-- 1. LIST MODE TABLE (RBC Dark-Header Product Catalog Table with Gold Header Text) -->
+                    <div class="table-responsive rbc-product-catalog-table-wrapper rounded-3 shadow-sm overflow-hidden mb-4 border bg-white">
+                        <table class="table align-middle m-0 rbc-catalog-table" style="background-color: #ffffff;">
+                            <thead style="background-color: #181818; color: #FED37E !important;">
+                                <tr class="text-uppercase fw-bold" style="letter-spacing: 0.8px; font-size: 0.78rem;">
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 14%; color: #FED37E !important;">
+                                        PART NO <span class="text-warning small ms-1">▲</span>
+                                    </th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 25%; color: #FED37E !important;">DESCRIPTION</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 11%; color: #FED37E !important;">CATEGORY</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 32%; color: #FED37E !important;">SPEC</th>
+                                    <th scope="col" class="py-3 px-3" style="background-color: #181818; width: 9%; color: #FED37E !important;">STOCK</th>
+                                    <th scope="col" class="py-3 px-3 text-center" style="background-color: #181818; width: 9%; color: #FED37E !important;">
+                                        <t t-if="not request.session.uid">QUOTE</t>
+                                        <t t-else="">ACTION</t>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="products" t-as="product">
+                                    <tr t-attf-class="rbc-product-row border-bottom #{'bg-light bg-opacity-50' if product_index % 2 == 1 else ''}">
+                                        <!-- PART NO: Compact font size & tight width -->
+                                        <td class="py-3 px-3">
+                                            <a t-att-href="product.website_url" class="text-decoration-none fw-bold text-dark d-inline-block" style="font-size: 0.85rem; line-height: 1.3; word-break: break-word;">
+                                                <t t-esc="product.name"/>
+                                            </a>
+                                        </td>
+                                        <!-- DESCRIPTION: Sales Description truncated with continuation notation (...) -->
+                                        <td class="py-3 px-3">
+                                            <t t-if="product.description_sale">
+                                                <t t-set="desc_val" t-value="product.description_sale.strip()"/>
+                                                <span t-att-title="desc_val" class="text-dark" style="font-size: 0.82rem;">
+                                                    <t t-esc="desc_val[:65] + ('...' if len(desc_val) > 65 else '')"/>
+                                                </span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted">—</span>
+                                            </t>
+                                        </td>
+                                        <!-- CATEGORY -->
+                                        <td class="py-3 px-3">
+                                            <t t-set="p_cat" t-value="product.public_categ_ids[0].name if product.public_categ_ids else (product.categ_id.name if product.categ_id else 'BEARINGS')"/>
+                                            <span class="badge bg-light text-secondary border fw-bold text-uppercase px-2 py-1" style="font-size: 0.65rem; letter-spacing: 0.5px; color: #555;">
+                                                <t t-esc="p_cat"/>
+                                            </span>
+                                        </td>
+                                        <!-- SPEC: Expanded column with modern attribute pill badges -->
+                                        <td class="py-3 px-3">
+                                            <t t-if="product.attribute_line_ids">
+                                                <div class="d-flex flex-wrap gap-1 align-items-center">
+                                                    <t t-foreach="product.attribute_line_ids[:4]" t-as="aline">
+                                                        <t t-set="v_names" t-value="', '.join(aline.value_ids.mapped('name'))"/>
+                                                        <t t-if="v_names">
+                                                            <span class="badge bg-light text-dark border border-secondary border-opacity-25 py-1 px-2" 
+                                                                  style="font-size: 0.72rem; font-weight: 500; border-radius: 4px; background-color: #f8f9fa;">
+                                                                <span class="text-secondary fw-semibold" style="color: #555 !important;"><t t-esc="aline.attribute_id.name"/>:</span> 
+                                                                <span class="fw-bold text-dark"><t t-esc="v_names"/></span>
+                                                            </span>
+                                                        </t>
+                                                    </t>
+                                                </div>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-muted" style="font-size: 0.8rem;">—</span>
+                                            </t>
+                                        </td>
+                                        <!-- STOCK STATUS -->
+                                        <td class="py-3 px-3 text-nowrap fw-bold" style="font-size: 0.8rem;">
+                                            <t t-if="product.sudo().qty_available &gt; 10">
+                                                <span class="text-success"><i class="fa fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle; color: #10b981;"></i> IN STOCK</span>
+                                            </t>
+                                            <t t-elif="product.sudo().qty_available &gt; 0">
+                                                <span class="text-warning" style="color: #d97706;"><i class="fa fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle; color: #f59e0b;"></i> LOW</span>
+                                            </t>
+                                            <t t-else="">
+                                                <span class="text-danger" style="color: #dc2626;"><i class="fa fa-circle me-1" style="font-size: 0.5rem; vertical-align: middle; color: #ef4444;"></i> LEAD TIME</span>
+                                            </t>
+                                        </td>
+                                        <!-- QUOTE / ACTION -->
+                                        <td class="py-3 px-3 text-center text-nowrap">
+                                            <t t-if="not request.session.uid">
+                                                <a t-attf-href="/contactus?product_id=#{product.id}" 
+                                                   class="btn btn-warning btn-gold btn-sm fw-bold px-3 py-1 text-dark border-0 shadow-sm"
+                                                   style="background-color: #ffc107; font-size: 0.8rem; border-radius: 4px;">
+                                                    RFQ
+                                                </a>
+                                            </t>
+                                            <t t-else="">
+                                                <form action="/shop/cart/update" method="post" class="d-inline-block m-0 o_wsale_product_btn">
+                                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                    <input type="hidden" name="product_id" t-att-value="product.product_variant_ids[0].id if product.product_variant_ids else product.id"/>
+                                                    <a role="button" href="#" class="btn btn-dark btn-sm fw-bold px-3 py-1 shadow-sm border-0 a-submit"
+                                                       style="background-color: #FED37E;  color: #181818; font-size: 0.8rem; border-radius: 4px;" title="Add to Cart">
+                                                        <i class="fa fa-shopping-cart me-1"/> Add to Cart
+                                                    </a>
+                                                </form>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- 2. TILE / GRID MODE CARDS (Kanban Cards Grid) -->
+                    <div class="rbc-product-grid-wrapper row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mb-4">
+                        <t t-foreach="products" t-as="product">
+                            <div class="col">
+                                <div class="card h-100 border rounded-3 shadow-sm overflow-hidden bg-white rbc-product-card">
+                                    <!-- Image -->
+                                    <a t-att-href="product.website_url" class="d-block text-center p-2 bg-light border-bottom position-relative" style="height: 160px; overflow: hidden;">
+                                        <img t-attf-src="/web/image/product.template/#{product.id}/image_512" class="img-fluid h-100 object-fit-contain" t-att-alt="product.name" loading="lazy"/>
+                                    </a>
+                                    <!-- Card Body -->
+                                    <div class="card-body d-flex flex-column p-3">
+                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                            <span class="badge bg-light text-secondary border fw-bold text-uppercase" style="font-size: 0.65rem;">
+                                                <t t-esc="product.public_categ_ids[0].name if product.public_categ_ids else (product.categ_id.name if product.categ_id else 'BEARINGS')"/>
+                                            </span>
+                                            <span class="small fw-bold" style="font-size: 0.72rem;">
+                                                <t t-if="product.sudo().qty_available &gt; 10"><span class="text-success"><i class="fa fa-circle me-1" style="font-size: 0.45rem; color: #10b981;"/> IN STOCK</span></t>
+                                                <t t-elif="product.sudo().qty_available &gt; 0"><span class="text-warning"><i class="fa fa-circle me-1" style="font-size: 0.45rem; color: #f59e0b;"/> LOW</span></t>
+                                                <t t-else=""><span class="text-danger"><i class="fa fa-circle me-1" style="font-size: 0.45rem; color: #ef4444;"/> LEAD TIME</span></t>
+                                            </span>
+                                        </div>
+                                        <h6 class="card-title fw-bold text-dark mb-1 text-truncate" style="font-size: 0.85rem;">
+                                            <a t-att-href="product.website_url" class="text-decoration-none text-dark"><t t-esc="product.name"/></a>
+                                        </h6>
+                                        <t t-if="product.description_sale">
+                                            <div class="small text-muted mb-2 text-truncate" style="font-size: 0.75rem;" t-att-title="product.description_sale">
+                                                <t t-esc="product.description_sale"/>
+                                            </div>
+                                        </t>
+                                        <div class="mt-auto pt-2 border-top d-flex align-items-center justify-content-between">
+                                            <t t-if="not request.session.uid">
+                                                <a t-attf-href="/contactus?product_id=#{product.id}" class="btn btn-warning btn-gold btn-sm fw-bold w-100 text-dark border-0 shadow-sm" style="background-color: #ffc107; font-size: 0.8rem;">RFQ</a>
+                                            </t>
+                                            <t t-else="">
+                                                <form action="/shop/cart/update" method="post" class="w-100 m-0 o_wsale_product_btn">
+                                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                                    <input type="hidden" name="product_id" t-att-value="product.product_variant_ids[0].id if product.product_variant_ids else product.id"/>
+                                                    <a role="button" href="#" class="btn btn-dark btn-sm fw-bold w-100 shadow-sm border-0 a-submit" style="background-color: #FED37E;  color: #181818; font-size: 0.8rem;">
+                                                        <i class="fa fa-shopping-cart me-1"/> Add to Cart
+                                                    </a>
+                                                </form>
+                                            </t>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

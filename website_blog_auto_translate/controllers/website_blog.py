@@ -1,4 +1,6 @@
-from odoo import tools
+from odoo import http, tools
+
+from odoo.addons.http_routing.models.ir_http import url_for
 
 from odoo.addons.website_blog.controllers.main import WebsiteBlog
 
@@ -25,14 +27,27 @@ class WebsiteBlogAutoTranslate(WebsiteBlog):
             )
         return values
 
+    # The bare @http.route() is required on any override of a routed method.
+    # Without it Odoo wraps the method in a functools.partial, which has no
+    # ``original_endpoint`` and makes /sitemap.xml fail with a 500 on every site.
+    @http.route()
     def blog_post(self, blog, blog_post, **post):
         response = super().blog_post(blog, blog_post, **post)
-        qcontext = getattr(response, "qcontext", None)
-        if not qcontext:
-            return response  # a redirect
-        qcontext["blog_post"]._auto_translate()
-        qcontext["blog"]._auto_translate()
-        qcontext["tags"]._auto_translate()
+        qcontext = getattr(response, "qcontext", None) or {}
+        post_record = qcontext.get("blog_post")
+        if not post_record:
+            # not the post page (a redirect, e.g. an old URL naming the blog
+            # the post was moved out of): hand it back, never a 500. Keep the
+            # visitor's language on the redirect (/es_MX/... stays /es_MX/...).
+            location = getattr(response, "headers", {}).get("Location")
+            if location and location.startswith("/") and getattr(response, "status_code", 0) in (301, 302, 303):
+                response.headers["Location"] = url_for(location)
+            return response
+        post_record._auto_translate()
+        if qcontext.get("blog"):
+            qcontext["blog"]._auto_translate()
+        if qcontext.get("tags"):
+            qcontext["tags"]._auto_translate()
         if qcontext.get("next_post"):
             qcontext["next_post"]._auto_translate(fnames=["name"])
         return response

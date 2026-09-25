@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="x_threshold_dashboard.Dashboard">
+        <div class="o_action o_tdash_root">
+        <div class="o_content o_tdash">
+            <!-- Header -->
+            <div class="o_tdash_header">
+                <div class="o_tdash_title">
+                    <div class="o_tdash_eyebrow">Financial Security Threshold</div>
+                    <h1>Threshold Dashboard</h1>
+                    <div class="o_tdash_meta" t-if="state.dashboard">
+                        <span><i class="fa fa-building-o me-1"/><t t-esc="state.dashboard.x_company_id[1]"/></span>
+                        <span><i class="fa fa-clock-o me-1"/>Refreshed <t t-esc="refreshedLabel"/></span>
+                    </div>
+                </div>
+                <div class="o_tdash_controls" t-if="state.dashboards.length">
+                    <select class="form-select o_tdash_select" t-on-change="onDashboardChange">
+                        <t t-foreach="state.dashboards" t-as="d" t-key="d.id">
+                            <option t-att-value="d.id" t-att-selected="d.id === state.dashboardId" t-esc="d.x_name"/>
+                        </t>
+                    </select>
+                    <button class="btn btn-primary o_tdash_btn" t-on-click="refresh" t-att-disabled="state.refreshing">
+                        <i t-attf-class="fa fa-refresh me-1 #{state.refreshing ? 'fa-spin' : ''}"/>
+                        <t t-if="state.refreshing">Refreshing…</t><t t-else="">Refresh</t>
+                    </button>
+                    <button class="btn btn-light o_tdash_btn" t-on-click="openReport" t-if="params.report_action_id">
+                        <i class="fa fa-file-excel-o me-1"/>Threshold Report
+                    </button>
+                    <button class="btn btn-light o_tdash_btn" t-on-click="openApBreakdown" t-if="params.ap_action_id">
+                        <i class="fa fa-list-ul me-1"/>AP Breakdown
+                    </button>
+                    <button class="btn btn-light o_tdash_btn" t-on-click="openSettings" title="Dashboard settings">
+                        <i class="fa fa-cog"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty states -->
+            <div class="o_tdash_empty" t-if="!state.loading and !state.dashboards.length">
+                <i class="fa fa-bar-chart fa-3x"/>
+                <h3>No Threshold dashboard yet</h3>
+                <p>Create one per company and year (e.g. RBC Industrial 2026), then click Refresh.</p>
+                <button class="btn btn-primary" t-on-click="openSettings">Create a dashboard</button>
+            </div>
+            <div class="o_tdash_empty" t-if="!state.loading and state.dashboards.length and !hasData">
+                <i class="fa fa-refresh fa-3x"/>
+                <h3>No figures yet</h3>
+                <p>Click Refresh to calculate the quarters of <t t-esc="state.dashboard.x_year"/>.</p>
+                <button class="btn btn-primary" t-on-click="refresh" t-att-disabled="state.refreshing">Refresh now</button>
+            </div>
+            <div class="o_tdash_loading" t-if="state.loading"><i class="fa fa-circle-o-notch fa-spin fa-2x"/></div>
+
+            <t t-if="!state.loading and hasData">
+                <!-- Period tabs -->
+                <div class="o_tdash_periods">
+                    <t t-foreach="standardPeriods" t-as="per" t-key="per.x_code">
+                        <button t-attf-class="o_tdash_period #{per.x_code === state.selectedCode ? 'active' : ''} #{per.x_is_future ? 'future' : ''}"
+                                t-att-disabled="per.x_is_future" t-on-click="() => this.selectPeriod(per.x_code)">
+                            <span class="o_tdash_period_code" t-esc="per.x_code"/>
+                            <span class="o_tdash_period_range"><t t-esc="per.x_date_from.slice(5)"/> → <t t-esc="per.x_date_to.slice(5)"/></span>
+                        </button>
+                    </t>
+                    <button t-if="customPeriod" t-attf-class="o_tdash_period o_tdash_period_custom #{state.selectedCode === 'CUSTOM' ? 'active' : ''}"
+                            t-on-click="() => this.selectPeriod('CUSTOM')">
+                        <span class="o_tdash_period_code">Custom</span>
+                        <span class="o_tdash_period_range" t-esc="customPeriod.x_name"/>
+                    </button>
+                    <div class="o_tdash_custom">
+                        <div class="o_tdash_custom_label"><i class="fa fa-calendar me-1"/>Custom range</div>
+                        <div class="o_tdash_custom_inputs">
+                            <input type="date" class="form-control" t-model="state.customFrom"/>
+                            <span>→</span>
+                            <input type="date" class="form-control" t-model="state.customTo"/>
+                            <button class="btn o_tdash_apply" t-on-click="applyCustomRange" t-att-disabled="state.applying">
+                                <i t-attf-class="fa #{state.applying ? 'fa-circle-o-notch fa-spin' : 'fa-check'} me-1"/>Calculate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI cards -->
+                <div class="o_tdash_kpis">
+                    <t t-foreach="kpis" t-as="k" t-key="k.key">
+                        <div t-attf-class="o_tdash_kpi o_tdash_click tone-#{k.tone}" t-on-click="() => this.onKpiClick(k)" title="Click to see the records behind this figure">
+                            <div class="o_tdash_kpi_label" t-esc="k.label"/>
+                            <div class="o_tdash_kpi_value" t-esc="k.value"/>
+                            <div class="o_tdash_kpi_sub" t-esc="k.sub"/>
+                            <div t-if="k.delta" t-attf-class="o_tdash_kpi_delta #{k.delta.tone}">
+                                <t t-esc="k.delta.arrow"/> <t t-esc="k.delta.text"/>
+                            </div>
+                            <i class="fa fa-external-link o_tdash_kpi_link"/>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- Row: waterfall + gauge -->
+                <div class="o_tdash_grid">
+                    <div class="o_tdash_card span-8">
+                        <div class="o_tdash_card_head">
+                            <div>
+                                <h3>From Net Profit to Headroom</h3>
+                                <p><t t-esc="selected and selected.x_name"/> · each bar is one line of the Threshold Report · click a bar for its records</p>
+                            </div>
+                            <div class="o_tdash_legend">
+                                <span class="dot navy"/>Profit <span class="dot teal"/>Adds cash <span class="dot amber"/>Uses cash <span class="dot green"/>Headroom
+                            </div>
+                        </div>
+                        <div class="o_tdash_chart h-320"><canvas t-ref="waterfall"/></div>
+                    </div>
+                    <div class="o_tdash_card span-4">
+                        <div class="o_tdash_card_head">
+                            <div>
+                                <h3>Profit vs Cash Requirement</h3>
+                                <p>How much of the threshold the period's profit covers</p>
+                            </div>
+                        </div>
+                        <div class="o_tdash_chart h-230"><canvas t-ref="gauge"/></div>
+                        <div class="o_tdash_gauge_foot" t-if="selected">
+                            <div><span>Net Profit</span><strong t-esc="fmt(selected.x_net_profit)"/></div>
+                            <div><span>Requirement</span><strong t-esc="fmt(-selected.x_threshold)"/></div>
+                            <div><span>Headroom</span><strong t-attf-class="#{selected.x_headroom >= 0 ? 'text-success' : 'text-danger'}" t-esc="fmt(selected.x_headroom)"/></div>
+                        </div>
+                    </div>
+
+                    <!-- Row: trend + ytd -->
+                    <div class="o_tdash_card span-6">
+                        <div class="o_tdash_card_head">
+                            <div><h3>Quarterly Trend</h3><p>Net profit and cash requirement per quarter, with the headroom line</p></div>
+                        </div>
+                        <div class="o_tdash_chart h-280"><canvas t-ref="trend"/></div>
+                    </div>
+                    <div class="o_tdash_card span-6">
+                        <div class="o_tdash_card_head">
+                            <div>
+                                <h3>Gain Share: Year to Date</h3>
+                                <p><t t-esc="state.dashboard.x_employee_share"/>% of YTD headroom · payout schedule <t t-esc="state.dashboard.x_payout_schedule"/>%</p>
+                            </div>
+                            <span class="o_tdash_badge">Estimate</span>
+                        </div>
+                        <div class="o_tdash_chart h-280"><canvas t-ref="ytd"/></div>
+                    </div>
+
+                    <!-- Row: AR/AP + donut + vendors -->
+                    <div class="o_tdash_card span-5">
+                        <div class="o_tdash_card_head">
+                            <div><h3>Receivables vs Payables</h3><p>Change per quarter and the net effect used in the report</p></div>
+                        </div>
+                        <div class="o_tdash_chart h-260"><canvas t-ref="arap"/></div>
+                    </div>
+                    <div class="o_tdash_card span-3">
+                        <div class="o_tdash_card_head">
+                            <div><h3>Share of Purchasing AP</h3><p>At the end of <t t-esc="selected and selected.x_name"/></p></div>
+                        </div>
+                        <t t-if="state.dashboard.x_has_ap_rule and selected and selected.x_source_ap_closing">
+                            <div class="o_tdash_chart h-200"><canvas t-ref="donut"/></div>
+                            <div class="o_tdash_donut_foot">
+                                <strong t-esc="fmt(selected.x_ap_closing)"/> of <t t-esc="fmt(selected.x_source_ap_closing)"/>
+                            </div>
+                        </t>
+                        <div t-else="" class="o_tdash_na">No allocated payables for this period</div>
+                    </div>
+                    <div class="o_tdash_card span-4">
+                        <div class="o_tdash_card_head">
+                            <div><h3>Top Vendors in Payables</h3>
+                                <p t-if="state.dashboard.x_vendor_as_of">Company share owed on <t t-esc="state.dashboard.x_vendor_as_of"/></p></div>
+                        </div>
+                        <div t-if="state.vendors.length" class="o_tdash_chart h-240"><canvas t-ref="vendors"/></div>
+                        <div t-else="" class="o_tdash_na">No open vendor payables</div>
+                    </div>
+
+                    <!-- Component table -->
+                    <div class="o_tdash_card span-12">
+                        <div class="o_tdash_card_head">
+                            <div><h3>Threshold Components</h3><p>Same lines and signs as the Threshold Report · cash uses shown negative · click any amount to open its journal items</p></div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="o_tdash_table">
+                                <thead>
+                                    <tr>
+                                        <th>Line</th>
+                                        <t t-foreach="state.periods" t-as="per" t-key="per.x_code">
+                                            <th t-attf-class="text-end #{per.x_code === state.selectedCode ? 'sel' : ''} #{per.x_is_year ? 'fy' : ''}" t-esc="per.x_name"/>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="tableRows" t-as="row" t-key="row.field">
+                                        <tr t-attf-class="#{row.css}">
+                                            <td t-esc="row.label"/>
+                                            <t t-foreach="row.cells" t-as="c" t-key="c.key">
+                                                <td t-attf-class="text-end #{c.key === state.selectedCode ? 'sel' : ''} #{c.year ? 'fy' : ''} #{c.custom ? 'custom' : ''} #{c.negative ? 'neg' : ''} #{c.future ? 'future' : 'o_tdash_click'}"
+                                                    t-on-click="() => this.onCellClick(row.field, c.key)" t-esc="c.text"/>
+                                            </t>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="o_tdash_footnote">Net profit is taken from the P&amp;L accounts. Rows with a Threshold Report account mapping use it;
+                            otherwise the dashboard's annual manual values are spread by quarter. Gain-share figures are estimates for planning.</div>
+                    </div>
+                </div>
+            </t>
+        </div>
+        </div>
+    </t>
+</templates>

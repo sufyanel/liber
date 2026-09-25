@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="default_dashboard_active" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_dashboard__x_active"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_dashboard_share" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_dashboard__x_employee_share"/>
+        <field name="json_value">50.0</field>
+    </record>
+    <record id="default_dashboard_schedule" model="ir.default">
+        <field name="field_id" ref="field_x_threshold_dashboard__x_payout_schedule"/>
+        <field name="json_value">"10,20,30,40"</field>
+    </record>
+</odoo>
