@@ -4,7 +4,7 @@
     <!-- RBC Shop Page Title & Banner Override -->
     <template id="products_shop_meta_rbc" inherit_id="website_sale.products" name="RBC Shop Meta" priority="99">
         <xpath expr="//t[@t-set='additional_title']" position="replace">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <t t-set="additional_title">RBC Industrial Product Catalog</t>
                 <t t-set="meta_description">Search and quote mission-critical bearings, power transmission, fluid dynamics, and MRO supplies from RBC Industrial with same-day El Paso &amp; Juárez availability.</t>
             </t>
@@ -15,10 +15,10 @@
 
         <!-- Inject RBC Industrial Top Catalog Header & Search inside products_grid before products_header -->
         <xpath expr="//div[@id='products_grid']//div[hasclass('products_header')]" position="before">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div class="rbc-catalog-header mb-4 pt-2">
                     <h1 class="fw-bold text-dark mb-2" style="font-size: 2.2rem; letter-spacing: -0.5px;">Product Catalog</h1>
-                    <p class="text-secondary lead fs-6 mb-4" style="max-width: 900px; color: #555;">
+                    <p class="lead fs-6 mb-4" style="max-width: 900px; color: #736C69 !important;">
                         Engineers scan for part numbers — every row is cross-referenced, specified, and ready for quote. Stock status reflects our El Paso warehouse plus Juárez-crossing availability.
                     </p>
 
@@ -39,13 +39,13 @@
 
         <!-- Inject RBC Left Sidebar inside products_grid_before -->
         <xpath expr="//*[@id='products_grid_before']" position="inside">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div class="rbc-filter-products-card card border shadow-sm rounded-3 p-3 mb-4 bg-white">
                     <h5 class="fw-bold text-dark border-bottom pb-2 mb-3 fs-6" style="letter-spacing: 0.3px;">Filter Products</h5>
                     
                     <!-- CATEGORY SECTION (Collapsible Accordion with Uncheck support) -->
                     <div class="filter-section mb-4">
-                        <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">CATEGORY</h6>
+                        <h6 class="text-uppercase fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px; color: #736C69 !important;">CATEGORY</h6>
                         <div class="rbc-category-accordion" id="rbcCategoryAccordion">
                             <t t-set="all_top_cats" t-value="categories if categories else request.env['product.public.category'].search([('parent_id', '=', False)])"/>
                             <t t-foreach="all_top_cats" t-as="c">
@@ -95,7 +95,7 @@
 
                     <!-- STOCK STATUS SECTION -->
                     <div class="filter-section mb-2">
-                        <h6 class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px;">STOCK STATUS</h6>
+                        <h6 class="text-uppercase fw-bold mb-2" style="font-size: 0.72rem; letter-spacing: 0.5px; color: #736C69 !important;">STOCK STATUS</h6>
                         <div class="form-check mb-1 ms-1">
                             <input class="form-check-input" type="checkbox" id="stockInStock" checked="checked"/>
                             <label class="form-check-label small text-dark" for="stockInStock">In Stock</label>
@@ -120,7 +120,7 @@
 
         <!-- Inject RBC Grid/List Container before standard grid container -->
         <xpath expr="//div[@id='products_grid']//div[hasclass('o_wsale_products_grid_table_wrapper')]" position="before">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div t-if="products" class="o_wsale_products_grid_table_wrapper pt-3 pt-lg-0 rbc-custom-catalog-wrapper">
                     
                     <!-- 1. LIST MODE TABLE (RBC Dark-Header Product Catalog Table with Gold Header Text) -->
@@ -165,7 +165,7 @@
                                         <!-- CATEGORY -->
                                         <td class="py-3 px-3">
                                             <t t-set="p_cat" t-value="product.public_categ_ids[0].name if product.public_categ_ids else (product.categ_id.name if product.categ_id else 'BEARINGS')"/>
-                                            <span class="badge bg-light text-secondary border fw-bold text-uppercase px-2 py-1" style="font-size: 0.65rem; letter-spacing: 0.5px; color: #555;">
+                                            <span class="badge cat-tag border fw-bold text-uppercase px-2 py-1" style="font-size: 0.65rem; letter-spacing: 0.5px; color: #736C69 !important; background-color: #E9E8E8 !important;">
                                                 <t t-esc="p_cat"/>
                                             </span>
                                         </td>
@@ -178,7 +178,7 @@
                                                         <t t-if="v_names">
                                                             <span class="badge bg-light text-dark border border-secondary border-opacity-25 py-1 px-2" 
                                                                   style="font-size: 0.72rem; font-weight: 500; border-radius: 4px; background-color: #f8f9fa;">
-                                                                <span class="text-secondary fw-semibold" style="color: #555 !important;"><t t-esc="aline.attribute_id.name"/>:</span> 
+                                                                <span class="fw-semibold" style="color: #736C69 !important;"><t t-esc="aline.attribute_id.name"/>:</span> 
                                                                 <span class="fw-bold text-dark"><t t-esc="v_names"/></span>
                                                             </span>
                                                         </t>
@@ -239,7 +239,7 @@
                                     <!-- Card Body -->
                                     <div class="card-body d-flex flex-column p-3">
                                         <div class="d-flex align-items-center justify-content-between mb-1">
-                                            <span class="badge bg-light text-secondary border fw-bold text-uppercase" style="font-size: 0.65rem;">
+                                            <span class="badge cat-tag border fw-bold text-uppercase" style="font-size: 0.65rem; color: #736C69 !important; background-color: #E9E8E8 !important;">
                                                 <t t-esc="product.public_categ_ids[0].name if product.public_categ_ids else (product.categ_id.name if product.categ_id else 'BEARINGS')"/>
                                             </span>
                                             <span class="small fw-bold" style="font-size: 0.72rem;">
@@ -252,7 +252,7 @@
                                             <a t-att-href="product.website_url" class="text-decoration-none text-dark"><t t-esc="product.name"/></a>
                                         </h6>
                                         <t t-if="product.description_sale">
-                                            <div class="small text-muted mb-2 text-truncate" style="font-size: 0.75rem;" t-att-title="product.description_sale">
+                                            <div class="small mb-2 text-truncate" style="font-size: 0.75rem; color: #736C69 !important;" t-att-title="product.description_sale">
                                                 <t t-esc="product.description_sale"/>
                                             </div>
                                         </t>
@@ -284,7 +284,7 @@
     <!-- Hide filmstrip categories on RBC Industrial -->
     <template id="filmstrip_categories_rbc" inherit_id="website_sale.filmstrip_categories" name="Filmstrip Categories RBC" priority="99">
         <xpath expr="//div[hasclass('o_wsale_filmstip_container')]" position="attributes">
-            <attribute name="t-if">entries and not (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4))</attribute>
+            <attribute name="t-if">entries and not (request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme')</attribute>
         </xpath>
     </template>
 

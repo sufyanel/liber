@@ -4,10 +4,10 @@
     <!-- RBC Main Header & Emergency Bar Override -->
     <template id="header_rbc_main" inherit_id="website.layout" name="RBC Main Header &amp; Navigation" priority="99">
         <xpath expr="//header" position="attributes">
-            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme') else ''}</attribute>
         </xpath>
         <xpath expr="//header" position="after">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <header id="top" data-anchor="true" data-name="Header" class="site-header sticky-top">
                     <!-- Signature RBC Emergency Line-Down Bar -->
                     <div class="emergency-bar">
@@ -35,7 +35,7 @@
                                         <a href="/shop" class="nav-link text-warning fw-semibold px-2" style="color: #FED37E !important;">Products</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="/#industries" class="nav-link text-light fw-semibold px-2">Industries</a>
+                                        <a href="/" class="nav-link text-light fw-semibold px-2">Industries</a>
                                     </li>
                                     <li class="nav-item">
                                         <a href="/blog" class="nav-link text-light fw-semibold px-2">Knowledge</a>

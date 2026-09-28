@@ -4,10 +4,10 @@
     <!-- RBC Main Footer Override -->
     <template id="footer_rbc_main" inherit_id="website.layout" name="RBC Main Footer" priority="99">
         <xpath expr="//div[@id='footer']" position="attributes">
-            <attribute name="t-attf-class">#{'d-none' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme') else ''}</attribute>
         </xpath>
         <xpath expr="//div[@id='footer']" position="after">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div id="footer" class="oe_structure">
                     <footer class="site-footer" style="background: #181818 !important; color: #B2ADAC !important; padding: 3rem 0; font-size: 0.85rem; border-top: 1px solid rgba(254,211,126,0.2) !important;">
                         <div class="container">
