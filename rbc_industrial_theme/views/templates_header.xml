@@ -35,7 +35,7 @@
                                         <a href="/shop" class="nav-link text-warning fw-semibold px-2" style="color: #FED37E !important;">Products</a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="/" class="nav-link text-light fw-semibold px-2">Industries</a>
+                                        <a href="/industries" class="nav-link text-light fw-semibold px-2">Industries</a>
                                     </li>
                                     <li class="nav-item">
                                         <a href="/blog" class="nav-link text-light fw-semibold px-2">Knowledge</a>

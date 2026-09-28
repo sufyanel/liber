@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <!-- RBC Industries Body Template -->
+    <!-- RBC Industries Body Template (Calls Homepage Body for now as requested; detailed body archived below) -->
     <template id="rbc_industries_body" name="RBC Industries Body">
+        <t t-call="rbc_industrial_theme.rbc_homepage_body"/>
+    </template>
+
+    <!-- RBC Industries Body Detailed (Preserved so it can be restored whenever user is ready) -->
+    <template id="rbc_industries_body_detailed" name="RBC Industries Body Detailed">
         <div id="wrap" class="oe_structure o_rbc_industries_page">
             <!-- Breadcrumbs -->
             <div class="container">
