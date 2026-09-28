@@ -7,7 +7,7 @@
             <div id="wrap" class="o_rbc_quote_page rbc-section">
                 <div class="container">
                     <h1 class="mb-2">Request a Quote</h1>
-                    <p class="text-muted mb-4" style="max-width: 54ch;">
+                    <p class="mb-4" style="max-width: 54ch; color: #736C69 !important;">
                         Tell us the part you need. RBC Industrial's team of trained engineers will confirm availability and pricing — ideal for mission-critical, line-down, or hard-to-find SKUs.
                     </p>
                     <div class="rbc-card" style="max-width: 680px;">
@@ -72,5 +72,12 @@
             </div>
         </t>
     </template>
+
+    <record id="quote_page_record" model="website.page">
+        <field name="name">Request a Quote</field>
+        <field name="url">/quote</field>
+        <field name="view_id" ref="quote_page"/>
+        <field name="is_published">True</field>
+    </record>
 
 </odoo>

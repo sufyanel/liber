@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- RBC Industries Body Template -->
+    <template id="rbc_industries_body" name="RBC Industries Body">
+        <div id="wrap" class="oe_structure o_rbc_industries_page">
+            <!-- Breadcrumbs -->
+            <div class="container">
+                <div class="breadcrumbs py-3">
+                    <a href="/">Home</a><span class="sep mx-2">›</span>
+                    <span class="current">Industries Served</span>
+                </div>
+            </div>
+
+            <!-- Page Header -->
+            <div class="container mb-4">
+                <div class="page-header">
+                    <h1 class="fw-bold mb-2">Industries We Serve</h1>
+                    <p class="lead fs-5" style="max-width: 720px; color: #736C69 !important;">From high-volume Juárez assembly plants to West Texas oilfield operations — RBC Industrial delivers brand-agnostic bearings, power transmission, and MRO solutions engineered for continuous uptime.</p>
+                </div>
+            </div>
+
+            <!-- Hero Band -->
+            <section class="hero-band py-4 mb-5" style="background-color: #181818; color: #FFFFFF; border-top: 3px solid #FED37E; border-bottom: 1px solid rgba(254,211,126,0.2);">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-8">
+                            <h2 class="fw-bold mb-2" style="color: #FED37E;">Mission-Critical Supply for High-Demand Sectors</h2>
+                            <p class="mb-0 text-light opacity-90">Located in El Paso with 5-minute proximity to the Juárez border corridor. Same-day emergency delivery, trained engineer support, and cross-reference expertise across all major industrial brands.</p>
+                        </div>
+                        <div class="col-12 col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="/contactus" class="btn btn-warning fw-bold text-dark px-4 py-2" style="background-color: #FED37E !important; border: none !important;">Discuss Your Application</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Industry Grid Section -->
+            <section class="container pb-5">
+                <div class="row g-4">
+                    <!-- Industry 1: Manufacturing & Maquiladoras -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                MFG
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Manufacturing &amp; Maquiladoras</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">High-speed assembly lines require zero-downtime component replacement. We supply precision bearings, linear motion components, and belting with 5-minute cross-border delivery to Juárez plants.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>High-precision miniature &amp; metric bearings</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Conveyor belting &amp; drive chains</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Same-day emergency border crossing</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Manufacturing Parts →</a>
+                        </div>
+                    </div>
+
+                    <!-- Industry 2: Mining & Aggregate -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                MIN
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Mining &amp; Aggregate</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">Heavy load, abrasive dust, and high shock conditions demand severe-duty gear reducers, spherical roller bearings, and heavy-duty conveyor drives built for harsh environments.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>Spherical roller bearings &amp; pillow blocks</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Heavy torque planetary &amp; helical gearboxes</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Abrasion-resistant shaft seals</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Aggregate Equipment →</a>
+                        </div>
+                    </div>
+
+                    <!-- Industry 3: Oil & Gas / Energy -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                O&amp;G
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Oil &amp; Gas / Energy</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">Pumping units, mud pumps, and refining equipment operating across Permian Basin oilfields require high-temp seals, explosion-proof motors, and heavy couplings.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>Viton &amp; PTFE high-pressure fluid seals</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Class I Div 1 explosion-proof AC motors</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Flexible grid &amp; gear couplings</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Energy Supplies →</a>
+                        </div>
+                    </div>
+
+                    <!-- Industry 4: Food & Beverage Processing -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                F&amp;B
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Food &amp; Beverage Processing</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">Sanitary washdown environments require stainless steel bearing units, food-grade synthetic lubricants, and IP69K sealed washdown gearmotors.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>Stainless steel mounted bearing units</li>
+                                <li><i class="fa fa-check text-warning me-2"/>NSF H1 food-grade greases &amp; oils</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Corrosion-resistant washdown drives</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Washdown Components →</a>
+                        </div>
+                    </div>
+
+                    <!-- Industry 5: Water & Utilities -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                UTL
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Water Utilities &amp; Power</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">Municipal water treatment, aeration blowers, and power generation turbines demand heavy-duty drive shafts, VFD speed controllers, and mechanical pump seals.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>Inverter-duty VFD motors</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Split-case pump mechanical seals</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Universal joints &amp; drive shafts</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Utility Solutions →</a>
+                        </div>
+                    </div>
+
+                    <!-- Industry 6: Packaging & Logistics -->
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="industry-card card h-100 border rounded-3 p-4 shadow-sm bg-white">
+                            <div class="ind-icon mb-3 d-inline-flex align-items-center justify-content-center rounded-2 fw-bold text-warning" style="width: 48px; height: 48px; background-color: #4A352C; color: #FED37E !important; font-size: 1.25rem;">
+                                PKG
+                            </div>
+                            <h3 class="fw-bold h4 mb-2">Packaging &amp; Material Handling</h3>
+                            <p class="small mb-3" style="color: #736C69 !important;">Automated sorting systems, palletizers, and stretch wrappers require high-cycle clutches, timing belts, and precision sensors for continuous operation.</p>
+                            <ul class="list-unstyled small text-dark mb-3 gap-1 d-flex flex-column">
+                                <li><i class="fa fa-check text-warning me-2"/>Polyurethane timing belts &amp; pulleys</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Electric clutches &amp; brakes</li>
+                                <li><i class="fa fa-check text-warning me-2"/>Modular conveyor chain &amp; sprockets</li>
+                            </ul>
+                            <a href="/shop" class="fw-semibold small text-decoration-none" style="color: #4A352C;">Browse Handling Supplies →</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bottom Emergency CTA Band -->
+            <section class="py-5 bg-white border-top">
+                <div class="container text-center">
+                    <h3 class="fw-bold mb-2">Don't See Your Specific Industry Listed?</h3>
+                    <p class="mb-4" style="max-width: 600px; margin: 0 auto; color: #736C69 !important;">Our trained engineers regularly cross-reference custom and obsolete components across all heavy industrial applications.</p>
+                    <a href="/contactus" class="btn btn-dark fw-bold px-4 py-2 me-2" style="background-color: #4A352C !important;">Contact an Engineer</a>
+                    <a href="tel:9158458188" class="btn btn-outline-dark fw-bold px-4 py-2">Call 915-845-8188</a>
+                </div>
+            </section>
+        </div>
+    </template>
+
+    <!-- RBC Industries Page Template -->
+    <template id="rbc_industries_page" name="RBC Industries Page">
+        <t t-call="website.layout">
+            <t t-call="rbc_industrial_theme.rbc_industries_body"/>
+        </t>
+    </template>
+
+</odoo>

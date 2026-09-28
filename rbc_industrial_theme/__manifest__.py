@@ -24,6 +24,7 @@
         "views/templates_footer.xml",
         "views/templates_homepage.xml",
         "views/templates_about.xml",
+        "views/templates_industries.xml",
         "views/templates_contact.xml",
         "views/templates_shop.xml",
         "views/templates_product.xml",

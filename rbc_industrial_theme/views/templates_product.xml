@@ -5,7 +5,7 @@
     <template id="product_rbc_ctas" inherit_id="website_sale.product" name="RBC Product CTAs &amp; Emergency Banner" priority="50">
         <!-- Emergency Alert Banner above product details -->
         <xpath expr="//*[@id='product_detail']" position="before">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div class="rbc-emergency-alert bg-primary text-white p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between container mt-3">
                     <div>
                         <span class="pulse d-inline-block bg-danger rounded-circle me-2" style="width:10px; height:10px;"></span>
@@ -21,7 +21,7 @@
 
         <!-- Custom CTAs inside product CTA wrapper -->
         <xpath expr="//*[@id='o_wsale_cta_wrapper']" position="inside">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div class="d-flex flex-wrap gap-2 mt-3">
                     <t t-set="show_quote" t-value="product._liber_show_request_quote()"/>
                     <t t-set="show_sign_in" t-value="product._liber_show_sign_in_to_buy()"/>
@@ -46,7 +46,7 @@
                             <span class="badge bg-primary text-warning">TX HUB</span>
                         </div>
                     </div>
-                    <div class="text-muted small">100% Genuine OEM factory certified component. Ships from El Paso, TX.</div>
+                    <div class="small" style="color: #736C69 !important;">100% Genuine OEM factory certified component. Ships from El Paso, TX.</div>
                 </div>
             </t>
         </xpath>

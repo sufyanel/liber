@@ -4,12 +4,12 @@
     <!-- RBC Blog Index & Knowledge Base Enhancements -->
     <template id="blog_index_rbc" inherit_id="website_blog.index" name="RBC Blog Index" priority="50">
         <xpath expr="//*[@id='wrap']" position="attributes">
-            <attribute name="t-attf-class">#{'o_rbc_blog_wrap' if (request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+            <attribute name="t-attf-class">#{'o_rbc_blog_wrap' if (request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme') else ''}</attribute>
         </xpath>
 
         <!-- Inject RBC Technical Knowledge Base Header Banner inside wrap -->
         <xpath expr="//*[@id='wrap']" position="after">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+            <t t-if="request and request.website and request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme'">
                 <div class="container mt-4">
                     <div class="rbc-blog-banner bg-dark text-white p-4 p-md-5 rounded-3 mb-4 shadow-sm">
                         <span class="badge bg-warning text-dark fw-bold px-3 py-2 text-uppercase mb-3">Field-Tested Engineering Intelligence</span>

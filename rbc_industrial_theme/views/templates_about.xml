@@ -134,12 +134,12 @@
 
     <!-- RBC Industrial About Us Page Template Override for website.aboutus -->
     <template id="aboutus_page_rbc" inherit_id="website.aboutus" name="RBC About Us Page" priority="30">
-        <xpath expr="//div[@id='wrap']" position="replace">
-            <t t-if="request and request.website and (request.website.name == 'RBC Industrial' or request.website.id == 4)">
+        <xpath expr="//div[@id='wrap']" position="attributes">
+            <attribute name="t-attf-class">#{'d-none' if (request and request.website and ((request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme') or request.website.name == 'RBC Industrial' or request.website.id == 4)) else ''}</attribute>
+        </xpath>
+        <xpath expr="//div[@id='wrap']" position="after">
+            <t t-if="request and request.website and ((request.website.sudo().theme_id and request.website.sudo().theme_id.name == 'rbc_industrial_theme') or request.website.name == 'RBC Industrial' or request.website.id == 4)">
                 <t t-call="rbc_industrial_theme.rbc_aboutus_body"/>
-            </t>
-            <t t-else="">
-                <div id="wrap" class="oe_structure oe_empty"/>
             </t>
         </xpath>
     </template>

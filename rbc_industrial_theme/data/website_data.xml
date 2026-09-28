@@ -7,6 +7,6 @@
         <field name="redirect_type">301</field>
     </record>
 
-    <function model="website" name="_liber_theme_setup"/>
+    <function model="website" name="_rbc_theme_setup"/>
 </odoo>
 
