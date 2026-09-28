@@ -81,10 +81,10 @@ def _setup_website_pages(env, website):
             "body": "rbc_industrial_theme.rbc_aboutus_body",
         },
         {
-            "url": "/",
+            "url": "/industries",
             "key": "website.industries",
             "name": "Industries Served",
-            "body": "rbc_industrial_theme.rbc_industries_body",
+            "body": "rbc_industrial_theme.rbc_homepage_body",
         },
     ]
 
@@ -127,6 +127,21 @@ def _setup_website_pages(env, website):
                 "website_id": website.id,
                 "is_published": True,
             })
+
+    # Ensure website.homepage view for website also calls rbc_homepage_body
+    hp_views = View.search([
+        ("website_id", "=", website.id),
+        ("key", "=", "website.homepage"),
+    ])
+    for hp_view in hp_views:
+        hp_view.write({
+            "arch_db": """<t name="Homepage" t-name="website.homepage">
+    <t t-call="website.layout">
+        <t t-set="pageName" t-value="'homepage'"/>
+        <t t-call="rbc_industrial_theme.rbc_homepage_body"/>
+    </t>
+</t>"""
+        })
 
 
 def _rbc_set_color_palette(env, website):
