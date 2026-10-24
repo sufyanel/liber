@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_liber_rebuild_timeline" model="ir.actions.server">
+        <field name="name">Liber: rebuild the history timeline</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Replaces the history timeline on the About page with one consistent block.
+# The existing one is page content written by code that Apps > Import Module
+# never runs, so its entries carry different heading levels and markers.
+# Safe to run again: it looks for its own marker class first.
+NEW = """<section id="liber_history" class="o_liber_timeline_section"><div class="container"><div class="o_liber_tl_head"><span class="o_liber_tl_kicker">Our History</span><h2 class="o_liber_tl_h2">Operating heritage since 1946</h2></div><div class="o_liber_tl"><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">RBC Industrial — Founded 1946</h3><p class="o_liber_tl_text">Founded in El Paso, Texas by Roger Brown, Sr. after he returned from serving as a Navy engineering officer in the Second World War.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">1946</span></div><div class="o_liber_tl_side"/></div><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">RBC Industrial — Acquired by Liber Holdings</h3><p class="o_liber_tl_text">Liber Holdings acquired the Texas-based Roger Brown Co in El Paso, Texas, which was founded in 1946.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">2016</span></div><div class="o_liber_tl_side"/></div><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">Liber Industrial - Founded</h3><p class="o_liber_tl_text">Liber Industrial was formed in 2018 in Bulverde, Texas as a separate operating entity within the Liber Holdings group, originally to serve public-sector school-district supply programs while shielding the group's other entities from contract liability. That line has since closed. Liber Industrial today focuses on industrial MRO supply and specialty chemical distribution.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">2018</span></div><div class="o_liber_tl_side"/></div><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">Tooling Components - Acquired</h3><p class="o_liber_tl_text">Tooling Components, a distributor of mold, die and polishing supplies, was founded by Diane Bowes in 1983 near Erie, Pennsylvania.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">2023</span></div><div class="o_liber_tl_side"/></div><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">Globe Electric Supply - Investment</h3><p class="o_liber_tl_text">Liber Holdings and an individual investor purchased the stock of Globe Electric Supply Co Inc to grow our share of government infrastructure projects.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">2024</span></div><div class="o_liber_tl_side"/></div><div class="o_liber_tl_row"><div class="o_liber_tl_side"><div class="o_liber_tl_card"><h3 class="o_liber_tl_title">RBC Industrial - Rebrand</h3><p class="o_liber_tl_text">RBC Industrial was formed as a rebrand of Roger Brown Co, with the same suppliers and the same team.</p></div></div><div class="o_liber_tl_axis"><span class="o_liber_tl_dot"/><span class="o_liber_tl_year">2025</span></div><div class="o_liber_tl_side"/></div></div></div></section>"""
+MARKERS = ["RBC Industrial — Acquired by Liber Holdings", "Liber Industrial - Founded",
+           "Globe Electric Supply - Investment", "Tooling Components Acquired"]
+
+Page = env["website.page"].sudo()
+pages = Page.search([("url", "in", ["/about-us", "/about", "/aboutus"])])
+report = []
+
+for page in pages:
+    view = page.view_id
+    if not view:
+        continue
+    arch = view.with_context(lang="en_US").arch_db or ""
+    if "o_liber_timeline_section" in arch:
+        report.append("%s: already rebuilt" % page.url)
+        continue
+    hit = -1
+    for marker in MARKERS:
+        hit = arch.find(marker)
+        if hit != -1:
+            break
+    if hit == -1:
+        report.append("%s: no timeline found, left alone" % page.url)
+        continue
+    start = arch.rfind("<section", 0, hit)
+    end = arch.find("</section>", hit)
+    if start == -1 or end == -1:
+        report.append("%s: timeline boundaries unclear, left alone" % page.url)
+        continue
+    end = end + 10
+    view.write({"arch_db": arch[:start] + NEW + arch[end:]})
+    report.append("%s: timeline rebuilt with 6 entries" % page.url)
+
+env["ir.attachment"].sudo().search([("name", "like", "web.assets_frontend%")]).unlink()
+env.registry.clear_cache()
+
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {"title": "Liber history timeline", "type": "success", "sticky": True,
+               "message": " | ".join(report) or "No About page found."},
+}
+]]></field>
+    </record>
+
+    <function model="ir.actions.server" name="run" eval="[[ref('action_liber_rebuild_timeline')]]"/>
+
+    <menuitem id="menu_liber_rebuild_timeline" name="Liber: rebuild history timeline"
+              parent="website.menu_website_configuration" action="action_liber_rebuild_timeline"
+              groups="website.group_website_designer" sequence="96"/>
+</odoo>

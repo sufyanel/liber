@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invcmp_report_download" model="ir.actions.server">
+        <field name="name">Download Excel</field>
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Invoice Comparison report: the old "Invoice Comparison" wizard's Excel, yearly
+# or one month across the years, same customers, same amounts, same layout.
+# Customers are grouped under their top-level parent across the selected
+# companies; group companies and archived contacts are left out; amounts are
+# posted invoices less credit notes; months still to come in the current year
+# use the confirmed analytic customer budget.
+MONTH_NAMES = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September',
+               'October', 'November', 'December']
+
+# ---- SpreadsheetML (Excel 2003 XML) writer. An imported module cannot use
+# xlsxwriter, so the workbook is written as XML that Excel opens with its
+# formatting. Cells are kept in a grid {(row, col): (value, style, merge_across, merge_down)}.
+def xml_text(value):
+    text = '' if value is None else str(value)
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def put(grid, row, col, value, style_id, across=0, down=0):
+    grid[(row, col)] = (value, style_id, across, down)
+
+
+def xml_style(sid, bold=False, size=10, color='', fill='', align='Left', number='', border='', italic=False, wrap=False):
+    out = '<Style ss:ID="%s"><Alignment ss:Horizontal="%s" ss:Vertical="Center"%s/>' % (
+        sid, align, ' ss:WrapText="1"' if wrap else '')
+    out += '<Font ss:FontName="Calibri" ss:Size="%d"%s%s%s/>' % (
+        size, ' ss:Bold="1"' if bold else '', ' ss:Italic="1"' if italic else '', (' ss:Color="%s"' % color) if color else '')
+    if fill:
+        out += '<Interior ss:Color="%s" ss:Pattern="Solid"/>' % fill
+    if number:
+        out += '<NumberFormat ss:Format="%s"/>' % xml_text(number)
+    if border:
+        out += '<Borders>'
+        for side in ('Top', 'Bottom', 'Left', 'Right'):
+            out += '<Border ss:Position="%s" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="%s"/>' % (side, border)
+        out += '</Borders>'
+    return out + '</Style>'
+
+
+def xml_sheet(name, grid, widths, hidden=None, heights=None):
+    hidden = hidden or []
+    heights = heights or {}
+    cols = ''
+    for index in range(len(widths)):
+        cols += '<Column ss:Index="%d" ss:Width="%d"%s/>' % (index + 1, widths[index], ' ss:Hidden="1"' if index in hidden else '')
+    rows_out = ''
+    by_row = {}
+    for key in grid:
+        by_row.setdefault(key[0], []).append(key[1])
+    for r in sorted(by_row):
+        cells = ''
+        for c in sorted(by_row[r]):
+            value, style_id, across, down = grid[(r, c)]
+            attrs = ' ss:Index="%d" ss:StyleID="%s"' % (c + 1, style_id)
+            if across:
+                attrs += ' ss:MergeAcross="%d"' % across
+            if down:
+                attrs += ' ss:MergeDown="%d"' % down
+            if value is None or value == '':
+                cells += '<Cell%s/>' % attrs
+            elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                cells += '<Cell%s><Data ss:Type="Number">%s</Data></Cell>' % (attrs, repr(round(float(value), 6)))
+            else:
+                cells += '<Cell%s><Data ss:Type="String">%s</Data></Cell>' % (attrs, xml_text(value))
+        height = (' ss:Height="%d"' % heights[r]) if r in heights else ''
+        rows_out += '<Row ss:Index="%d"%s>%s</Row>' % (r + 1, height, cells)
+    return '<Worksheet ss:Name="%s"><Table>%s%s</Table></Worksheet>' % (xml_text(name), cols, rows_out)
+
+
+def xml_workbook(styles, sheets):
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n'
+            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" '
+            'xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+            '<Styles>%s</Styles>%s</Workbook>') % (''.join(styles), ''.join(sheets))
+
+
+def xml_download(filename, content, res_model, res_id):
+    attachment = env['ir.attachment'].sudo().create({
+        'name': filename, 'type': 'binary', 'raw': content.encode('utf-8'),
+        'mimetype': 'application/vnd.ms-excel', 'res_model': res_model, 'res_id': res_id,
+    })
+    return {'type': 'ir.actions.act_url', 'url': '/web/content/%s?download=true' % attachment.id, 'target': 'self'}
+
+
+def month_end(year, month):
+    if month == 12:
+        return datetime.date(year, 12, 31)
+    return datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+
+
+def top_parent(partner):
+    top = partner
+    while top.parent_id:
+        top = top.parent_id
+    return top
+
+
+def actual_by_month(company_filter, year, month):
+    """{(partner id, company id): net invoiced} for one month, one query."""
+    domain = [('move_type', 'in', ['out_invoice', 'out_refund']), ('state', '=', 'posted'),
+              ('invoice_date', '>=', datetime.date(year, month, 1)), ('invoice_date', '<=', month_end(year, month))]
+    if company_filter:
+        domain.append(('company_id', 'in', company_filter))
+    out = {}
+    for group in env['account.move'].sudo().read_group(domain, ['amount_total_signed'], ['partner_id', 'company_id'], lazy=False):
+        if group.get('partner_id') and group.get('company_id'):
+            out[(group['partner_id'][0], group['company_id'][0])] = group['amount_total_signed'] or 0.0
+    return out
+
+
+def budget_for_month(partner_id, company_id, year, month, cache):
+    key = (partner_id, company_id)
+    if key not in cache:
+        analytic = env['account.analytic.account'].sudo().search([('partner_id', '=', partner_id), ('company_id', '=', company_id)], limit=1)
+        posts = env['account.budget.post'].sudo().search([('account_ids.account_type', '=', 'income'), ('company_id', '=', company_id)])
+        cache[key] = (analytic, posts)
+    analytic, posts = cache[key]
+    if not analytic or not posts:
+        return 0.0
+    start = datetime.date(year, month, 1)
+    end = month_end(year, month)
+    total = 0.0
+    for line in env['crossovered.budget.lines'].sudo().search([
+            ('analytic_account_id', '=', analytic.id), ('general_budget_id', 'in', posts.ids),
+            ('date_from', '<=', end), ('date_to', '>=', start), ('planned_amount', '>', 0)]):
+        if line.crossovered_budget_id.state not in ('confirm', 'validate', 'done'):
+            continue
+        line_start = max(line.date_from, start)
+        line_end = min(line.date_to, end)
+        if line_start <= line_end:
+            total += line.planned_amount * ((line_end - line_start).days + 1) / ((line.date_to - line.date_from).days + 1)
+    return total
+
+
+wizard = record.sudo()
+monthly = wizard.x_report_type == 'monthly'
+if monthly and not wizard.x_month:
+    raise UserError('Please select a month for monthly report.')
+today = datetime.date.today()
+current_year = today.year
+years_count = int(wizard.x_years_count or '5')
+years = []
+for i in range(years_count):
+    years.append(current_year - years_count + 1 + i)
+month_int = int(wizard.x_month) if monthly else 0
+company_filter = wizard.x_company_ids.ids
+group_partners = env['res.company'].sudo().search([]).mapped('partner_id').ids
+
+# ---- which customers: invoices (and, for the yearly report, budget lines)
+if monthly:
+    inv_from = datetime.date(years[0], month_int, 1)
+    inv_to = month_end(years[-1], month_int)
+else:
+    inv_from = datetime.date(years[0], 1, 1)
+    inv_to = datetime.date(years[-1], 12, 31)
+domain = [('move_type', '=', 'out_invoice'), ('state', '=', 'posted'),
+          ('invoice_date', '>=', inv_from), ('invoice_date', '<=', inv_to),
+          ('partner_id', 'not in', group_partners), ('partner_id.commercial_partner_id', 'not in', group_partners),
+          ('partner_id.active', '=', True)]
+if company_filter:
+    domain.append(('company_id', 'in', company_filter))
+company_customers = {}
+company_names = set()
+for group in env['account.move'].sudo().read_group(domain, ['amount_total_signed'], ['company_id', 'partner_id', 'invoice_date:month'], lazy=False):
+    if not group.get('partner_id') or not group.get('company_id'):
+        continue
+    company_customers.setdefault(group['company_id'][0], set()).add(group['partner_id'][0])
+    company_names.add(group['company_id'][1])
+if monthly:
+    # only invoices of that month in each year
+    company_customers = {}
+    company_names = set()
+    for y in years:
+        m_domain = []
+        for term in domain:
+            if term[0] == 'invoice_date':
+                continue
+            m_domain.append(term)
+        m_domain += [('invoice_date', '>=', datetime.date(y, month_int, 1)), ('invoice_date', '<=', month_end(y, month_int))]
+        for group in env['account.move'].sudo().read_group(m_domain, ['amount_total_signed'], ['company_id', 'partner_id'], lazy=False):
+            if group.get('partner_id') and group.get('company_id'):
+                company_customers.setdefault(group['company_id'][0], set()).add(group['partner_id'][0])
+                company_names.add(group['company_id'][1])
+else:
+    b_domain = [('date_from', '<=', datetime.date(years[-1], 12, 31)), ('date_to', '>=', datetime.date(years[0], 1, 1)),
+                ('planned_amount', '>', 0), ('analytic_account_id.partner_id', 'not in', group_partners),
+                ('analytic_account_id.partner_id.commercial_partner_id', 'not in', group_partners),
+                ('analytic_account_id.partner_id.active', '=', True)]
+    if company_filter:
+        b_domain.append(('analytic_account_id.company_id', 'in', company_filter))
+    if env['ir.model'].sudo().search_count([('model', '=', 'crossovered.budget.lines')]):
+        for line in env['crossovered.budget.lines'].sudo().search(b_domain):
+            if line.crossovered_budget_id.state not in ('confirm', 'validate', 'done'):
+                continue
+            analytic = line.analytic_account_id
+            if analytic.partner_id and analytic.company_id:
+                company_customers.setdefault(analytic.company_id.id, set()).add(analytic.partner_id.id)
+                company_names.add(analytic.company_id.name)
+
+# ---- amounts
+months = [month_int] if monthly else list(range(1, 13))
+actual = {}
+for y in years:
+    for m in months:
+        if (y, m) <= (today.year, today.month) or y < current_year:
+            for key, amount in actual_by_month(company_filter, y, m).items():
+                actual[(key[0], key[1], y, m)] = amount
+budget_cache = {}
+budget_ok = bool(env['ir.model'].sudo().search_count([('model', '=', 'crossovered.budget.lines')]))
+Partner = env['res.partner'].sudo().with_context(active_test=False)
+customers = {}
+for company_id in company_customers:
+    hierarchy = {}
+    for partner in Partner.browse(list(company_customers[company_id])):
+        top = top_parent(partner)
+        entry = hierarchy.setdefault(top.id, {'name': top.name or top.display_name or 'Unknown Customer', 'ids': set()})
+        entry['ids'].add(partner.id)
+    for top_id in hierarchy:
+        name = hierarchy[top_id]['name']
+        data = customers.setdefault(name, {})
+        for y in years:
+            inv, bud = 0.0, 0.0
+            for m in months:
+                future = y >= current_year and (y, m) > (today.year, today.month)
+                for pid in hierarchy[top_id]['ids']:
+                    if future:
+                        if budget_ok:
+                            bud += budget_for_month(pid, company_id, y, m, budget_cache)
+                    else:
+                        inv += actual.get((pid, company_id, y, m), 0.0)
+            item = data.setdefault(y, {'invoice': 0.0, 'budget': 0.0})
+            item['invoice'] += inv
+            item['budget'] += bud
+
+# ---- the workbook, laid out as the old report
+budget_years = []
+for y in years:
+    if y >= current_year:
+        budget_years.append(y)
+total_cols = 1 + len(years) + (len(years) - 1) + len(budget_years)
+short = MONTH_NAMES[month_int][:3] if monthly else ''
+title = ('INVOICE COMPARISON REPORT - %s' % MONTH_NAMES[month_int].upper()) if monthly else 'INVOICE COMPARISON REPORT - YEARLY'
+styles = [
+    xml_style('title', bold=True, size=18, color='#FFFFFF', fill='#2E5984', align='Center', border='#1F4E79'),
+    xml_style('section', bold=True, size=12, color='#2E5984', fill='#E8F1FF', border='#B8D4F0'),
+    xml_style('info', size=9, italic=True, color='#666666'),
+    xml_style('header', bold=True, size=10, color='#FFFFFF', fill='#4A90C2', align='Center', border='#2E5984'),
+]
+for tag, fill in (('n', '#FFFF99'), ('a', '#F8F9FA'), ('w', '')):
+    styles.append(xml_style('cust_' + tag, size=9, fill=fill, border='#D0D0D0'))
+    styles.append(xml_style('num_' + tag, size=9, fill=fill, align='Right', number='#,##0.00', border='#D0D0D0'))
+    styles.append(xml_style('pct_' + tag, size=9, bold=True, color='#E67E22', fill='#FFFF99' if tag == 'n' else '#FDF2E9',
+                            align='Right', number='0.00%', border='#D0D0D0'))
+    styles.append(xml_style('bud_' + tag, size=9, fill='#FFFF99' if tag == 'n' else ('#E8F4FD' if tag == 'a' else '#FFFFFF'),
+                            align='Right', number='#,##0.00', border='#D0D0D0'))
+grid = {}
+put(grid, 1, 0, title, 'title', total_cols - 1, 1)
+put(grid, 4, 0, 'Generated By: %s' % env.user.name, 'info')
+put(grid, 4, max(4, total_cols - 3), 'Date: %s' % datetime.datetime.now().strftime('%B %d, %Y at %H:%M'), 'info')
+row = 6
+if customers:
+    names = sorted(company_names)
+    put(grid, row, 0, '%s' % ', '.join(names), 'section', total_cols - 1)
+    row += 1
+    put(grid, row, 0, 'Customer', 'header')
+    col = 1
+    for i in range(len(years)):
+        put(grid, row, col, ('%s %d' % (short, years[i])) if monthly else str(years[i]), 'header')
+        col += 1
+        if i > 0:
+            put(grid, row, col, 'Growth %', 'header')
+            col += 1
+    for y in budget_years:
+        put(grid, row, col, ('%s %d Budget' % (short, y)) if monthly else ('%d Budget' % y), 'header')
+        col += 1
+    row += 1
+    count = 0
+    for name in sorted(customers):
+        data = customers[name]
+        second_last = data.get(years[-2], {'invoice': 0.0, 'budget': 0.0}) if len(years) > 1 else {'invoice': 0.0, 'budget': 0.0}
+        is_new = (second_last['invoice'] + second_last['budget']) == 0
+        tag = 'n' if is_new else ('a' if count % 2 == 0 else 'w')
+        put(grid, row, 0, name, 'cust_' + tag)
+        col = 1
+        totals = []
+        for i in range(len(years)):
+            item = data.get(years[i], {'invoice': 0.0, 'budget': 0.0})
+            total = item['invoice'] + item['budget']
+            totals.append(total)
+            put(grid, row, col, item['invoice'] if years[i] >= current_year else total, 'num_' + tag)
+            col += 1
+            if i > 0:
+                prev = totals[i - 1]
+                diff = ((total - prev) / prev) if prev != 0 else (1 if total > 0 else 0)
+                put(grid, row, col, diff, 'pct_' + tag)
+                col += 1
+        for y in budget_years:
+            amount = data.get(y, {'invoice': 0.0, 'budget': 0.0})['budget']
+            put(grid, row, col, amount if amount > 0 else 0, 'bud_' + tag)
+            col += 1
+        row += 1
+        count += 1
+    if not monthly:
+        put(grid, row + 2, 0, 'Generated by Odoo Invoice Reporting Module', 'info')
+widths = [150]
+for i in range(1, total_cols):
+    widths.append(75)
+filename = ('Invoice_Comparison_%s_%s.xls' % (MONTH_NAMES[month_int], today.strftime('%Y%m%d'))) if monthly else \
+    ('Invoice_Comparison_yearly_%s.xls' % today.strftime('%Y%m%d'))
+content = xml_workbook(styles, [xml_sheet('Invoice Comparison', grid, widths)])
+action = xml_download(filename, content, 'x_invcmp_report', wizard.id)
+]]></field>
+    </record>
+</odoo>

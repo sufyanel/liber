@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- What the old Invoice Reporting module held, as data: the Invoice Comparison wizard. -->
+    <record id="model_x_invcmp_report" model="ir.model">
+        <field name="name">Invoice Comparison Report</field>
+        <field name="model">x_invcmp_report</field>
+        <field name="order">id</field>
+        <field name="transient" eval="True"/>
+    </record>
+    <record id="field_x_invcmp_report__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_invcmp_report__x_report_type" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="name">x_report_type</field>
+        <field name="field_description">Report Type</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_invcmp_report__x_report_type_sel_yearly" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_report_type"/>
+        <field name="value">yearly</field>
+        <field name="name">Yearly</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_invcmp_report__x_report_type_sel_monthly" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_report_type"/>
+        <field name="value">monthly</field>
+        <field name="name">Monthly</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_invcmp_report__x_years_count" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="name">x_years_count</field>
+        <field name="field_description">Years</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_invcmp_report__x_years_count_sel_2" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_years_count"/>
+        <field name="value">2</field>
+        <field name="name">2 Years</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_invcmp_report__x_years_count_sel_3" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_years_count"/>
+        <field name="value">3</field>
+        <field name="name">3 Years</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_invcmp_report__x_years_count_sel_4" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_years_count"/>
+        <field name="value">4</field>
+        <field name="name">4 Years</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_invcmp_report__x_years_count_sel_5" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_years_count"/>
+        <field name="value">5</field>
+        <field name="name">5 Years</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_invcmp_report__x_company_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="name">x_company_ids</field>
+        <field name="field_description">Companies</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.company</field>
+        <field name="relation_table">x_invcmp_report_company_rel</field>
+        <field name="column1">report_id</field>
+        <field name="column2">company_id</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_report"/>
+        <field name="name">x_month</field>
+        <field name="field_description">Month</field>
+        <field name="ttype">selection</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_1" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">1</field>
+        <field name="name">January</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_2" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">2</field>
+        <field name="name">February</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_3" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">3</field>
+        <field name="name">March</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_4" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">4</field>
+        <field name="name">April</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_5" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">5</field>
+        <field name="name">May</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_6" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">6</field>
+        <field name="name">June</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_7" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">7</field>
+        <field name="name">July</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_8" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">8</field>
+        <field name="name">August</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_9" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">9</field>
+        <field name="name">September</field>
+        <field name="sequence">90</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_10" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">10</field>
+        <field name="name">October</field>
+        <field name="sequence">100</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_11" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">11</field>
+        <field name="name">November</field>
+        <field name="sequence">110</field>
+    </record>
+    <record id="field_x_invcmp_report__x_month_sel_12" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_invcmp_report__x_month"/>
+        <field name="value">12</field>
+        <field name="name">December</field>
+        <field name="sequence">120</field>
+    </record>
+    <record id="default_report_type" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_report__x_report_type"/>
+        <field name="json_value">"yearly"</field>
+    </record>
+    <record id="default_years_count" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_report__x_years_count"/>
+        <field name="json_value">"5"</field>
+    </record>
+</odoo>

@@ -1,0 +1,35 @@
+{
+    "name": "Invoice Comparison - Dashboard",
+    "version": "17.0.5.5.0",
+    "category": "Accounting",
+    "summary": "Customer invoicing across years: dashboard, custom range and spreadsheet "
+               "(frontend-importable, built like the Threshold Dashboard)",
+    "author": "Axiom World",
+    "website": "https://axiomworld.net",
+    "license": "LGPL-3",
+    "depends": ["account", "account_budget", "analytic"],
+    "data": [
+        "data/models.xml",
+        "data/legacy_models.xml",
+        "data/defaults.xml",
+        "security/ir.model.access.csv",
+        "security/rules.xml",
+        "data/server_actions.xml",
+        "data/export_action.xml",
+        "views/views.xml",
+        "data/legacy_actions.xml",
+        "views/legacy_views.xml",
+        "data/cron.xml",
+        "data/setup.xml",
+        "data/refresh_on_upgrade.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "axiom_invoice_comparison/static/src/dashboard.css",
+            "axiom_invoice_comparison/static/src/dashboard.xml",
+            "axiom_invoice_comparison/static/src/dashboard.js",
+        ],
+    },
+    "installable": True,
+    "application": False,
+}

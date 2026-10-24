@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Custom website fields (import-safe replacement for the Python fields) -->
+    <record id="field_website__x_rbc_theme_active" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_rbc_theme_active</field>
+        <field name="field_description">RBC Industrial Theme</field>
+        <field name="ttype">boolean</field>
+    </record>
+    <record id="field_website__x_rbc_logo" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_rbc_logo</field>
+        <field name="field_description">RBC Header Logo</field>
+        <field name="ttype">binary</field>
+    </record>
+    <record id="field_website__x_rbc_line_card_url" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_rbc_line_card_url</field>
+        <field name="field_description">RBC Line Card URL</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_rbc_quote_form_url" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_rbc_quote_form_url</field>
+        <field name="field_description">RBC Quote Form URL (GoHighLevel)</field>
+        <field name="ttype">char</field>
+    </record>
+</odoo>

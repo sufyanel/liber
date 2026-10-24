@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="x_isr_dashboard.Dashboard">
+        <div class="o_action o_axd_root">
+        <div class="o_content o_axd">
+            <!-- Header -->
+            <div class="o_axd_header">
+                <div class="o_axd_title">
+                    <div class="o_axd_eyebrow">Margin Performance</div>
+                    <h1>Income Statement</h1>
+                    <div class="o_axd_meta" t-if="state.dashboard">
+                        <span><i class="fa fa-building-o me-1"/><t t-esc="state.dashboard.x_company_id[1]"/></span>
+                        <span><i class="fa fa-clock-o me-1"/>Refreshed <t t-esc="refreshedLabel"/></span>
+                    </div>
+                </div>
+                <div class="o_axd_controls" t-if="state.dashboards.length">
+                    <select class="form-select o_axd_select" t-on-change="onDashboardChange">
+                        <t t-foreach="state.dashboards" t-as="d" t-key="d.id">
+                            <option t-att-value="d.id" t-att-selected="d.id === state.dashboardId" t-esc="d.x_name"/>
+                        </t>
+                    </select>
+                    <button class="btn btn-primary o_axd_btn" t-on-click="refresh" t-att-disabled="state.refreshing">
+                        <i t-attf-class="fa fa-refresh me-1 #{state.refreshing ? 'fa-spin' : ''}"/>
+                        <t t-if="state.refreshing">Refreshing…</t><t t-else="">Refresh</t>
+                    </button>
+                    <button class="btn btn-light o_axd_btn" t-on-click="download" t-if="params.export_action_id"
+                            t-att-disabled="state.downloading or !hasData">
+                        <i t-attf-class="fa #{state.downloading ? 'fa-circle-o-notch fa-spin' : 'fa-file-excel-o'} me-1"/>Spreadsheet
+                    </button>
+                    <button class="btn btn-light o_axd_btn" t-on-click="openSettings" title="Dashboard settings">
+                        <i class="fa fa-cog"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty states -->
+            <div class="o_axd_empty" t-if="!state.loading and !state.dashboards.length">
+                <i class="fa fa-bar-chart fa-3x"/>
+                <h3>No Income Statement dashboard yet</h3>
+                <p>Create one per company and year (e.g. RBC Industrial 2026), then click Refresh.</p>
+                <button class="btn btn-primary" t-on-click="openSettings">Create a dashboard</button>
+            </div>
+            <div class="o_axd_empty" t-if="!state.loading and state.dashboards.length and !hasData">
+                <i class="fa fa-refresh fa-3x"/>
+                <h3>No figures yet</h3>
+                <p>Click Refresh to build the statement for <t t-esc="state.dashboard.x_year"/>.
+                    The standard lines are created on the first refresh.</p>
+                <button class="btn btn-primary" t-on-click="refresh" t-att-disabled="state.refreshing">Refresh now</button>
+            </div>
+            <div class="o_axd_loading" t-if="state.loading"><i class="fa fa-circle-o-notch fa-spin fa-2x"/></div>
+
+            <t t-if="!state.loading and hasData">
+                <!-- Period tabs: quarters, full year and Custom. The date range appears only on Custom and
+                     recalculates automatically when a date changes (as on the Invoice Comparison, 23 Oct 2026). -->
+                <div class="o_axd_periods">
+                    <t t-foreach="standardPeriods" t-as="per" t-key="per.x_code">
+                        <button t-attf-class="o_axd_period #{per.x_code === state.selectedCode ? 'active' : ''} #{per.x_is_future ? 'future' : ''}"
+                                t-att-disabled="per.x_is_future" t-on-click="() => this.selectPeriod(per.x_code)">
+                            <span class="o_axd_period_code" t-esc="per.x_code"/>
+                            <span class="o_axd_period_range"><t t-esc="per.x_date_from.slice(5)"/> → <t t-esc="per.x_date_to.slice(5)"/></span>
+                        </button>
+                    </t>
+                    <button t-attf-class="o_axd_period o_axd_period_custom #{state.selectedCode === 'CUSTOM' ? 'active' : ''}"
+                            t-on-click="() => this.selectPeriod('CUSTOM')">
+                        <span class="o_axd_period_code">Custom</span>
+                        <span class="o_axd_period_range" t-if="customPeriod" t-esc="customPeriod.x_name"/>
+                        <span class="o_axd_period_range" t-else="">Choose dates</span>
+                    </button>
+                    <div class="o_axd_custom" t-if="state.selectedCode === 'CUSTOM'">
+                        <div class="o_axd_custom_label"><i class="fa fa-calendar me-1"/>Custom range</div>
+                        <div class="o_axd_custom_inputs">
+                            <input type="date" class="form-control" t-model="state.customFrom" t-on-change="onDateChange"/>
+                            <span>→</span>
+                            <input type="date" class="form-control" t-model="state.customTo" t-on-change="onDateChange"/>
+                            <span class="o_axd_updating ms-2" t-if="state.applying"><i class="fa fa-circle-o-notch fa-spin me-1"/>Updating…</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI cards -->
+                <div class="o_axd_kpis">
+                    <t t-foreach="kpis" t-as="k" t-key="k.key">
+                        <div t-attf-class="o_axd_kpi o_axd_click tone-#{k.tone}" t-on-click="() => this.onKpiClick(k)" t-att-data-kpi="k.key"
+                             title="Click to see the records behind this figure">
+                            <div class="o_axd_kpi_label" t-esc="k.label"/>
+                            <div class="o_axd_kpi_value" t-esc="k.value"/>
+                            <div class="o_axd_kpi_sub" t-esc="k.sub"/>
+                            <div t-if="k.delta" t-attf-class="o_axd_kpi_delta #{k.delta.tone}">
+                                <t t-esc="k.delta.arrow"/> <t t-esc="k.delta.text"/>
+                            </div>
+                            <i class="fa fa-external-link o_axd_kpi_link"/>
+                        </div>
+                    </t>
+                </div>
+
+                <div class="o_axd_grid">
+                    <div class="o_axd_card span-8">
+                        <div class="o_axd_card_head">
+                            <div>
+                                <h3>From Revenue to the Bottom Line</h3>
+                                <p><t t-esc="selected and selected.x_name"/> · each bar is one line of the statement · click a bar for its journal items</p>
+                            </div>
+                            <div class="o_axd_legend">
+                                <span class="dot navy"/>Revenue <span class="dot teal"/>Adds <span class="dot amber"/>Takes away <span class="dot green"/>Result
+                            </div>
+                        </div>
+                        <div class="o_axd_chart h-320"><canvas t-ref="waterfall"/></div>
+                    </div>
+                    <div class="o_axd_card span-4">
+                        <div class="o_axd_card_head">
+                            <div><h3>Actual vs Budget</h3><p><t t-esc="selected and selected.x_name"/> · planned revenue <t t-esc="fmt(selected ? selected.x_budget_revenue : 0)"/> · click a bar for its records</p></div>
+                        </div>
+                        <div class="o_axd_chart h-320"><canvas t-ref="budget"/></div>
+                    </div>
+
+                    <div class="o_axd_card span-6">
+                        <div class="o_axd_card_head">
+                            <div><h3>Quarterly Trend</h3><p>Revenue against plan, with the bottom line · click a bar or point for its records</p></div>
+                        </div>
+                        <div class="o_axd_chart h-280"><canvas t-ref="trend"/></div>
+                    </div>
+                    <div class="o_axd_card span-6">
+                        <div class="o_axd_card_head">
+                            <div><h3>% of Sales by Year</h3><p>Each margin as a share of sales · click a point for its records</p></div>
+                        </div>
+                        <div class="o_axd_chart h-280"><canvas t-ref="margins"/></div>
+                    </div>
+
+                    <!-- The statement -->
+                    <div class="o_axd_card span-12">
+                        <div class="o_axd_card_head">
+                            <div>
+                                <h3>Statement</h3>
+                                <p>Costs shown negative · % of sales under each figure · click a figure for its journal items</p>
+                            </div>
+                        </div>
+                        <div style="overflow-x:auto">
+                            <table class="o_axd_table">
+                                <thead>
+                                    <tr>
+                                        <th>Line</th>
+                                        <t t-foreach="columns" t-as="col" t-key="col.key">
+                                            <th t-attf-class="text-end #{col.css} #{col.key === state.selectedCode ? 'sel' : ''}" t-esc="col.label"/>
+                                        </t>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="tableRows" t-as="row" t-key="row.line.id" t-att-class="row.css">
+                                        <td t-esc="row.line.x_name"/>
+                                        <t t-foreach="row.cells" t-as="c" t-key="c.key">
+                                            <td t-attf-class="text-end #{c.css} #{c.future ? 'future' : ''} #{c.negative ? 'neg' : ''} #{c.selected ? 'sel' : ''} #{c.future ? '' : 'o_axd_click'}"
+                                                t-att-data-line="row.line.x_key" t-att-data-col="c.key"
+                                                t-on-click="() => this.onCellClick(row.line, c.col)">
+                                                <t t-esc="c.text"/>
+                                                <span t-if="c.sub" class="o_axd_sub" t-esc="c.sub"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="o_axd_footnote">Lines, accounts, formulas and budget percentages are set on the dashboard:
+                            Accounting → Configuration → Income Statement Dashboards.</div>
+                    </div>
+                </div>
+            </t>
+        </div>
+        </div>
+    </t>
+</templates>

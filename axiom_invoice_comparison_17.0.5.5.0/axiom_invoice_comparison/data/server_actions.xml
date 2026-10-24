@@ -1,0 +1,506 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invcmp_refresh" model="ir.actions.server">
+        <field name="name">Refresh Invoice Comparison</field>
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="binding_model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Refresh Invoice Comparison dashboard(s). Rebuilds every customer's monthly
+# figures for the years compared, the custom range, and Q1-Q4 / FY totals.
+# One aggregate query per month; never one query per customer.
+
+MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+               'August', 'September', 'October', 'November', 'December']
+
+
+def month_end(year, month):
+    if month == 12:
+        return datetime.date(year, 12, 31)
+    return datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+
+
+def shift_year(day, years):
+    """The same calendar day some years away; 29 Feb falls back to 28 Feb."""
+    target = day.year + years
+    if day.month == 2 and day.day == 29:
+        return datetime.date(target, 2, 28)
+    return datetime.date(target, day.month, day.day)
+
+
+def excluded_partners(dashboard):
+    partners = dashboard.x_exclude_partner_ids
+    if dashboard.x_exclude_group:
+        partners = partners | env['res.company'].sudo().search([]).mapped('partner_id')
+    ids = set(partners.ids)
+    for partner in partners:
+        if partner.commercial_partner_id:
+            ids.add(partner.commercial_partner_id.id)
+    return list(ids)
+
+
+def invoiced(sc, date_from, date_to):
+    """{partner id: signed total} for one date range, in a single query."""
+    domain = invoice_domain(sc, date_from, date_to)
+    result = {}
+    for group in env['account.move'].sudo().read_group(
+            domain, ['amount_total_signed'], ['partner_id'], lazy=False):
+        if group.get('partner_id'):
+            result[group['partner_id'][0]] = group.get('amount_total_signed') or 0.0
+    return result
+
+
+def monthly_budget(dashboard, company_ids, years, detail=None):
+    """{(partner id, year, month): amount} from analytic budget lines, prorated by day.
+    detail, when given, receives one entry per budget line and month, so every
+    budget figure on the dashboard can open the lines it came from."""
+    result = {}
+    if not dashboard.x_use_budget:
+        return result
+    if not env['ir.model'].sudo().search_count([('model', '=', 'crossovered.budget.lines')]):
+        return result
+    analytic_partner = {}
+    for row in env['account.analytic.account'].sudo().search_read(
+            [('partner_id', '!=', False), '|', ('company_id', '=', False),
+             ('company_id', 'in', company_ids)], ['partner_id']):
+        analytic_partner[row['id']] = row['partner_id'][0]
+    if not analytic_partner:
+        return result
+    posts = dashboard.x_budget_post_ids
+    if not posts:
+        posts = env['account.budget.post'].sudo().search(
+            [('account_ids.account_type', '=', 'income'), ('company_id', 'in', company_ids)])
+    if not posts:
+        return result
+    first = datetime.date(years[0], 1, 1)
+    last = datetime.date(years[-1], 12, 31)
+    lines = env['crossovered.budget.lines'].sudo().search([
+        ('analytic_account_id', 'in', list(analytic_partner.keys())),
+        ('general_budget_id', 'in', posts.ids),
+        ('crossovered_budget_id.state', 'in', ['confirm', 'validate', 'done']),
+        ('date_from', '<=', last), ('date_to', '>=', first), ('planned_amount', '>', 0),
+    ])
+    for line in lines:
+        span = (line.date_to - line.date_from).days + 1
+        partner = analytic_partner.get(line.analytic_account_id.id)
+        if span <= 0 or not partner:
+            continue
+        rate = line.planned_amount / span
+        for year in years:
+            for month in range(1, 13):
+                start = max(datetime.date(year, month, 1), line.date_from)
+                end = min(month_end(year, month), line.date_to)
+                if start > end:
+                    continue
+                key = (partner, year, month)
+                share = rate * ((end - start).days + 1)
+                result[key] = result.get(key, 0.0) + share
+                if detail is not None:
+                    detail.append((key, line, share))
+    return result
+
+
+def top_parents(partner_ids, rollup):
+    """partner id -> (customer id, customer name), walking up the whole chain."""
+    known = {}
+    forced = set()
+    pending = list(partner_ids)
+    Partner = env['res.partner'].sudo().with_context(active_test=False)
+    while pending:
+        rows = Partner.search_read([('id', 'in', pending)], ['parent_id', 'x_invcmp_report_under_id', 'name'])
+        pending = []
+        for row in rows:
+            # "Report Under (dashboards)" set on the contact wins over the normal parent company
+            parent = (row['x_invcmp_report_under_id'][0] if row['x_invcmp_report_under_id'] else False) or (row['parent_id'][0] if row['parent_id'] else False)
+            if parent == row['id']:
+                parent = False
+            if row['x_invcmp_report_under_id']:
+                forced.add(row['id'])
+            known[row['id']] = (parent, row['name'] or 'Unknown Customer')
+            if (rollup or row['x_invcmp_report_under_id']) and parent and parent not in known:
+                pending.append(parent)
+    result = {}
+    for partner_id in partner_ids:
+        top = partner_id
+        if rollup or (partner_id in forced):
+            seen = set()
+            while top in known and known[top][0] and top not in seen:
+                seen.add(top)
+                top = known[top][0]
+        result[partner_id] = (top, known.get(top, (False, 'Unknown Customer'))[1])
+    return result
+
+
+
+
+WINDOW_MONTHS = {'Q1': [1, 2, 3], 'Q2': [4, 5, 6], 'Q3': [7, 8, 9], 'Q4': [10, 11, 12],
+                 'FY': list(range(1, 13)), 'CUSTOM': [0]}
+SHORT = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+
+def scope(dashboard):
+    """Everything a figure depends on, read from the dashboard the same way for
+    the refresh and for every drill-down."""
+    types = ['out_invoice']
+    if dashboard.x_include_refunds:
+        types.append('out_refund')
+    return {'company_ids': (dashboard.x_company_id | dashboard.x_peer_company_ids).ids,
+            'types': types, 'excluded': excluded_partners(dashboard)}
+
+
+def invoice_domain(sc, date_from, date_to, partner_ids=None):
+    """The one invoice domain: used by the refresh to add up, and by every drill-down to list."""
+    domain = [
+        ('invoice_date', '>=', date_from), ('invoice_date', '<=', date_to),
+        ('move_type', 'in', sc['types']), ('state', '=', 'posted'),
+        ('company_id', 'in', sc['company_ids']), ('partner_id', '!=', False),
+    ]
+    if sc['excluded']:
+        domain.append(('partner_id', 'not in', sc['excluded']))
+        domain.append(('partner_id.commercial_partner_id', 'not in', sc['excluded']))
+    if partner_ids is not None:
+        domain.append(('partner_id', 'in', partner_ids))
+    return domain
+
+
+def ranges(dashboard, years, months):
+    """(from, to) date ranges for months of years; month 0 is the custom range."""
+    out = []
+    for y in years:
+        if months == [0]:
+            if dashboard.x_custom_from and dashboard.x_custom_to:
+                offset = y - dashboard.x_year
+                out.append((shift_year(dashboard.x_custom_from, offset), shift_year(dashboard.x_custom_to, offset)))
+            continue
+        run = []
+        for m in sorted(set(months)):
+            if run and m == run[-1] + 1:
+                run.append(m)
+            else:
+                if run:
+                    out.append((datetime.date(y, run[0], 1), month_end(y, run[-1])))
+                run = [m]
+        if run:
+            out.append((datetime.date(y, run[0], 1), month_end(y, run[-1])))
+    return out
+
+
+def any_of(domains):
+    if not domains:
+        return [('id', '=', 0)]
+    out = ['|'] * (len(domains) - 1)
+    for d in domains:
+        out += ['&'] * (len(d) - 1) + list(d)
+    return out
+
+
+def drill(dashboard, spec):
+    """An act_window listing exactly the records behind one figure on the dashboard."""
+    kind = spec.get('kind') or 'invoices'
+    years = [int(y) for y in (spec.get('years') or [dashboard.x_year])]
+    months = [int(m) for m in (spec.get('months') or WINDOW_MONTHS.get(spec.get('window') or 'FY'))]
+    Customer = env['x_invcmp_customer'].sudo()
+    if spec.get('customer_ids'):
+        customers = Customer.search([('x_dashboard_id', '=', dashboard.id), ('id', 'in', spec['customer_ids'])])
+    else:
+        customers = dashboard.x_customer_ids
+    title = spec.get('title') or 'Invoice Comparison'
+    ctx = {'create': False}
+    if spec.get('group_by'):
+        ctx['group_by'] = spec['group_by']
+    if kind == 'invoices':
+        partner_ids = sorted(set(customers.mapped('x_partner_ids').ids) | set(customers.mapped('x_partner_id').ids))
+        sc = scope(dashboard)
+        # a plain loop, not a comprehension: on Python 3.10 a comprehension that uses
+        # the function's own variables needs closure opcodes, which safe_eval refuses
+        parts = []
+        for r in ranges(dashboard, years, months):
+            parts.append(invoice_domain(sc, r[0], r[1], partner_ids))
+        domain = any_of(parts)
+        ctx.update({'default_move_type': 'out_invoice'})
+        return {'type': 'ir.actions.act_window', 'name': title, 'res_model': 'account.move', 'target': 'current',
+                'views': [[env.ref('account.view_out_invoice_tree').id, 'list'], [env.ref('account.view_move_form').id, 'form']],
+                'domain': domain, 'context': ctx}
+    if kind == 'budget':
+        domain = [('x_dashboard_id', '=', dashboard.id), ('x_customer_id', 'in', customers.ids),
+                  ('x_year', 'in', years), ('x_month', 'in', months)]
+        return {'type': 'ir.actions.act_window', 'name': title, 'res_model': 'x_invcmp_budget', 'target': 'current',
+                'views': [[env.ref('axiom_invoice_comparison.view_x_invcmp_budget_tree').id, 'list'], [False, 'form']],
+                'domain': domain, 'context': ctx}
+    if kind == 'cells':
+        domain = [('x_dashboard_id', '=', dashboard.id), ('x_customer_id', 'in', customers.ids),
+                  ('x_year', 'in', years), ('x_month', 'in', months)]
+        return {'type': 'ir.actions.act_window', 'name': title, 'res_model': 'x_invcmp_cell', 'target': 'current',
+                'views': [[env.ref('axiom_invoice_comparison.view_x_invcmp_cell_tree').id, 'list'], [False, 'form']],
+                'domain': domain, 'context': ctx}
+    if kind == 'customers':
+        return {'type': 'ir.actions.act_window', 'name': title, 'res_model': 'x_invcmp_customer', 'target': 'current',
+                'views': [[env.ref('axiom_invoice_comparison.view_x_invcmp_customer_tree').id, 'list'],
+                          [env.ref('axiom_invoice_comparison.view_x_invcmp_customer_form').id, 'form']],
+                'domain': [('id', 'in', customers.ids)], 'context': ctx}
+    raise UserError("Unknown drill-down: %s" % kind)
+
+
+def month_label(year, month, dashboard):
+    if month == 0:
+        return 'Custom range %d' % year
+    return '%s %d' % (SHORT[month], year)
+
+def add(bucket, key, amount):
+    bucket[key] = bucket.get(key, 0.0) + amount
+
+
+today = datetime.date.today()
+ctx = env.context
+targets = records or (record and [record]) or []
+if ctx.get('active_model') in ('x_invcmp_cell', 'x_invcmp_customer', 'x_invcmp_budget') and ctx.get('invcmp_open'):
+    # a button on a breakdown row: open what that row adds up
+    row = env[ctx['active_model']].sudo().browse(ctx.get('active_id'))
+    if ctx['active_model'] == 'x_invcmp_customer':
+        row_years = [int(ctx.get('invcmp_year') or row.x_dashboard_id.x_year)]
+        row_months = WINDOW_MONTHS['FY']
+        customer_ids = [row.id]
+    else:
+        row_years, row_months, customer_ids = [row.x_year], [row.x_month], [row.x_customer_id.id]
+    targets = []
+    action = drill(row.x_dashboard_id, {
+        'kind': ctx['invcmp_open'], 'years': row_years, 'months': row_months, 'customer_ids': customer_ids,
+        'title': ('%s · %s' % (row.x_name, row_years[0])) if ctx['active_model'] == 'x_invcmp_customer'
+                 else ('%s · %s' % (row.x_customer_id.x_name, row.x_label))})
+elif ctx.get('invcmp_drill'):
+    targets = []
+    dash = env['x_invcmp_dashboard'].browse(ctx.get('active_id'))
+    dash.check_access_rule('read')
+    action = drill(dash.sudo(), ctx['invcmp_drill'])
+for dashboard in targets:
+    dashboard = dashboard.sudo()
+    company = dashboard.x_company_id
+    year = dashboard.x_year
+    if not company or not year or year < 2000 or year > 2100:
+        raise UserError("Set a company and a valid year on the dashboard.")
+    count = dashboard.x_years_count or 5
+    if count < 1 or count > 10:
+        raise UserError("Years Compared must be between 1 and 10.")
+    years = list(range(year - count + 1, year + 1))
+    sc = scope(dashboard)
+    company_ids = sc['company_ids']
+    excluded = sc['excluded']
+    excluded_set = set(excluded)
+
+    # ---- actuals, one query per month
+    raw = {}
+    for y in years:
+        for m in range(1, 13):
+            start = datetime.date(y, m, 1)
+            if start > today:
+                continue
+            for partner_id, amount in invoiced(sc, start, month_end(y, m)).items():
+                raw[(partner_id, y, m)] = amount
+
+    # ---- the custom range, repeated for every year compared
+    c_from = dashboard.x_custom_from
+    c_to = dashboard.x_custom_to
+    has_custom = bool(c_from and c_to and c_from <= c_to)
+    raw_custom = {}
+    if has_custom:
+        for y in years:
+            offset = y - year
+            for partner_id, amount in invoiced(
+                    sc, shift_year(c_from, offset), shift_year(c_to, offset)).items():
+                raw_custom[(partner_id, y)] = amount
+
+    # ---- budget only stands in for months that have not happened yet
+    raw_budget = {}
+    budget_detail = []
+    for key, amount in monthly_budget(dashboard, company_ids, years, budget_detail).items():
+        if (key[1], key[2]) > (today.year, today.month):
+            raw_budget[key] = amount
+
+    # ---- one customer per top-level parent
+    partner_ids = set()
+    for key in raw:
+        partner_ids.add(key[0])
+    for key in raw_custom:
+        partner_ids.add(key[0])
+    for key in raw_budget:
+        partner_ids.add(key[0])
+    partner_ids = partner_ids - excluded_set
+    parents = top_parents(list(partner_ids), dashboard.x_rollup_parents)
+    # archived customers are never listed (Dale, 23 Oct 2026); an archived contact that reports under an active
+    # customer still adds its sales to that customer
+    top_ids = set()
+    for parent in parents.values():
+        if parent and parent[0]:
+            top_ids.add(parent[0])
+    archived_tops = set(env['res.partner'].sudo().with_context(active_test=False).search(
+        [('id', 'in', list(top_ids)), ('active', '=', False)]).ids)
+    # an active contact (plant, AP contact) of an archived company is left out too, unless Report Under points it
+    # to an active customer
+    archived_members = set(env['res.partner'].sudo().with_context(active_test=False).search(
+        [('id', 'in', list(partner_ids)), ('commercial_partner_id.active', '=', False),
+         ('x_invcmp_report_under_id', '=', False)]).ids)
+
+    names, members = {}, {}
+    inv, bud, cus = {}, {}, {}
+    for source, target in ((raw, inv), (raw_budget, bud)):
+        for key, amount in source.items():
+            parent = parents.get(key[0])
+            if not parent or parent[0] in excluded_set or parent[0] in archived_tops or key[0] in archived_members:
+                continue
+            names[parent[0]] = parent[1]
+            members.setdefault(parent[0], set()).add(key[0])
+            add(target, (parent[0], key[1], key[2]), amount)
+    for key, amount in raw_custom.items():
+        parent = parents.get(key[0])
+        if not parent or parent[0] in excluded_set or parent[0] in archived_tops or key[0] in archived_members:
+            continue
+        names[parent[0]] = parent[1]
+        members.setdefault(parent[0], set()).add(key[0])
+        add(cus, (parent[0], key[1]), amount)
+
+    fy_total = {}
+    fy_budget = {}
+    for key, amount in inv.items():
+        add(fy_total, (key[0], key[1]), amount)
+    for key, amount in bud.items():
+        add(fy_total, (key[0], key[1]), amount)
+        add(fy_budget, (key[0], key[1]), amount)
+
+    # ---- rebuild the snapshot
+    env['x_invcmp_budget'].sudo().search([('x_dashboard_id', '=', dashboard.id)]).unlink()
+    dashboard.x_customer_ids.unlink()
+    dashboard.x_period_ids.unlink()
+
+    ranking = []
+    for cid in names:
+        has_activity = False
+        for y in years:
+            if fy_total.get((cid, y)) or cus.get((cid, y)):
+                has_activity = True
+        if has_activity:
+            ranking.append((-fy_total.get((cid, year), 0.0),
+                            -fy_total.get((cid, year - 1), 0.0), names[cid], cid))
+    ranking.sort()
+
+    customer_vals = []
+    order = []
+    for rank, entry in enumerate(ranking, start=1):
+        cid = entry[3]
+        total = fy_total.get((cid, year), 0.0)
+        prev = fy_total.get((cid, year - 1), 0.0) if (year - 1) in years else 0.0
+        customer_vals.append({
+            'x_dashboard_id': dashboard.id, 'x_name': names[cid], 'x_partner_id': cid,
+            'x_partner_ids': [(6, 0, sorted(members.get(cid, set())))], 'x_sequence': rank,
+            'x_total': total, 'x_prev_total': prev,
+            'x_growth': ((total - prev) / prev * 100.0) if prev else 0.0,
+            'x_budget': fy_budget.get((cid, year), 0.0),
+            'x_is_new': bool(total) and not prev and (year - 1) in years,
+            'x_is_lost': bool(prev) and not total,
+        })
+        order.append(cid)
+    customers = env['x_invcmp_customer'].sudo().create(customer_vals) if customer_vals else []
+
+    cell_vals = []
+    record_of = {}
+    for index, customer in enumerate(customers):
+        cid = order[index]
+        record_of[cid] = customer.id
+        for y in years:
+            for m in range(1, 13):
+                i = inv.get((cid, y, m), 0.0)
+                b = bud.get((cid, y, m), 0.0)
+                if i or b:
+                    cell_vals.append({'x_dashboard_id': dashboard.id, 'x_customer_id': customer.id,
+                                      'x_year': y, 'x_month': m, 'x_invoiced': i, 'x_budget': b,
+                                      'x_total': i + b, 'x_label': month_label(y, m, dashboard)})
+            c = cus.get((cid, y), 0.0)
+            if c:
+                cell_vals.append({'x_dashboard_id': dashboard.id, 'x_customer_id': customer.id,
+                                  'x_year': y, 'x_month': 0, 'x_invoiced': c, 'x_budget': 0.0,
+                                  'x_total': c, 'x_label': month_label(y, 0, dashboard)})
+    if cell_vals:
+        env['x_invcmp_cell'].sudo().create(cell_vals)
+
+    # every budget share that reached a figure, so the budget opens its lines
+    share_vals = []
+    for entry in budget_detail:
+        key, line, share = entry
+        if key not in raw_budget:
+            continue
+        parent = parents.get(key[0])
+        if not parent or parent[0] not in record_of:
+            continue
+        share_vals.append({
+            'x_dashboard_id': dashboard.id, 'x_customer_id': record_of[parent[0]], 'x_partner_id': key[0],
+            'x_year': key[1], 'x_month': key[2], 'x_label': month_label(key[1], key[2], dashboard),
+            'x_amount': share, 'x_planned': line.planned_amount, 'x_line_from': line.date_from,
+            'x_line_to': line.date_to, 'x_budget_line_id': line.id, 'x_budget_id': line.crossovered_budget_id.id,
+            'x_analytic_id': line.analytic_account_id.id,
+            'x_name': '%s · %s' % (line.crossovered_budget_id.name, line.analytic_account_id.name),
+        })
+    if share_vals:
+        env['x_invcmp_budget'].sudo().create(share_vals)
+
+    # ---- Q1-Q4, FY and the custom range for the dashboard year
+    windows = []
+    for q in (1, 2, 3, 4):
+        start = datetime.date(year, q * 3 - 2, 1)
+        windows.append({'code': 'Q%d' % q, 'name': 'Q%d %d' % (q, year), 'from': start,
+                        'to': month_end(year, q * 3), 'months': [q * 3 - 2, q * 3 - 1, q * 3],
+                        'year': False, 'custom': False, 'seq': q})
+    windows.append({'code': 'FY', 'name': 'FY %d' % year, 'from': datetime.date(year, 1, 1),
+                    'to': datetime.date(year, 12, 31), 'months': list(range(1, 13)),
+                    'year': True, 'custom': False, 'seq': 5})
+    if has_custom:
+        windows.append({'code': 'CUSTOM', 'name': '%s to %s' % (
+            c_from.strftime('%m/%d/%Y'), c_to.strftime('%m/%d/%Y')),
+            'from': c_from, 'to': c_to, 'months': [0], 'year': True, 'custom': True, 'seq': 6})
+
+    period_vals = []
+    for window in windows:
+        now_by, prev_by = {}, {}
+        total_inv, total_bud = 0.0, 0.0
+        for cid in record_of:
+            if window['custom']:
+                now = cus.get((cid, year), 0.0)
+                before = cus.get((cid, year - 1), 0.0)
+                total_inv += now
+            else:
+                now, before = 0.0, 0.0
+                for m in window['months']:
+                    i = inv.get((cid, year, m), 0.0)
+                    b = bud.get((cid, year, m), 0.0)
+                    total_inv += i
+                    total_bud += b
+                    now += i + b
+                    before += inv.get((cid, year - 1, m), 0.0) + bud.get((cid, year - 1, m), 0.0)
+            now_by[cid] = now
+            prev_by[cid] = before
+        prev_total = 0.0
+        customers_now, fresh, lost = 0, 0, 0
+        for cid in record_of:
+            prev_total += prev_by[cid]
+            if now_by[cid]:
+                customers_now += 1
+                if not prev_by[cid] and (year - 1) in years:
+                    fresh += 1
+            elif prev_by[cid]:
+                lost += 1
+        period_vals.append({
+            'x_dashboard_id': dashboard.id, 'x_name': window['name'], 'x_code': window['code'],
+            'x_sequence': window['seq'], 'x_date_from': window['from'],
+            'x_date_to': window['to'], 'x_is_future': window['from'] > today,
+            'x_is_year': window['year'], 'x_is_custom': window['custom'],
+            'x_invoiced': total_inv, 'x_budget': total_bud, 'x_total': total_inv + total_bud,
+            'x_prev_total': prev_total, 'x_customers': customers_now,
+            'x_new_customers': fresh, 'x_lost_customers': lost,
+        })
+    env['x_invcmp_period'].sudo().create(period_vals)
+
+    dashboard.write({
+        'x_refreshed': datetime.datetime.now(),
+        'x_currency_code': company.currency_id.name or 'USD',
+    })
+]]></field>
+    </record>
+</odoo>

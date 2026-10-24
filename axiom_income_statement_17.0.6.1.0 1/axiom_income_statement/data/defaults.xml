@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="default_isr_active" model="ir.default">
+        <field name="field_id" ref="field_x_isr_dashboard__x_active"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_isr_prior" model="ir.default">
+        <field name="field_id" ref="field_x_isr_dashboard__x_prior_years"/>
+        <field name="json_value">4</field>
+    </record>
+    <record id="default_isr_kind" model="ir.default">
+        <field name="field_id" ref="field_x_isr_line__x_kind"/>
+        <field name="json_value">"mapped"</field>
+    </record>
+    <record id="default_isr_sign" model="ir.default">
+        <field name="field_id" ref="field_x_isr_line__x_sign"/>
+        <field name="json_value">"positive"</field>
+    </record>
+    <record id="default_isr_bridge" model="ir.default">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="json_value">"none"</field>
+    </record>
+    <record id="default_isr_pct" model="ir.default">
+        <field name="field_id" ref="field_x_isr_line__x_show_pct"/>
+        <field name="json_value">true</field>
+    </record>
+</odoo>

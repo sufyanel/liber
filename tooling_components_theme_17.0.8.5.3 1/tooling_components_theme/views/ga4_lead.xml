@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Google Analytics 4: a generate_lead event on /quote-received (Dale, 9 Oct 2026).
+         The event carries currency USD and deliberately NO value: an event sent with value 0 records every
+         lead as $0 and overrides the lead value set in GA4 (Admin > Events > Key events > generate_lead >
+         Set default value). Hardcoded here so module updates no longer erase it.
+         Fires once per visit to the page (a refresh is not counted twice). Needs the GA4 Measurement ID in
+         Website > Configuration > Settings > Google Analytics, or a gtag/GTM snippet in the site head. -->
+    <template id="tc_quote_received_ga4" inherit_id="liber_holdings_theme.quote_received_page"
+              name="Tooling Components: GA4 lead event on Quote Received" priority="60">
+        <xpath expr="//div[@id='wrap']" position="after">
+            <script t-if="website and 'x_tc_theme_active' in website and website.x_tc_theme_active">
+(function () {
+    var key = "tc_lead:" + location.pathname + location.search;
+    try { if (sessionStorage.getItem(key)) { return; } sessionStorage.setItem(key, "1"); } catch (e) { /* storage blocked: still count */ }
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+    window.gtag("event", "generate_lead", { currency: "USD", lead_source: "quote_form", site: "Tooling Components" });
+})();
+            </script>
+        </xpath>
+    </template>
+</odoo>

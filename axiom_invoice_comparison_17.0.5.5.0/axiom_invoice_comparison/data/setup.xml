@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         Configuration agreed with Dale, created when the module is installed
+         and left alone on every later update:
+         - RBC Industrial 2026: invoices grouped under the top-level parent
+           (27 Jan and 3 Mar 2026), Roger Brown Co combined (3 Mar 2026).
+         - Tooling Components 2026.
+         Five years (2022-2026). Customer budget off for 2026 (8 Sep 2026:
+         2026 customer budgets deprioritised; 2027 to be prepared).
+         Same external ids as the import spreadsheet.
+         ================================================================== -->
+    <record id="action_invcmp_install_setup" model="ir.actions.server">
+        <field name="name">Invoice Comparison: install the agreed configuration</field>
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+CONFIG = [
+    ('RBC Industrial LLC', 'RBC Industrial 2026', 2026, ['Roger Brown Co'], 'invcmp_dashboard_rbc_2026'),
+    ('Tooling Components', 'Tooling Components 2026', 2026, [], 'invcmp_dashboard_tooling_2026'),
+]
+Data = env['ir.model.data'].sudo()
+Company = env['res.company'].sudo()
+for spec in CONFIG:
+    company = Company.search([('name', '=', spec[0])], limit=1)
+    if not company:
+        continue
+    if env['x_invcmp_dashboard'].sudo().with_context(active_test=False).search_count(
+            [('x_company_id', '=', company.id), ('x_year', '=', spec[2])]):
+        continue
+    dashboard = env['x_invcmp_dashboard'].sudo().create({
+        'x_name': spec[1], 'x_company_id': company.id, 'x_year': spec[2], 'x_years_count': 5,
+        'x_peer_company_ids': [(6, 0, Company.search([('name', 'in', spec[3])]).ids)],
+        'x_rollup_parents': True, 'x_include_refunds': True, 'x_exclude_group': True, 'x_use_budget': False,
+    })
+    if not Data.search_count([('module', '=', '__import__'), ('name', '=', spec[4])]):
+        Data.create({'module': '__import__', 'name': spec[4], 'model': 'x_invcmp_dashboard',
+                     'res_id': dashboard.id, 'noupdate': True})
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run">
+        <value eval="[ref('axiom_invoice_comparison.action_invcmp_install_setup')]"/>
+    </function>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_x_invcmp_report_form" model="ir.ui.view">
+        <field name="name">x_invcmp_report.form</field>
+        <field name="model">x_invcmp_report</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Comparison Report">
+                <group>
+                    <field name="x_report_type"/>
+                    <field name="x_years_count"/>
+                    <field name="x_company_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="x_month" invisible="x_report_type != 'monthly'" required="x_report_type == 'monthly'"/>
+                </group>
+                <footer>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_report_download)d" string="Download Excel" type="action" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_x_invcmp_report" model="ir.actions.act_window">
+        <field name="name">Invoice Comparison Report</field>
+        <field name="res_model">x_invcmp_report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+    <!-- Dale, 23 Oct 2026: people opened this Excel download instead of the dashboard; kept for developer mode only -->
+    <menuitem id="menu_invcmp_report" name="Invoice Comparison (Excel)" parent="account.menu_finance_reports" action="action_x_invcmp_report" sequence="50" active="False"/>
+</odoo>

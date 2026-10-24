@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         Load Standard Lines. A new dashboard takes its lines from the most
+         recent dashboard of the same company, so a year's mapping and budget
+         percentages carry forward. The very first one gets the standard
+         fifteen lines with the account codes the old module used.
+         On a dashboard that already has lines, it only fills in accounts on
+         lines that have none.
+         ================================================================== -->
+    <record id="action_isr_seed" model="ir.actions.server">
+        <field name="name">Load Standard Lines</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="binding_model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+DEFAULT_CODES = {
+    'sales_revenue': ['04.1.101', '04.1.102', '04.1.104'],
+    'cost_purchased_finished_goods': ['05.1.101', '05.1.102', '05.1.103', '05.1.104', '05.1.105',
+                                      '05.2.101', '05.2.102', '05.1.1.104', '500000'],
+    'variable_overhead_landed_costs': ['05.1.113', '06.1.302', '05.1.106', '220110', '06.1.304', '220100'],
+    'add_back_fixed_overhead': ['01.1.116', '230200', '06.2.505', '06.2.604', '220601', '06.2.605',
+                                '220600', '220900', '06.2.613'],
+    'less_variable_operating_expense': ['06.2.611', '240101', '06.2.201', '212300', '06.2.503', '620000'],
+    'interest_expense': ['06.2.203'],
+    'taxes': ['230150'],
+}
+# key, label, calculated from, formula, shown as, bold, % of sales, revenue line,
+# waterfall, KPI card, also every account of type
+LINES = [
+    ('sales_revenue', 'SALES REVENUE', 'mapped', '', 'positive', True, False, True, 'base', True, ''),
+    ('less_cost_of_sales', 'Less Cost of Sales', 'computed',
+     'cost_purchased_finished_goods + variable_overhead_landed_costs',
+     'negative', True, True, False, 'none', False, ''),
+    ('cost_purchased_finished_goods', 'Cost of Purchased Finished Goods', 'mapped', '',
+     'negative', False, True, False, 'subtract', False, ''),
+    ('variable_overhead_landed_costs', 'Variable Overhead Landed Costs', 'mapped', '',
+     'negative', False, True, False, 'subtract', False, ''),
+    ('gross_profit_margin', 'GROSS PROFIT MARGIN', 'computed', 'sales_revenue - less_cost_of_sales',
+     'positive', True, True, False, 'none', True, ''),
+    ('add_back_fixed_overhead', 'Add back Fixed Overhead', 'mapped', '',
+     'positive', False, True, False, 'add', False, ''),
+    ('less_variable_operating_expense', 'Less Variable Operating Expense', 'mapped', '',
+     'negative', False, True, False, 'subtract', False, ''),
+    ('contribution_margin', 'CONTRIBUTION MARGIN', 'computed',
+     'gross_profit_margin + add_back_fixed_overhead - less_variable_operating_expense',
+     'positive', True, True, False, 'none', True, ''),
+    ('selling_general_administrative', 'Selling, General & Administrative', 'catchall', '',
+     'negative', False, True, False, 'subtract', False, 'expense'),
+    ('operating_profit', 'OPERATING PROFIT', 'computed',
+     'contribution_margin - selling_general_administrative',
+     'positive', True, True, False, 'none', True, ''),
+    ('other_income_expense', 'Other income or expense', 'mapped', '',
+     'positive', True, True, False, 'add', False, 'income_other'),
+    ('interest_expense', 'Interest expense', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('profit_before_tax', 'PROFIT BEFORE TAX', 'computed',
+     'operating_profit + other_income_expense - interest_expense',
+     'positive', True, True, False, 'none', False, ''),
+    ('taxes', 'Taxes', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('net_income', 'NET INCOME', 'computed', 'profit_before_tax - taxes',
+     'positive', True, True, False, 'total', True, ''),
+]
+COPIED = ['x_sequence', 'x_key', 'x_name', 'x_kind', 'x_auto_types', 'x_formula', 'x_sign',
+          'x_bold', 'x_show_pct', 'x_is_revenue', 'x_budget_pct', 'x_bridge', 'x_kpi']
+
+
+def accounts_for(dashboard, key):
+    """The accounts of a row: Income Statement Accounts of the dashboard's company and
+    every company combined into it when that row is mapped there (as the old report
+    read them), otherwise the standard codes in those companies."""
+    company_ids = (dashboard.x_company_id | dashboard.x_peer_company_ids).ids
+    mappings = env['x_isr_mapping'].sudo().search([('x_company_id', 'in', company_ids), ('x_row_key', '=', key)])
+    if mappings:
+        return mappings.mapped('x_account_ids').ids
+    codes = DEFAULT_CODES.get(key, [])
+    if not codes:
+        return []
+    return env['account.account'].sudo().search(
+        [('company_id', 'in', company_ids), ('code', 'in', codes)]).ids
+
+
+def combine_companies_of(dashboard, account_ids):
+    """A mapped account of another company only counts when that company is combined in."""
+    others = env['account.account'].sudo().browse(account_ids).mapped('company_id') - dashboard.x_company_id - dashboard.x_peer_company_ids
+    commands = []
+    for other in others:
+        commands.append((4, other.id))
+    if commands:
+        dashboard.write({'x_peer_company_ids': commands})
+
+
+Line = env['x_isr_line'].sudo()
+filled = 0
+created = 0
+targets = records or (record and [record]) or []
+for dashboard in targets:
+    dashboard = dashboard.sudo()
+    company = dashboard.x_company_id
+    if dashboard.x_line_ids:
+        for line in dashboard.x_line_ids:
+            if line.x_kind == 'mapped' and not line.x_account_ids:
+                ids = accounts_for(dashboard, line.x_key)
+                if ids:
+                    line.write({'x_account_ids': [(6, 0, ids)]})
+                    filled += 1
+        continue
+    source = env['x_isr_dashboard'].sudo().search(
+        [('x_company_id', '=', company.id), ('id', '!=', dashboard.id), ('x_year', '<', dashboard.x_year)],
+        order='x_year desc', limit=1)
+    if not source or not source.x_line_ids:
+        source = env['x_isr_dashboard'].sudo().search(
+            [('x_company_id', '=', company.id), ('id', '!=', dashboard.id)], order='x_year desc', limit=1)
+    if source and source.x_line_ids:
+        # Carry the combined companies too: the catch-all line sweeps their
+        # accounts, so leaving them behind would change last year's figures.
+        if not dashboard.x_peer_company_ids and source.x_peer_company_ids:
+            dashboard.write({'x_peer_company_ids': [(6, 0, source.x_peer_company_ids.ids)]})
+        values = []
+        for line in source.x_line_ids.sorted(key=lambda l: (l.x_sequence, l.id)):
+            row = {'x_dashboard_id': dashboard.id, 'x_account_ids': [(6, 0, line.x_account_ids.ids)]}
+            for name in COPIED:
+                row[name] = line[name]
+            values.append(row)
+        Line.create(values)
+        created += len(values)
+        continue
+    values = []
+    sequence = 0
+    for spec in LINES:
+        sequence += 10
+        values.append({
+            'x_dashboard_id': dashboard.id, 'x_sequence': sequence, 'x_key': spec[0],
+            'x_name': spec[1], 'x_kind': spec[2], 'x_formula': spec[3], 'x_sign': spec[4],
+            'x_bold': spec[5], 'x_show_pct': spec[6], 'x_is_revenue': spec[7], 'x_bridge': spec[8],
+            'x_kpi': spec[9], 'x_auto_types': spec[10], 'x_budget_pct': 0.0,
+            'x_account_ids': [(6, 0, accounts_for(dashboard, spec[0]))],
+        })
+    Line.create(values)
+    created += len(values)
+
+if not env.context.get('isr_quiet'):
+    action = {
+        'type': 'ir.actions.client', 'tag': 'display_notification',
+        'params': {'title': 'Statement lines', 'type': 'success', 'sticky': False,
+                   'message': '%s line(s) created, %s line(s) given accounts.' % (created, filled)},
+    }
+]]></field>
+    </record>
+
+    <!-- ==================================================================
+         Refresh. Rebuilds the earlier years, Q1-Q4, the full year and the
+         custom range from the dashboard's own lines. One aggregate query per
+         period. Formulas are parsed as additions and subtractions of line
+         keys; they are never evaluated as code.
+         ================================================================== -->
+    <record id="action_isr_refresh" model="ir.actions.server">
+        <field name="name">Refresh Income Statement</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="binding_model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+def parse(formula):
+    """'a + b - c' -> [(1, 'a'), (1, 'b'), (-1, 'c')]"""
+    terms = []
+    sign = 1.0
+    text = (formula or '').replace('+', ' + ').replace('-', ' - ')
+    for token in text.split():
+        if token == '+':
+            sign = 1.0
+        elif token == '-':
+            sign = -1.0
+        else:
+            terms.append((sign, token))
+            sign = 1.0
+    return terms
+
+
+def evaluate(formula, values):
+    total = 0.0
+    for term in parse(formula):
+        total += term[0] * values.get(term[1], 0.0)
+    return total
+
+
+def expand(key, by_key, path=None):
+    """A line as account-based lines with their weights: {leaf key: weight}.
+    A formula may use any line, above or below it; a loop is refused."""
+    path = path or []
+    if key in path:
+        raise UserError("The formulas loop back on themselves: %s" % ' -> '.join(path + [key]))
+    line = by_key[key]
+    if line.x_kind != 'computed':
+        return {key: 1.0}
+    out = {}
+    for term in parse(line.x_formula):
+        for leaf, weight in expand(term[1], by_key, path + [key]).items():
+            out[leaf] = out.get(leaf, 0.0) + term[0] * weight
+    return out
+
+
+def move_line_domain(account_ids, company_ids, date_from, date_to):
+    """The one journal-item domain: the refresh adds these up, a drill-down lists them.
+    An account belongs to one company, so the accounts decide the company: an account of
+    another company mapped into this statement (Roger Brown Co payroll into RBC Industrial)
+    always counts. company_ids is kept for the callers but no longer narrows the search."""
+    return [('account_id', 'in', account_ids),
+            ('parent_state', '=', 'posted'), ('date', '>=', date_from), ('date', '<=', date_to)]
+
+
+DEFAULT_CODES = {
+    'sales_revenue': ['04.1.101', '04.1.102', '04.1.104'],
+    'cost_purchased_finished_goods': ['05.1.101', '05.1.102', '05.1.103', '05.1.104', '05.1.105',
+                                      '05.2.101', '05.2.102', '05.1.1.104', '500000'],
+    'variable_overhead_landed_costs': ['05.1.113', '06.1.302', '05.1.106', '220110', '06.1.304', '220100'],
+    'add_back_fixed_overhead': ['01.1.116', '230200', '06.2.505', '06.2.604', '220601', '06.2.605',
+                                '220600', '220900', '06.2.613'],
+    'less_variable_operating_expense': ['06.2.611', '240101', '06.2.201', '212300', '06.2.503', '620000'],
+    'interest_expense': ['06.2.203'],
+    'taxes': ['230150'],
+}
+
+
+def accounts_for(dashboard, key):
+    """The accounts of a row: Income Statement Accounts of the dashboard's company and
+    every company combined into it when that row is mapped there (as the old report
+    read them), otherwise the standard codes in those companies."""
+    company_ids = (dashboard.x_company_id | dashboard.x_peer_company_ids).ids
+    mappings = env['x_isr_mapping'].sudo().search([('x_company_id', 'in', company_ids), ('x_row_key', '=', key)])
+    if mappings:
+        return mappings.mapped('x_account_ids').ids
+    codes = DEFAULT_CODES.get(key, [])
+    if not codes:
+        return []
+    return env['account.account'].sudo().search(
+        [('company_id', 'in', company_ids), ('code', 'in', codes)]).ids
+
+
+
+def drill(dashboard, spec):
+    line = env['x_isr_line'].sudo().browse(int(spec.get('line_id') or 0))
+    period = env['x_isr_period'].sudo().browse(int(spec.get('period_id') or 0))
+    if not line.exists() or line.x_dashboard_id != dashboard or not period.exists() or period.x_dashboard_id != dashboard:
+        raise UserError("This figure is out of date. Refresh the dashboard.")
+    kind = spec.get('kind') or 'actual'
+    title = '%s · %s' % (line.x_name, period.x_name)
+    if kind == 'budget':
+        company_ids = (dashboard.x_company_id | dashboard.x_peer_company_ids).ids
+        alloc_domain = [('x_year', '=', dashboard.x_year), ('x_state', '=', 'confirmed'), ('x_company_id', 'in', company_ids)]
+        if line.x_kind != 'computed' and env['x_isr_budget'].sudo().search_count(alloc_domain):
+            if period.x_code in ('Q1', 'Q2', 'Q3', 'Q4'):
+                alloc_domain.append(('x_quarter', '=', period.x_code.lower()))
+            return {'type': 'ir.actions.act_window', 'name': '%s · Budget Allocation' % title, 'res_model': 'x_isr_budget',
+                    'views': [[env.ref('axiom_income_statement.view_x_isr_budget_tree').id, 'list'],
+                              [env.ref('axiom_income_statement.view_x_isr_budget_form').id, 'form']],
+                    'domain': alloc_domain, 'context': {'create': False}, 'target': 'current'}
+        if line.x_kind == 'computed':
+            return {'type': 'ir.actions.act_window', 'name': '%s · budget' % title, 'res_model': 'x_isr_part',
+                    'views': [[env.ref('axiom_income_statement.view_x_isr_part_tree').id, 'list']],
+                    'domain': [('x_period_id', '=', period.id), ('x_line_id', '=', line.id)],
+                    'context': {'create': False}, 'target': 'current'}
+        if line.x_is_revenue:
+            return {'type': 'ir.actions.act_window', 'name': 'Planned revenue', 'res_model': 'x_isr_dashboard',
+                    'res_id': dashboard.id, 'views': [[False, 'form']], 'target': 'current'}
+        return {'type': 'ir.actions.act_window', 'name': '%s · budget %% of sales' % line.x_name, 'res_model': 'x_isr_line',
+                'res_id': line.id, 'views': [[env.ref('axiom_income_statement.view_x_isr_line_form').id, 'form']], 'target': 'new'}
+    if period.x_is_future:
+        raise UserError("%s has not started yet." % period.x_name)
+    if line.x_kind == 'computed':
+        return {'type': 'ir.actions.act_window', 'name': '%s = %s' % (title, line.x_formula), 'res_model': 'x_isr_part',
+                'views': [[env.ref('axiom_income_statement.view_x_isr_part_tree').id, 'list']],
+                'domain': [('x_period_id', '=', period.id), ('x_line_id', '=', line.id)],
+                'context': {'create': False}, 'target': 'current'}
+    company_ids = (dashboard.x_company_id | dashboard.x_peer_company_ids).ids
+    return {'type': 'ir.actions.act_window', 'name': title, 'res_model': 'account.move.line',
+            'views': [[env.ref('account.view_move_line_tree').id, 'list'], [False, 'form']],
+            'domain': move_line_domain(line.x_resolved_account_ids.ids, company_ids, period.x_date_from, period.x_date_to),
+            'context': {'create': False, 'search_default_posted': 0}, 'target': 'current'}
+
+
+def types_of(line, fallback):
+    out = []
+    for part in (line.x_auto_types or '').split(','):
+        if part.strip():
+            out.append(part.strip())
+    return out or fallback
+
+
+def balances(account_ids, company_ids, date_from, date_to):
+    result = {}
+    if not account_ids:
+        return result
+    for group in env['account.move.line'].sudo().read_group(
+            move_line_domain(account_ids, company_ids, date_from, date_to),
+            ['balance'], ['account_id'], lazy=False):
+        if group.get('account_id'):
+            result[group['account_id'][0]] = group.get('balance') or 0.0
+    return result
+
+
+def month_end(year, month):
+    if month == 12:
+        return datetime.date(year, 12, 31)
+    return datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+
+
+today = datetime.date.today()
+Account = env['account.account'].sudo()
+ctx = env.context
+targets = records or (record and [record]) or []
+if ctx.get('active_model') == 'x_isr_part' and ctx.get('isr_open'):
+    # a row of a subtotal's breakdown: open the line it stands for
+    part = env['x_isr_part'].sudo().browse(ctx.get('active_id'))
+    targets = []
+    action = drill(part.x_dashboard_id, {'line_id': part.x_part_line_id.id, 'period_id': part.x_period_id.id,
+                                         'kind': ctx['isr_open']})
+elif ctx.get('isr_drill'):
+    targets = []
+    dash = env['x_isr_dashboard'].browse(ctx.get('active_id'))
+    dash.check_access_rule('read')
+    action = drill(dash.sudo(), ctx['isr_drill'])
+for dashboard in targets:
+    dashboard = dashboard.sudo()
+    company = dashboard.x_company_id
+    year = dashboard.x_year
+    if not company or not year or year < 2000 or year > 2100:
+        raise UserError("Set a company and a valid year on the dashboard.")
+    prior = dashboard.x_prior_years
+    if prior < 0 or prior > 9:
+        raise UserError("Earlier Years Shown must be between 0 and 9.")
+    if not dashboard.x_line_ids:
+        env.ref('axiom_income_statement.action_isr_seed').sudo().with_context(
+            active_model='x_isr_dashboard', active_id=dashboard.id, active_ids=[dashboard.id],
+            isr_quiet=True).run()
+    lines = dashboard.x_line_ids.sorted(key=lambda l: (l.x_sequence, l.id))
+    keys = set()
+    revenue_lines = 0
+    for line in lines:
+        if line.x_key in keys:
+            raise UserError("The key %s is used on two lines." % line.x_key)
+        keys.add(line.x_key)
+        if line.x_is_revenue:
+            revenue_lines += 1
+    if revenue_lines != 1:
+        raise UserError("Mark exactly one line as the Revenue Line (found %s)." % revenue_lines)
+    by_key = {}
+    for line in lines:
+        by_key[line.x_key] = line
+    for line in lines:
+        if line.x_kind == 'computed':
+            if not parse(line.x_formula):
+                raise UserError("Line %s is calculated from other lines but has no formula." % line.x_name)
+            for term in parse(line.x_formula):
+                if term[1] not in keys:
+                    raise UserError("The formula of %s uses %s, which is not a line key." % (
+                        line.x_name, term[1]))
+    weights = {}
+    for line in lines:
+        if line.x_kind == 'computed':
+            weights[line.x_key] = expand(line.x_key, by_key)
+
+    # ---- standard lines take their accounts from Income Statement Accounts: one mapping,
+    # shared with the Income Statement report; other lines keep their own accounts
+    for line in lines:
+        if line.x_kind == 'mapped' and line.x_key in DEFAULT_CODES:
+            ids = accounts_for(dashboard, line.x_key)
+            if sorted(ids) != sorted(line.x_account_ids.ids):
+                line.write({'x_account_ids': [(6, 0, ids)]})
+
+    # ---- which accounts each line reads
+    company_ids = (company | dashboard.x_peer_company_ids).ids
+    per_line = {}
+    mapped = set()
+    for line in lines:
+        if line.x_kind != 'mapped':
+            continue
+        ids = set(line.x_account_ids.ids)
+        extra = types_of(line, [])
+        if extra:
+            ids |= set(Account.search([('company_id', 'in', company_ids),
+                                       ('account_type', 'in', extra)]).ids)
+        per_line[line.id] = ids
+        mapped |= ids
+    swept = set()
+    for line in lines:
+        if line.x_kind != 'catchall':
+            continue
+        ids = set(Account.search([('company_id', 'in', company_ids),
+                                  ('account_type', 'in', types_of(line, ['expense'])),
+                                  ('id', 'not in', list(mapped))]).ids)
+        swept |= ids
+        per_line[line.id] = ids | set(line.x_account_ids.ids)
+    for line in lines:
+        line.write({'x_resolved_account_ids': [(6, 0, sorted(per_line.get(line.id, set())))]})
+    dashboard.write({'x_unmapped_account_ids': [(6, 0, sorted(swept))]})
+    all_ids = set()
+    for ids in per_line.values():
+        all_ids |= ids
+    income_ids = set(Account.search([('id', 'in', list(all_ids)),
+                                     ('account_type', 'in', ['income', 'income_other'])]).ids)
+
+    # ---- budget: confirmed Budget Allocation of the year when there is one (as the
+    # old report), otherwise the planned revenue and Budget % on the dashboard
+    allocation = {}
+    for budget in env['x_isr_budget'].sudo().search([('x_year', '=', year), ('x_state', '=', 'confirmed'),
+                                                     ('x_company_id', 'in', company_ids)]):
+        q = {'q1': 1, 'q2': 2, 'q3': 3, 'q4': 4}.get(budget.x_quarter)
+        if not q:
+            continue
+        slot = allocation.setdefault(q, {'revenue': 0.0, 'lines': {}})
+        slot['revenue'] += budget.x_sales_revenue or 0.0
+        seen = set()
+        for bline in budget.x_line_ids:
+            if bline.x_line_type in seen:
+                continue
+            seen.add(bline.x_line_type)
+            slot['lines'][bline.x_line_type] = slot['lines'].get(bline.x_line_type, 0.0) + (bline.x_amount or 0.0)
+    use_allocation = bool(allocation)
+    if use_allocation:
+        planned = {}
+        for q in (1, 2, 3, 4):
+            planned[q] = allocation.get(q, {'revenue': 0.0})['revenue']
+    else:
+        planned = {1: dashboard.x_budget_q1, 2: dashboard.x_budget_q2,
+                   3: dashboard.x_budget_q3, 4: dashboard.x_budget_q4}
+    periods = []
+    for back in range(prior, 0, -1):
+        y = year - back
+        periods.append({'code': 'Y%d' % y, 'name': 'FY %d' % y, 'from': datetime.date(y, 1, 1),
+                        'to': datetime.date(y, 12, 31), 'year': True, 'prior': True,
+                        'custom': False, 'budget': 0.0, 'seq': prior - back + 1})
+    for q in (1, 2, 3, 4):
+        start = datetime.date(year, q * 3 - 2, 1)
+        periods.append({'code': 'Q%d' % q, 'name': 'Q%d %d' % (q, year), 'from': start,
+                        'to': month_end(year, q * 3), 'year': False, 'prior': False,
+                        'custom': False, 'budget': planned[q] or 0.0, 'seq': 20 + q, 'quarters': [q]})
+    periods.append({'code': 'FY', 'name': 'FY %d' % year, 'from': datetime.date(year, 1, 1),
+                    'to': datetime.date(year, 12, 31), 'year': True, 'prior': False,
+                    'custom': False, 'seq': 25, 'quarters': [1, 2, 3, 4],
+                    'budget': (planned[1] or 0.0) + (planned[2] or 0.0) + (planned[3] or 0.0) + (planned[4] or 0.0)})
+    c_from = dashboard.x_custom_from
+    c_to = dashboard.x_custom_to
+    if c_from and c_to and c_from <= c_to:
+        periods.append({'code': 'CUSTOM', 'name': '%s to %s' % (c_from.strftime('%m/%d/%Y'),
+                                                                 c_to.strftime('%m/%d/%Y')),
+                        'from': c_from, 'to': c_to, 'year': True, 'prior': False,
+                        'custom': True, 'budget': 0.0, 'seq': 26})
+
+    env['x_isr_part'].sudo().search([('x_dashboard_id', '=', dashboard.id)]).unlink()
+    dashboard.x_period_ids.unlink()
+    account_list = list(all_ids)
+    for period in periods:
+        future = period['from'] > today
+        actual = {}
+        if not future:
+            found = balances(account_list, company_ids, period['from'], period['to'])
+            for line in lines:
+                if line.x_kind == 'computed':
+                    continue
+                total = 0.0
+                for account_id in per_line.get(line.id, set()):
+                    amount = found.get(account_id, 0.0)
+                    total += -amount if account_id in income_ids else amount
+                actual[line.x_key] = total
+        planned_rev = period['budget']
+        budget = {}
+        for line in lines:
+            if line.x_kind == 'computed':
+                continue
+            if line.x_is_revenue:
+                budget[line.x_key] = planned_rev
+            elif use_allocation:
+                amount = 0.0
+                for q in period.get('quarters', []):
+                    amount += allocation.get(q, {'lines': {}})['lines'].get(line.x_key, 0.0)
+                budget[line.x_key] = amount
+            else:
+                budget[line.x_key] = planned_rev * (line.x_budget_pct or 0.0) / 100.0
+        # formulas from the account-based lines they rest on, whatever their order
+        leaf_actual = dict(actual)
+        leaf_budget = dict(budget)
+        for line in lines:
+            if line.x_kind == 'computed':
+                total_a, total_b = 0.0, 0.0
+                for leaf, weight in weights[line.x_key].items():
+                    total_a += weight * leaf_actual.get(leaf, 0.0)
+                    total_b += weight * leaf_budget.get(leaf, 0.0)
+                actual[line.x_key] = total_a
+                budget[line.x_key] = total_b
+        revenue = 0.0
+        for line in lines:
+            if line.x_is_revenue:
+                revenue = actual.get(line.x_key, 0.0)
+        record_period = env['x_isr_period'].sudo().create({
+            'x_dashboard_id': dashboard.id, 'x_name': period['name'], 'x_code': period['code'],
+            'x_sequence': period['seq'], 'x_date_from': period['from'], 'x_date_to': period['to'],
+            'x_is_future': future, 'x_is_year': period['year'], 'x_is_prior': period['prior'],
+            'x_is_custom': period['custom'], 'x_revenue': revenue, 'x_budget_revenue': planned_rev,
+        })
+        rows = []
+        for line in lines:
+            sign = -1.0 if line.x_sign == 'negative' else 1.0
+            amount = sign * actual.get(line.x_key, 0.0)
+            rows.append({
+                'x_dashboard_id': dashboard.id, 'x_period_id': record_period.id, 'x_line_id': line.id,
+                'x_key': line.x_key, 'x_sequence': line.x_sequence, 'x_amount': amount,
+                'x_budget': sign * budget.get(line.x_key, 0.0),
+                'x_pct': (amount / revenue * 100.0) if (revenue and line.x_show_pct) else 0.0,
+            })
+        env['x_isr_value'].sudo().create(rows)
+        # what each subtotal is made of: contributions that add up to the subtotal exactly
+        parts = []
+        for line in lines:
+            if line.x_kind != 'computed':
+                continue
+            sign_c = -1.0 if line.x_sign == 'negative' else 1.0
+            seq = 0
+            for leaf_line in lines:
+                weight = weights[line.x_key].get(leaf_line.x_key)
+                if not weight:
+                    continue
+                seq += 1
+                sign_l = -1.0 if leaf_line.x_sign == 'negative' else 1.0
+                parts.append({
+                    'x_dashboard_id': dashboard.id, 'x_period_id': record_period.id, 'x_line_id': line.id,
+                    'x_part_line_id': leaf_line.id, 'x_name': leaf_line.x_name, 'x_sequence': seq, 'x_coef': weight,
+                    'x_leaf_amount': sign_l * leaf_actual.get(leaf_line.x_key, 0.0),
+                    'x_amount': sign_c * weight * leaf_actual.get(leaf_line.x_key, 0.0),
+                    'x_budget': sign_c * weight * leaf_budget.get(leaf_line.x_key, 0.0),
+                })
+        if parts:
+            env['x_isr_part'].sudo().create(parts)
+
+    first_day = min(period['from'] for period in periods)
+    last_day = max(period['to'] for period in periods)
+    posted = env['account.move.line'].sudo().read_group(
+        [('company_id', 'in', company_ids), ('parent_state', '=', 'posted'),
+         ('date', '>=', first_day), ('date', '<=', last_day),
+         ('account_id.account_type', 'in', ['income', 'income_other', 'expense', 'expense_depreciation',
+                                            'expense_direct_cost'])],
+        ['balance'], ['account_id'], lazy=False)
+    missing = []
+    for group in posted:
+        if group.get('account_id') and group['account_id'][0] not in all_ids:
+            missing.append(group['account_id'][0])
+    dashboard.write({'x_missing_account_ids': [(6, 0, sorted(missing))]})
+    dashboard.write({'x_refreshed': datetime.datetime.now(),
+                     'x_currency_code': company.currency_id.name or 'USD'})
+]]></field>
+    </record>
+</odoo>

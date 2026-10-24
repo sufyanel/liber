@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         Import from the old Income Statement module: its account mapping
+         (including accounts of other companies Dale mapped, such as Roger
+         Brown payroll) and its budget for the dashboard year. Run it BEFORE
+         uninstalling the old module; uninstalling drops those tables.
+         ================================================================== -->
+    <record id="action_isr_import_old" model="ir.actions.server">
+        <field name="name">Import from Old Income Statement</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="binding_model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Copy the old Income Statement module's data into this module: Income Statement
+# Accounts (mapping) and Budget Allocation (budgets with their lines), record for
+# record. Run it before uninstalling the old module; uninstalling drops its tables.
+# Then every dashboard (or the selected ones) takes its accounts from the mapping.
+has_mapping = bool(env['ir.model'].sudo().search_count([('model', '=', 'income.statement.account.mapping')]))
+has_budget = bool(env['ir.model'].sudo().search_count([('model', '=', 'income.statement.budget')]))
+if not has_mapping and not has_budget:
+    raise UserError("The old Income Statement module is not installed, so there is nothing to "
+                    "import. If it was already uninstalled, its mapping and budgets are gone.")
+mapped = 0
+budgets_copied = 0
+if has_mapping:
+    for old in env['income.statement.account.mapping'].sudo().search([]):
+        current = env['x_isr_mapping'].sudo().search([('x_company_id', '=', old.company_id.id), ('x_row_key', '=', old.row_key)], limit=1)
+        values = {'x_company_id': old.company_id.id, 'x_row_key': old.row_key, 'x_account_ids': [(6, 0, old.account_ids.ids)]}
+        if current:
+            current.write(values)
+        else:
+            env['x_isr_mapping'].sudo().create(values)
+        mapped += 1
+if has_budget:
+    for old in env['income.statement.budget'].sudo().search([]):
+        year_text = str(old.year or '')[:4]
+        if not year_text.isdigit():
+            continue
+        year = int(year_text)
+        if env['x_isr_budget'].sudo().search_count([('x_company_id', '=', old.company_id.id), ('x_year', '=', year),
+                                                   ('x_quarter', '=', old.quarter)]):
+            continue
+        lines = []
+        for line in old.line_ids:
+            lines.append((0, 0, {'x_sequence': line.sequence, 'x_line_type': line.line_type, 'x_percentage': line.percentage}))
+        env['x_isr_budget'].sudo().create({
+            'x_company_id': old.company_id.id, 'x_year': year, 'x_quarter': old.quarter,
+            'x_sales_revenue': old.sales_revenue, 'x_state': 'confirmed' if old.state == 'confirmed' else 'draft',
+            'x_line_ids': lines,
+        })
+        budgets_copied += 1
+
+# dashboards: accounts from the mapping just copied
+targets = records or (record and [record]) or []
+for dashboard in targets:
+    dashboard = dashboard.sudo()
+    for line in dashboard.x_line_ids:
+        if line.x_kind != 'mapped':
+            continue
+        company_ids = (dashboard.x_company_id | dashboard.x_peer_company_ids).ids
+        mappings = env['x_isr_mapping'].sudo().search([('x_company_id', 'in', company_ids), ('x_row_key', '=', line.x_key)])
+        if mappings and mappings.mapped('x_account_ids'):
+            accounts = mappings.mapped('x_account_ids')
+            line.write({'x_account_ids': [(6, 0, accounts.ids)]})
+
+if not env.context.get('isr_quiet'):
+    action = {
+        'type': 'ir.actions.client', 'tag': 'display_notification',
+        'params': {'title': 'Imported from the old Income Statement', 'type': 'success', 'sticky': True,
+                   'message': '%s account mapping(s) and %s budget(s) copied. Click Refresh Data.' % (mapped, budgets_copied)},
+    }
+]]></field>
+    </record>
+
+    <!-- ==================================================================
+         Download: the statement in the old workbook's layout - earlier years,
+         the quarters, the full year and the budget, each with Amount and
+         % of Sales. SpreadsheetML 2003, because an imported module cannot
+         use xlsxwriter.
+         ================================================================== -->
+    <record id="action_isr_export" model="ir.actions.server">
+        <field name="name">Download Income Statement</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="binding_model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+ACCENT = '#13294B'
+MONEY = '#,##0;[Red](#,##0);-'
+PCT = '0.0%;[Red](0.0%);-'
+
+
+def esc(value):
+    text = '' if value is None else str(value)
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def cell(value, style, number=False, merge=0):
+    attrs = ' ss:StyleID="%s"' % style
+    if merge:
+        attrs += ' ss:MergeAcross="%d"' % merge
+    if value is None or value == '':
+        return '<Cell%s/>' % attrs
+    if number:
+        return '<Cell%s><Data ss:Type="Number">%s</Data></Cell>' % (attrs, repr(round(float(value), 6)))
+    return '<Cell%s><Data ss:Type="String">%s</Data></Cell>' % (attrs, esc(value))
+
+
+def style(sid, bold=False, size=10, color='', fill='', align='Left', number='', border=True):
+    out = '<Style ss:ID="%s"><Alignment ss:Horizontal="%s" ss:Vertical="Center"/>' % (sid, align)
+    out += '<Font ss:FontName="Arial" ss:Size="%d"%s%s/>' % (
+        size, ' ss:Bold="1"' if bold else '', ' ss:Color="%s"' % color if color else '')
+    if fill:
+        out += '<Interior ss:Color="%s" ss:Pattern="Solid"/>' % fill
+    if number:
+        out += '<NumberFormat ss:Format="%s"/>' % number
+    if border:
+        out += '<Borders>'
+        for side in ('Top', 'Bottom', 'Left', 'Right'):
+            out += '<Border ss:Position="%s" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9DEE7"/>' % side
+        out += '</Borders>'
+    return out + '</Style>'
+
+
+dashboard = record
+if not dashboard:
+    raise UserError("Open an Income Statement dashboard first.")
+dashboard = dashboard.sudo()
+lines = dashboard.x_line_ids.sorted(key=lambda l: (l.x_sequence, l.id))
+periods = dashboard.x_period_ids.filtered(lambda p: not p.x_is_custom).sorted(
+    key=lambda p: (p.x_sequence, p.id))
+if not periods:
+    raise UserError("There are no figures yet. Click Refresh first.")
+
+values = {}
+for row in env['x_isr_value'].sudo().search_read(
+        [('x_dashboard_id', '=', dashboard.id)], ['x_period_id', 'x_key', 'x_amount', 'x_budget']):
+    values[(row['x_period_id'][0], row['x_key'])] = (row['x_amount'], row['x_budget'])
+
+# columns: every period's actual, then the full year's budget
+columns = []
+for period in periods:
+    columns.append((period, 'actual', period.x_name, period.x_revenue))
+fy = periods.filtered(lambda p: p.x_code == 'FY')
+if fy:
+    columns.append((fy[0], 'budget', 'Budget %d' % dashboard.x_year, fy[0].x_budget_revenue))
+last = len(columns) * 2
+
+styles = '<Styles>' + ''.join([
+    style('title', True, 16, '#FFFFFF', ACCENT, 'Left', '', False),
+    style('info', False, 9, '#5B6472', '', 'Left', '', False),
+    style('head', True, 10, '#FFFFFF', ACCENT, 'Center'),
+    style('sub', True, 9, ACCENT, '#EEF2F7', 'Center'),
+    style('label', False, 10),
+    style('labelBold', True, 10, '', '#F8FAFC'),
+    style('num', False, 10, '', '', 'Right', MONEY),
+    style('numBold', True, 10, '', '#F8FAFC', 'Right', MONEY),
+    style('pct', False, 9, '#0E7C86', '', 'Right', PCT),
+    style('pctBold', True, 9, '#0E7C86', '#F8FAFC', 'Right', PCT),
+    style('blank', False, 10, '', '', 'Right'),
+    style('blankBold', False, 10, '', '#F8FAFC', 'Right'),
+]) + '</Styles>'
+
+rows = []
+rows.append('<Row ss:Height="26">%s</Row>' % cell(
+    'INCOME STATEMENT  -  %s' % dashboard.x_name, 'title', merge=last))
+companies = [dashboard.x_company_id.name] + dashboard.x_peer_company_ids.mapped('name')
+rows.append('<Row>%s</Row>' % cell('Companies: %s' % ', '.join(companies), 'info', merge=last))
+rows.append('<Row>%s</Row>' % cell(
+    'Costs are shown negative. %% of Sales is each line against the revenue line of the same '
+    'column. Refreshed %s.' % (dashboard.x_refreshed or 'never'), 'info', merge=last))
+rows.append('<Row/>')
+
+head = [cell('Line', 'head')]
+sub = [cell('', 'sub')]
+for column in columns:
+    head.append(cell(column[2], 'head', merge=1))
+    sub.append(cell('Amount', 'sub'))
+    sub.append(cell('% of Sales', 'sub'))
+rows.append('<Row>%s</Row>' % ''.join(head))
+rows.append('<Row>%s</Row>' % ''.join(sub))
+
+for line in lines:
+    bold = line.x_bold
+    out = [cell(line.x_name, 'labelBold' if bold else 'label')]
+    for column in columns:
+        pair = values.get((column[0].id, line.x_key), (0.0, 0.0))
+        amount = pair[0] if column[1] == 'actual' else pair[1]
+        future = column[1] == 'actual' and column[0].x_is_future
+        if future:
+            out.append(cell('', 'blankBold' if bold else 'blank'))
+            out.append(cell('', 'blankBold' if bold else 'blank'))
+            continue
+        out.append(cell(amount, 'numBold' if bold else 'num', True))
+        if line.x_show_pct and column[3]:
+            out.append(cell(amount / column[3], 'pctBold' if bold else 'pct', True))
+        else:
+            out.append(cell('', 'blankBold' if bold else 'blank'))
+    rows.append('<Row>%s</Row>' % ''.join(out))
+
+widths = '<Column ss:Width="230"/>'
+for column in columns:
+    widths += '<Column ss:Width="86"/><Column ss:Width="56"/>'
+
+content = (
+    '<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>'
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+    ' xmlns:o="urn:schemas-microsoft-com:office:office"'
+    ' xmlns:x="urn:schemas-microsoft-com:office:excel"'
+    ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">%s'
+    '<Worksheet ss:Name="Income Statement"><Table>%s%s</Table>'
+    '<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">'
+    '<FreezePanes/><FrozenNoSplit/><SplitHorizontal>6</SplitHorizontal>'
+    '<TopRowBottomPane>6</TopRowBottomPane><SplitVertical>1</SplitVertical>'
+    '<LeftColumnRightPane>1</LeftColumnRightPane><ActivePane>0</ActivePane>'
+    '</WorksheetOptions></Worksheet></Workbook>') % (styles, widths, ''.join(rows))
+
+attachment = env['ir.attachment'].sudo().create({
+    'name': 'Income Statement %s.xls' % dashboard.x_name,
+    'type': 'binary',
+    'datas': b64encode(content.encode('utf-8')),
+    'res_model': 'x_isr_dashboard',
+    'res_id': dashboard.id,
+    'mimetype': 'application/vnd.ms-excel',
+})
+action = {'type': 'ir.actions.act_url', 'url': '/web/content/%s?download=true' % attachment.id,
+          'target': 'self'}
+]]></field>
+    </record>
+</odoo>

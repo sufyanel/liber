@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="model_x_login_alias" model="ir.model">
+        <field name="name">Alternative Login</field>
+        <field name="model">x_login_alias</field>
+        <field name="info">Another address a user can sign in with, using the same password.</field>
+    </record>
+    <record id="field_x_login_alias__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_login_alias"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Alternative Login</field>
+        <field name="ttype">char</field>
+        <field name="required" eval="True"/>
+        <field name="index" eval="True"/>
+        <field name="help">Another address this user can sign in with, using the same password (letter case is ignored).</field>
+    </record>
+    <record id="field_x_login_alias__x_user_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_login_alias"/>
+        <field name="name">x_user_id</field>
+        <field name="field_description">User</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.users</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+        <field name="index" eval="True"/>
+    </record>
+    <record id="field_res_users__x_login_alias_ids" model="ir.model.fields">
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="name">x_login_alias_ids</field>
+        <field name="field_description">Alternative Logins</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_login_alias</field>
+        <field name="relation_field">x_user_id</field>
+    </record>
+</odoo>

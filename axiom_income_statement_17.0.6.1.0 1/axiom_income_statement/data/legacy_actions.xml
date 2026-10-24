@@ -1,0 +1,465 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Budget Allocation: the eight standard lines, as the old module created them -->
+    <record id="action_isr_budget_lines" model="ir.actions.server">
+        <field name="name">Load Budget Lines</field>
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+LINE_TYPES = ['cost_purchased_finished_goods', 'variable_overhead_landed_costs', 'add_back_fixed_overhead',
+              'less_variable_operating_expense', 'selling_general_administrative', 'total_operating_expenses',
+              'interest_expense', 'taxes']
+
+
+def ensure_lines(budget):
+    if budget.x_line_ids:
+        return
+    values = []
+    sequence = 0
+    for line_type in LINE_TYPES:
+        sequence += 10
+        values.append({'x_budget_id': budget.id, 'x_sequence': sequence, 'x_line_type': line_type, 'x_percentage': 0.0})
+    env['x_isr_budget_line'].sudo().create(values)
+
+for budget in records:
+    ensure_lines(budget)
+]]></field>
+    </record>
+    <!-- Budget Allocation: Confirm, with the old checks -->
+    <record id="action_isr_budget_confirm" model="ir.actions.server">
+        <field name="name">Confirm Budget</field>
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+LINE_TYPES = ['cost_purchased_finished_goods', 'variable_overhead_landed_costs', 'add_back_fixed_overhead',
+              'less_variable_operating_expense', 'selling_general_administrative', 'total_operating_expenses',
+              'interest_expense', 'taxes']
+
+
+def ensure_lines(budget):
+    if budget.x_line_ids:
+        return
+    values = []
+    sequence = 0
+    for line_type in LINE_TYPES:
+        sequence += 10
+        values.append({'x_budget_id': budget.id, 'x_sequence': sequence, 'x_line_type': line_type, 'x_percentage': 0.0})
+    env['x_isr_budget_line'].sudo().create(values)
+
+for budget in records:
+    ensure_lines(budget)
+    if (budget.x_sales_revenue or 0) <= 0:
+        raise UserError("Cannot confirm a budget with zero sales revenue.")
+    has_pct = False
+    for line in budget.x_line_ids:
+        if line.x_percentage:
+            has_pct = True
+    if not has_pct:
+        raise UserError("Cannot confirm a budget when all budget lines have zero percent and calculated amounts are all zero.")
+    if env['x_isr_budget'].sudo().search_count([('x_year', '=', budget.x_year), ('x_quarter', '=', budget.x_quarter),
+                                               ('x_company_id', '=', budget.x_company_id.id), ('id', '!=', budget.id)]):
+        raise UserError("Year %s already has a budget for %s for this company. Each quarter (Q1-Q4) can only be used once per year per company."
+                        % (budget.x_year, (budget.x_quarter or '').upper()))
+    budget.write({'x_state': 'confirmed'})
+]]></field>
+    </record>
+    <record id="action_isr_budget_draft" model="ir.actions.server">
+        <field name="name">Set to Draft</field>
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+for budget in records:
+    budget.write({'x_state': 'draft'})
+]]></field>
+    </record>
+    <record id="action_isr_budget_duplicate" model="ir.actions.server">
+        <field name="name">Duplicate to Next Quarter</field>
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+ORDER = ['q1', 'q2', 'q3', 'q4']
+for budget in records:
+    index = ORDER.index(budget.x_quarter) if budget.x_quarter in ORDER else 0
+    quarter = ORDER[index + 1] if index < 3 else 'q1'
+    year = budget.x_year if index < 3 else budget.x_year + 1
+    if env['x_isr_budget'].sudo().search_count([('x_year', '=', year), ('x_quarter', '=', quarter), ('x_company_id', '=', budget.x_company_id.id)]):
+        raise UserError("Cannot duplicate: company already has a budget for year %s %s." % (year, quarter.upper()))
+    lines = []
+    for line in budget.x_line_ids:
+        lines.append((0, 0, {'x_sequence': line.x_sequence, 'x_line_type': line.x_line_type, 'x_percentage': line.x_percentage}))
+    new = env['x_isr_budget'].create({'x_company_id': budget.x_company_id.id, 'x_year': year, 'x_quarter': quarter,
+                                      'x_sales_revenue': budget.x_sales_revenue, 'x_state': 'draft', 'x_line_ids': lines})
+    new.message_post(body="Duplicated from %s." % budget.x_name)
+    action = {'type': 'ir.actions.act_window', 'res_model': 'x_isr_budget', 'res_id': new.id, 'views': [[False, 'form']], 'target': 'current'}
+]]></field>
+    </record>
+    <record id="action_isr_mapping_seed" model="ir.actions.server">
+        <field name="name">Load Standard Accounts</field>
+        <field name="model_id" ref="model_x_isr_mapping"/>
+        <field name="binding_model_id" ref="model_x_isr_mapping"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# The old module's install hook: for every company and row without a mapping,
+# the accounts with the standard codes.
+CODES = {
+    'sales_revenue': ['04.1.101', '04.1.102', '04.1.104'],
+    'cost_purchased_finished_goods': ['05.1.101', '05.1.102', '05.1.103', '05.1.104', '05.1.105', '05.2.101', '05.2.102', '05.1.1.104', '500000'],
+    'variable_overhead_landed_costs': ['05.1.113', '06.1.302', '05.1.106', '220110', '06.1.304', '220100'],
+    'add_back_fixed_overhead': ['01.1.116', '230200', '06.2.505', '06.2.604', '220601', '06.2.605', '220600', '220900', '06.2.613'],
+    'less_variable_operating_expense': ['06.2.611', '240101', '06.2.201', '212300', '06.2.503', '620000'],
+    'interest_expense': ['06.2.203'],
+    'taxes': ['230150'],
+}
+created = 0
+for company in env['res.company'].sudo().search([]):
+    for row_key in CODES:
+        if env['x_isr_mapping'].sudo().search_count([('x_company_id', '=', company.id), ('x_row_key', '=', row_key)]):
+            continue
+        accounts = env['account.account'].sudo().search([('company_id', '=', company.id), ('code', 'in', CODES[row_key])])
+        if accounts:
+            env['x_isr_mapping'].sudo().create({'x_company_id': company.id, 'x_row_key': row_key, 'x_account_ids': [(6, 0, accounts.ids)]})
+            created += 1
+if not env.context.get('isr_quiet'):
+    action = {'type': 'ir.actions.client', 'tag': 'display_notification',
+              'params': {'title': 'Income Statement Accounts', 'type': 'success', 'message': '%s mapping(s) created.' % created}}
+]]></field>
+    </record>
+    <record id="action_isr_report_download" model="ir.actions.server">
+        <field name="name">Download Excel</field>
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Income Statement report: the old "Income Statement" wizard's Excel, same rows,
+# same columns, same rules: mapped rows from Income Statement Accounts (else the
+# standard codes), SG&A = every other expense account, Other income = every
+# other-income account, budget from confirmed Budget Allocation.
+ACCOUNT_CODE_MAP = {
+    'sales_revenue': ['04.1.101', '04.1.102', '04.1.104'],
+    'cost_purchased_finished_goods': ['05.1.101', '05.1.102', '05.1.103', '05.1.104', '05.1.105',
+                                      '05.2.101', '05.2.102', '05.1.1.104', '500000'],
+    'variable_overhead_landed_costs': ['05.1.113', '06.1.302', '05.1.106', '220110', '06.1.304', '220100'],
+    'add_back_fixed_overhead': ['01.1.116', '230200', '06.2.505', '06.2.604', '220601', '06.2.605',
+                                '220600', '220900', '06.2.613'],
+    'less_variable_operating_expense': ['06.2.611', '240101', '06.2.201', '212300', '06.2.503', '620000'],
+    'interest_expense': ['06.2.203'],
+    'taxes': ['230150'],
+}
+BUDGET_KEYS = ['cost_purchased_finished_goods', 'variable_overhead_landed_costs', 'add_back_fixed_overhead',
+               'less_variable_operating_expense', 'selling_general_administrative', 'interest_expense', 'taxes']
+NEGATE = ['less_cost_of_sales', 'cost_purchased_finished_goods', 'variable_overhead_landed_costs',
+          'less_variable_operating_expense', 'selling_general_administrative', 'interest_expense', 'taxes']
+ROW_SPEC = [
+    ('SALES REVENUE', 'sales_revenue', True), ('Less Cost of Sales', 'less_cost_of_sales', True),
+    ('Cost of Purchased Finished Goods', 'cost_purchased_finished_goods', False),
+    ('Variable Overhead Landed Costs', 'variable_overhead_landed_costs', False),
+    ('GROSS PROFIT MARGIN', 'gross_profit_margin', True), ('Add back Fixed Overhead', 'add_back_fixed_overhead', False),
+    ('Less Variable Operating Expense', 'less_variable_operating_expense', False),
+    ('CONTRIBUTION MARGIN', 'contribution_margin', True),
+    ('Selling, General & Administrative', 'selling_general_administrative', False),
+    ('OPERATING PROFIT', 'operating_profit', True), ('Other income or expense', 'other_income_expense', True),
+    ('Interest expense', 'interest_expense', False), ('PROFIT BEFORE TAX', 'profit_before_tax', True),
+    ('Taxes', 'taxes', False), ('NET INCOME', 'net_income', True),
+]
+
+# ---- SpreadsheetML (Excel 2003 XML) writer. An imported module cannot use
+# xlsxwriter, so the workbook is written as XML that Excel opens with its
+# formatting. Cells are kept in a grid {(row, col): (value, style, merge_across, merge_down)}.
+def xml_text(value):
+    text = '' if value is None else str(value)
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def put(grid, row, col, value, style_id, across=0, down=0):
+    grid[(row, col)] = (value, style_id, across, down)
+
+
+def xml_style(sid, bold=False, size=10, color='', fill='', align='Left', number='', border='', italic=False, wrap=False):
+    out = '<Style ss:ID="%s"><Alignment ss:Horizontal="%s" ss:Vertical="Center"%s/>' % (
+        sid, align, ' ss:WrapText="1"' if wrap else '')
+    out += '<Font ss:FontName="Calibri" ss:Size="%d"%s%s%s/>' % (
+        size, ' ss:Bold="1"' if bold else '', ' ss:Italic="1"' if italic else '', (' ss:Color="%s"' % color) if color else '')
+    if fill:
+        out += '<Interior ss:Color="%s" ss:Pattern="Solid"/>' % fill
+    if number:
+        out += '<NumberFormat ss:Format="%s"/>' % xml_text(number)
+    if border:
+        out += '<Borders>'
+        for side in ('Top', 'Bottom', 'Left', 'Right'):
+            out += '<Border ss:Position="%s" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="%s"/>' % (side, border)
+        out += '</Borders>'
+    return out + '</Style>'
+
+
+def xml_sheet(name, grid, widths, hidden=None, heights=None):
+    hidden = hidden or []
+    heights = heights or {}
+    cols = ''
+    for index in range(len(widths)):
+        cols += '<Column ss:Index="%d" ss:Width="%d"%s/>' % (index + 1, widths[index], ' ss:Hidden="1"' if index in hidden else '')
+    rows_out = ''
+    by_row = {}
+    for key in grid:
+        by_row.setdefault(key[0], []).append(key[1])
+    for r in sorted(by_row):
+        cells = ''
+        for c in sorted(by_row[r]):
+            value, style_id, across, down = grid[(r, c)]
+            attrs = ' ss:Index="%d" ss:StyleID="%s"' % (c + 1, style_id)
+            if across:
+                attrs += ' ss:MergeAcross="%d"' % across
+            if down:
+                attrs += ' ss:MergeDown="%d"' % down
+            if value is None or value == '':
+                cells += '<Cell%s/>' % attrs
+            elif isinstance(value, (int, float)) and not isinstance(value, bool):
+                cells += '<Cell%s><Data ss:Type="Number">%s</Data></Cell>' % (attrs, repr(round(float(value), 6)))
+            else:
+                cells += '<Cell%s><Data ss:Type="String">%s</Data></Cell>' % (attrs, xml_text(value))
+        height = (' ss:Height="%d"' % heights[r]) if r in heights else ''
+        rows_out += '<Row ss:Index="%d"%s>%s</Row>' % (r + 1, height, cells)
+    return '<Worksheet ss:Name="%s"><Table>%s%s</Table></Worksheet>' % (xml_text(name), cols, rows_out)
+
+
+def xml_workbook(styles, sheets):
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n<?mso-application progid="Excel.Sheet"?>\n'
+            '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" '
+            'xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'
+            '<Styles>%s</Styles>%s</Workbook>') % (''.join(styles), ''.join(sheets))
+
+
+def xml_download(filename, content, res_model, res_id):
+    attachment = env['ir.attachment'].sudo().create({
+        'name': filename, 'type': 'binary', 'raw': content.encode('utf-8'),
+        'mimetype': 'application/vnd.ms-excel', 'res_model': res_model, 'res_id': res_id,
+    })
+    return {'type': 'ir.actions.act_url', 'url': '/web/content/%s?download=true' % attachment.id, 'target': 'self'}
+
+
+def compute_derived(base, n):
+    zeros = [0.0] * n
+    sales = base.get('sales_revenue', zeros)
+    copfg = base.get('cost_purchased_finished_goods', zeros)
+    var_oh = base.get('variable_overhead_landed_costs', zeros)
+    fixed_oh = base.get('add_back_fixed_overhead', zeros)
+    var_opex = base.get('less_variable_operating_expense', zeros)
+    sga = base.get('selling_general_administrative', zeros)
+    other_ie = base.get('other_income_expense', zeros)
+    interest = base.get('interest_expense', zeros)
+    taxes = base.get('taxes', zeros)
+    less_cos, gpm, cm, op, pbt, ni = [], [], [], [], [], []
+    for i in range(n):
+        less_cos.append(copfg[i] + var_oh[i])
+        gpm.append(sales[i] - less_cos[i])
+        cm.append(gpm[i] + fixed_oh[i] - var_opex[i])
+        op.append(cm[i] - sga[i])
+        pbt.append(op[i] + other_ie[i] - interest[i])
+        ni.append(pbt[i] - taxes[i])
+    base['less_cost_of_sales'] = less_cos
+    base['gross_profit_margin'] = gpm
+    base['contribution_margin'] = cm
+    base['operating_profit'] = op
+    base['profit_before_tax'] = pbt
+    base['net_income'] = ni
+
+
+wizard = record.sudo()
+companies = wizard.x_company_ids
+if not companies:
+    raise UserError("Choose at least one company.")
+company_ids = companies.ids
+current_year = wizard.x_year or datetime.date.today().year
+quarterly = wizard.x_report_mode == 'quarterly'
+n_actual = 20 if quarterly else 5
+n_budget = 4 if quarterly else 1
+n_pct_years = int(wizard.x_expense_pct_years or '5')
+cols_per_year = 4 if quarterly else 1
+pct_year_cutoff = 5 - n_pct_years
+Account = env['account.account'].sudo()
+
+# ---- accounts per row
+mapping_lookup = {}
+for mapping in env['x_isr_mapping'].sudo().search([('x_company_id', 'in', company_ids)]):
+    mapping_lookup.setdefault(mapping.x_row_key, set()).update(mapping.x_account_ids.ids)
+row_account_ids = {}
+all_ids = set()
+for row_key in ACCOUNT_CODE_MAP:
+    if row_key in mapping_lookup:
+        ids = mapping_lookup[row_key]
+    else:
+        ids = set(Account.search([('company_id', 'in', company_ids), ('code', 'in', ACCOUNT_CODE_MAP[row_key])]).ids)
+    row_account_ids[row_key] = ids
+    all_ids |= ids
+sga = set(Account.search([('company_id', 'in', company_ids), ('account_type', '=', 'expense'),
+                          ('id', 'not in', list(all_ids))]).ids)
+row_account_ids['selling_general_administrative'] = sga
+all_ids |= sga
+other = set(Account.search([('company_id', 'in', company_ids), ('account_type', '=', 'income_other')]).ids)
+row_account_ids['other_income_expense'] = other
+all_ids |= other
+income_ids = set(Account.search([('id', 'in', list(all_ids)), ('account_type', 'in', ['income', 'income_other'])]).ids)
+
+# ---- balances per account, year and quarter
+balances = {}
+if all_ids:
+    for yr in range(current_year - 4, current_year + 1):
+        for q in range(1, 5):
+            start = datetime.date(yr, q * 3 - 2, 1)
+            end = datetime.date(yr + 1, 1, 1) - datetime.timedelta(days=1) if q == 4 else datetime.date(yr, q * 3 + 1, 1) - datetime.timedelta(days=1)
+            for group in env['account.move.line'].sudo().read_group(
+                    # every mapped account counts, whichever company it belongs to (Roger Brown Co
+                    # payroll mapped into RBC Industrial); SG&A and other income above stay
+                    # within the companies ticked
+                    [('account_id', 'in', list(all_ids)),
+                     ('date', '>=', start), ('date', '<=', end), ('parent_state', '=', 'posted')],
+                    ['balance'], ['account_id'], lazy=False):
+                balances[(group['account_id'][0], yr, q)] = group['balance'] or 0.0
+
+actuals = {}
+for row_key in row_account_ids:
+    values = []
+    for yr in range(current_year - 4, current_year + 1):
+        if quarterly:
+            for q in range(1, 5):
+                val = 0.0
+                for aid in row_account_ids[row_key]:
+                    raw = balances.get((aid, yr, q), 0.0)
+                    val += -raw if aid in income_ids else raw
+                values.append(val)
+        else:
+            val = 0.0
+            for aid in row_account_ids[row_key]:
+                for q in range(1, 5):
+                    raw = balances.get((aid, yr, q), 0.0)
+                    val += -raw if aid in income_ids else raw
+            values.append(val)
+    actuals[row_key] = values
+compute_derived(actuals, n_actual)
+
+# ---- budget: confirmed Budget Allocation of the year
+budget_base = {'sales_revenue': [], 'other_income_expense': [0.0] * n_budget}
+for key in BUDGET_KEYS:
+    budget_base[key] = []
+budgets = env['x_isr_budget'].sudo().search([('x_year', '=', current_year), ('x_state', '=', 'confirmed'),
+                                              ('x_company_id', 'in', company_ids)])
+for q in (['q1', 'q2', 'q3', 'q4'] if quarterly else [False]):
+    chosen = env['x_isr_budget'].sudo()
+    for budget in budgets:
+        if not q or budget.x_quarter == q:
+            chosen |= budget
+    total = 0.0
+    for budget in chosen:
+        total += budget.x_sales_revenue or 0.0
+    budget_base['sales_revenue'].append(total)
+    for key in BUDGET_KEYS:
+        amount = 0.0
+        for budget in chosen:
+            for line in budget.x_line_ids:
+                if line.x_line_type == key:
+                    amount += line.x_amount or 0.0
+                    break
+        budget_base[key].append(amount)
+compute_derived(budget_base, n_budget)
+
+# ---- the workbook, laid out as the old report
+mode_label = 'Quarterly' if quarterly else 'Yearly'
+year_labels = ['Prior YR4 Actual (%d)' % (current_year - 4), 'Prior YR3 Actual (%d)' % (current_year - 3),
+               'Prior YR2 Actual (%d)' % (current_year - 2), 'Prior YR1 Actual (%d)' % (current_year - 1),
+               'Current YR Actual (%d)' % current_year, 'Current YR Budget (%d)' % current_year]
+names = companies.mapped('name')
+names.sort()
+company_names = ', '.join(names)
+period_body = ('Calendar quarters (Q1 Jan-Mar, Q2 Apr-Jun, Q3 Jul-Sep, Q4 Oct-Dec).' if quarterly
+               else 'One total per calendar year per column.')
+period_block = ("Report type: %s. Years shown: %d-%d. Column date span: %s to %s. %s Each 'Sales %%' column "
+                "shows that line as a percentage of Sales Revenue for the same period." % (
+                    mode_label, current_year - 4, current_year, datetime.date(current_year - 4, 1, 1).isoformat(),
+                    datetime.date(current_year, 12, 31).isoformat(), period_body))
+last_col = (n_actual + n_budget) * 2
+NUM = '#,##0.00;[Red](#,##0.00);0.00'
+PCT = '0.00%;[Red](0.00%);0.00%'
+styles = [
+    xml_style('banner', bold=True, size=20, color='#FFFFFF', fill='#1F4E79', align='Center', border='#000000'),
+    xml_style('bannersub', bold=True, size=12, color='#1F4E79', fill='#E8F1FF', align='Center', border='#000000'),
+    xml_style('meta', size=10, fill='#F8F9FA', border='#CED4DA', wrap=True),
+    xml_style('gen', size=9, italic=True, color='#555555'),
+    xml_style('rule', fill='#E67E22'),
+    xml_style('hdr', bold=True, align='Center', border='#000000'),
+    xml_style('lbl', bold=True, border='#000000'), xml_style('rowlbl', border='#000000'),
+    xml_style('empty', border='#000000'), xml_style('emptyb', bold=True, border='#000000'),
+    xml_style('val', align='Right', number=NUM, border='#000000'), xml_style('valb', bold=True, align='Right', number=NUM, border='#000000'),
+    xml_style('pct', align='Right', number=PCT, border='#000000'), xml_style('pctb', bold=True, align='Right', number=PCT, border='#000000'),
+    xml_style('sub', bold=True, size=9, fill='#F2F2F2', align='Center', border='#000000'),
+]
+grid = {}
+heights = {0: 34, 1: 24, 2: 30 if len(company_names) > 100 else 20, 3: 48, 4: 16, 5: 5}
+put(grid, 0, 0, 'INCOME STATEMENT', 'banner', last_col)
+put(grid, 1, 0, mode_label.upper(), 'bannersub', last_col)
+put(grid, 2, 0, 'Companies: %s' % company_names, 'meta', last_col)
+put(grid, 3, 0, period_block, 'meta', last_col)
+tz = timezone(env.user.tz or 'UTC')
+put(grid, 4, 0, 'Generated: %s' % datetime.datetime.now(tz).strftime('%Y-%m-%d %H:%M %Z'), 'gen', last_col)
+put(grid, 5, 0, '', 'rule', last_col)
+hr = 6
+put(grid, hr, 0, 'YR', 'hdr')
+col = 1
+if quarterly:
+    for label in year_labels:
+        put(grid, hr, col, label, 'hdr', 7)
+        for qi in range(4):
+            put(grid, hr + 1, col + qi * 2, 'Q%d' % (qi + 1), 'hdr', 1)
+            put(grid, hr + 2, col + qi * 2, 'Amount', 'sub')
+            put(grid, hr + 2, col + qi * 2 + 1, 'Sales %', 'sub')
+        col += 8
+    data_start = hr + 3
+else:
+    for label in year_labels:
+        put(grid, hr, col, label, 'hdr', 1)
+        put(grid, hr + 1, col, 'Amount', 'sub')
+        put(grid, hr + 1, col + 1, 'Sales %', 'sub')
+        col += 2
+    data_start = hr + 2
+revenue_actual = actuals.get('sales_revenue', [0.0] * n_actual)
+revenue_budget = budget_base.get('sales_revenue', [0.0] * n_budget)
+for i in range(len(ROW_SPEC)):
+    label, key, bold = ROW_SPEC[i]
+    row = data_start + i
+    put(grid, row, 0, label, 'lbl' if bold else 'rowlbl')
+    for c in range(1, last_col + 1):
+        put(grid, row, c, '', 'emptyb' if bold else 'empty')
+    sign = -1 if key in NEGATE else 1
+    show_pct = key != 'sales_revenue'
+    actual_vals = actuals.get(key, [0.0] * n_actual)
+    for ci in range(len(actual_vals)):
+        c = 1 + ci * 2
+        disp = actual_vals[ci] * sign
+        put(grid, row, c, disp, 'valb' if bold else 'val')
+        if show_pct and (ci // cols_per_year) >= pct_year_cutoff:
+            rev = revenue_actual[ci] if ci < len(revenue_actual) else 0.0
+            if rev:
+                put(grid, row, c + 1, disp / rev, 'pctb' if bold else 'pct')
+    budget_vals = budget_base.get(key, [0.0] * n_budget)
+    for ci in range(len(budget_vals)):
+        c = 1 + n_actual * 2 + ci * 2
+        disp = budget_vals[ci] * sign
+        put(grid, row, c, disp, 'valb' if bold else 'val')
+        if show_pct:
+            rev = revenue_budget[ci] if ci < len(revenue_budget) else 0.0
+            if rev:
+                put(grid, row, c + 1, disp / rev, 'pctb' if bold else 'pct')
+amt_width, pct_width = (75, 55) if quarterly else (120, 65)
+widths = [220]
+hidden = []
+group = 0
+c = 1
+while c <= last_col:
+    widths.append(amt_width)
+    widths.append(pct_width)
+    if group < n_actual and (group // cols_per_year) < pct_year_cutoff:
+        hidden.append(c + 1)
+    c += 2
+    group += 1
+content = xml_workbook(styles, [xml_sheet('Income Statement', grid, widths, hidden, heights)])
+action = xml_download('Income_Statement_%d.xls' % current_year, content, 'x_isr_report', wizard.id)
+]]></field>
+    </record>
+</odoo>

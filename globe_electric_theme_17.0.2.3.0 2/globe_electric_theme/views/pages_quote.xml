@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- globe_quote, built to mockups/globe-electric/full-site/quote.html.
+         Odoo's own website form: leads land in CRM under the Globe company,
+         custom fields and attribution go into the lead's notes, the file is attached. -->
+    <template id="globe_quote" name="Globe Electric: quote">
+        <t t-call="website.layout">
+            <div id="wrap" class="globe-page">
+                <section class="globe-pagehead">
+                    <div class="globe-container">
+                        <p class="globe-eyebrow">Same-Day Quotes</p>
+                        <h1>Request a quote</h1>
+                        <p>Send the part, the spec, or the drawing. Attach a BOM or specification sheet and we will cross-reference, confirm availability, and come back with pricing and lead time.</p>
+                    </div>
+                </section>
+                <div class="globe-container">
+                    <div class="globe-quote-wrap">
+                        <div class="globe-formcard">
+                            <h2>Tell us what you need</h2>
+                            <p class="globe-sub">Same-day response on standard requests. Complex or obsolete items may take longer while we cross-reference.</p>
+                            <section class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                <form id="globe_quote_form" action="/website/form/" method="post" enctype="multipart/form-data"
+                                      class="o_mark_required" data-mark="*" data-model_name="crm.lead"
+                                      data-success-mode="redirect" data-success-page="/quote-received" hide-change-model="true">
+                                    <div class="s_website_form_rows row s_col_no_bgcolor">
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-md-6 s_website_form_required" data-type="char"><label class="s_website_form_label" for="globe_contact_name"><span class="s_website_form_label_content">Full name</span> *</label><input type="text" class="form-control s_website_form_input" name="contact_name" id="globe_contact_name" required="1" placeholder="Jane Doe"/></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-md-6 s_website_form_required" data-type="char"><label class="s_website_form_label" for="globe_partner_name"><span class="s_website_form_label_content">Company / agency</span> *</label><input type="text" class="form-control s_website_form_input" name="partner_name" id="globe_partner_name" required="1" placeholder="City of Houston"/></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-md-6 s_website_form_required" data-type="email"><label class="s_website_form_label" for="globe_email_from"><span class="s_website_form_label_content">Work email</span> *</label><input type="email" class="form-control s_website_form_input" name="email_from" id="globe_email_from" required="1" placeholder="jane@agency.gov"/></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-md-6 s_website_form_required" data-type="tel"><label class="s_website_form_label" for="globe_phone"><span class="s_website_form_label_content">Phone</span> *</label><input type="tel" class="form-control s_website_form_input" name="phone" id="globe_phone" required="1" placeholder="(713) 555-0100"/></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12" data-type="char"><label class="s_website_form_label" for="globe_product_lane"><span class="s_website_form_label_content">Industry</span></label><select class="form-select s_website_form_input" name="Industry" id="globe_product_lane"><option value="Rail &amp; Transit">Rail &amp; Transit</option><option value="Traffic &amp; Highway">Traffic &amp; Highway</option><option value="Aviation &amp; Airport">Aviation &amp; Airport</option><option value="Industrial &amp; Electrical">Industrial &amp; Electrical</option><option value="Obsolete &amp; Hard-to-Find">Obsolete &amp; Hard-to-Find</option><option value="Other / Not sure">Other / Not sure</option></select></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12 s_website_form_required" data-type="text"><label class="s_website_form_label" for="globe_spec_detail"><span class="s_website_form_label_content">Part numbers, specification, or scope</span> *</label><t t-set="globe_qp" t-value="request.env['product.template'].sudo().browse(int(request.params.get('product_id'))).exists() if (request and (request.params.get('product_id') or '').isdigit()) else False"/><textarea class="form-control s_website_form_input" name="Spec detail" id="globe_spec_detail" required="1" placeholder="Manufacturer + part number if known — or paste the specification / description. Quantity and required delivery date help us respond faster."><t t-if="globe_qp" t-out="'Product: %s%s\nQuantity: ' % (globe_qp.name, (' (' + globe_qp.default_code + ')') if globe_qp.default_code else '')"/></textarea><div class="form-text">Manufacturer part number, your legacy internal number, or a plain description all work.</div></div>
+                                    <div data-name="Field" class="s_website_form_field mb-3 col-12" data-type="binary"><label class="s_website_form_label" for="globe_drawing_or_bom"><span class="s_website_form_label_content">Drawing, BOM, or specification sheet</span></label><input type="file" class="form-control s_website_form_input" name="Drawing or BOM" id="globe_drawing_or_bom" accept=".pdf,.xls,.xlsx,.csv,.dwg,.dxf,.png,.jpg,.jpeg,.doc,.docx"/><div class="form-text">Attach a bill of material and we will quote line by line.</div></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="name" value="Globe Electric RFQ"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="utm_source" value="" data-globe-utm="utm_source"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="utm_medium" value="" data-globe-utm="utm_medium"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="utm_campaign" value="" data-globe-utm="utm_campaign"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="utm_term" value="" data-globe-utm="utm_term"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="utm_content" value="" data-globe-utm="utm_content"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="lead_source" value="" data-globe-utm="lead_source"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="gclid" value="" data-globe-utm="gclid"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="landing_page" value="" data-globe-utm="landing_page"/></div>
+                                    <div class="s_website_form_field s_website_form_field_hidden" data-type="char" data-name="Field"><input type="hidden" class="form-control s_website_form_input" name="referrer" value="" data-globe-utm="referrer"/></div>
+                                        <div class="mb-0 py-2 col-12 s_website_form_submit" data-name="Submit Button">
+                                            <a href="#" role="button" class="globe-btn globe-btn-accent s_website_form_send">Submit Request</a>
+                                            <span id="s_website_form_result"/>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                        <aside>
+                            <div class="globe-sidethumb globe-call">
+                                <p class="globe-call-lbl">Call us directly</p>
+                                <p class="globe-call-num"><a href="tel:+18327912940">(832) 791-2940</a></p>
+                                <p style="font-size:.88rem;color:#6B7280;margin:.4rem 0 0">Mon–Fri, 8:00–5:00 CT</p>
+                            </div>
+                            <div class="globe-sidethumb">
+                                <h2>What happens next</h2>
+                                <ul>
+                                    <li>We confirm the part against the manufacturer and your specification.</li>
+                                    <li>If the part is obsolete, we check cross-reference and replacement options.</li>
+                                    <li>You receive pricing, availability, and a committed lead time.</li>
+                                </ul>
+                            </div>
+                            <div class="globe-sidethumb">
+                                <h2>Buying for the public sector?</h2>
+                                <ul>
+                                    <li>MBE · SBE · WBE — City of Houston</li>
+                                    <li>SBE — LA Metro, Port Houston, Texas DOT</li>
+                                    <li>DBE — Texas (TUCP)</li>
+                                    <li>DUNS 098875727 · CAGE 0V628 · UEI GRRXFG6WEJA3</li>
+                                </ul>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- /quote-received lives in the module, so an upgrade can never lose it.
+         globe.js fires GA4 generate_lead from the marker below, with no value field. -->
+    <template id="globe_quote_received" name="Globe Electric: quote received">
+        <t t-call="website.layout">
+            <div id="wrap" class="globe-page">
+                <section class="globe-pagehead">
+                    <div class="globe-container">
+                        <p class="globe-eyebrow">Request Received</p>
+                        <h1>Thank you. Your request is with our team.</h1>
+                        <p>A specialist will reply the same business day. If it is urgent, call <a href="tel:+18327912940" style="color:#FFC400">(832) 791-2940</a>.</p>
+                        <div style="margin-top:1.75rem"><a href="/" class="globe-btn globe-btn-accent">Back to home</a></div>
+                    </div>
+                </section>
+                <div class="d-none" data-globe-lead-event="generate_lead" data-globe-lead-source="globe_rfq"/>
+            </div>
+        </t>
+    </template>
+</odoo>

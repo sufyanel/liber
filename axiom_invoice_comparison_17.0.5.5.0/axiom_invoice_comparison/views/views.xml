@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invcmp_customer_budgets" model="ir.actions.act_window">
+        <field name="name">Customer Budgets</field>
+        <field name="res_model">crossovered.budget</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="action_x_invcmp_dashboard" model="ir.actions.act_window">
+        <field name="name">Invoice Comparison Dashboards</field>
+        <field name="res_model">x_invcmp_dashboard</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an Invoice Comparison dashboard</p>
+            <p>One dashboard per company and year, e.g. RBC Industrial 2026 and Tooling Components 2026.</p>
+        </field>
+    </record>
+
+    <record id="action_invcmp_dashboard_client" model="ir.actions.client">
+        <field name="name">Invoice Comparison Dashboard</field>
+        <field name="tag">x_invcmp_dashboard</field>
+        <field name="params" eval="{
+            'refresh_action_id': ref('axiom_invoice_comparison.action_invcmp_refresh'),
+            'export_action_id': ref('axiom_invoice_comparison.action_invcmp_export'),
+            'settings_action_id': ref('axiom_invoice_comparison.action_x_invcmp_dashboard'),
+        }"/>
+    </record>
+
+    <record id="view_x_invcmp_dashboard_tree" model="ir.ui.view">
+        <field name="name">x_invcmp_dashboard.tree</field>
+        <field name="model">x_invcmp_dashboard</field>
+        <field name="arch" type="xml">
+            <tree string="Invoice Comparison Dashboards">
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <field name="x_year" options="{'enable_formatting': false}"/>
+                <field name="x_years_count"/>
+                <field name="x_refreshed"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_invcmp_dashboard_form" model="ir.ui.view">
+        <field name="name">x_invcmp_dashboard.form</field>
+        <field name="model">x_invcmp_dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Invoice Comparison Dashboard">
+                <header>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action"
+                            string="Refresh Data" class="btn-primary" invisible="not id"/>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_dashboard_client)d" type="action"
+                            string="Open Dashboard" invisible="not id"/>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_export)d" type="action"
+                            string="Download Spreadsheet" invisible="not id"/>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_customer_budgets)d" type="action"
+                            string="Customer Budgets" invisible="not x_use_budget"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="x_name"/>
+                        <h1><field name="x_name" placeholder="e.g. RBC Industrial 2026"/></h1>
+                    </div>
+                    <group>
+                        <group string="Scope">
+                            <field name="x_company_id" options="{'no_create': True}"/>
+                            <field name="x_year" options="{'enable_formatting': false}"/>
+                            <field name="x_years_count"/>
+                            <field name="x_peer_company_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="x_active" invisible="1"/>
+                        </group>
+                        <group string="What Counts">
+                            <field name="x_rollup_parents"/>
+                            <field name="x_include_refunds"/>
+                            <field name="x_exclude_group"/>
+                            <field name="x_exclude_partner_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group string="Budget">
+                            <field name="x_use_budget"/>
+                            <field name="x_budget_post_ids" widget="many2many_tags"
+                                   invisible="not x_use_budget" options="{'no_create': True}"/>
+                        </group>
+                        <group string="Custom Range (optional)">
+                            <field name="x_custom_from"/>
+                            <field name="x_custom_to"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">The current year shows what has been invoiced so far plus
+                        the budget for the months still to come. A customer is new when it had no sales in
+                        the same period last year. The custom range is compared with the same dates in
+                        every earlier year.</div>
+                    <group>
+                        <field name="x_refreshed" readonly="1"/>
+                        <field name="x_note" placeholder="Notes..."/>
+                    </group>
+                    <notebook>
+                        <page string="Customers" name="customers">
+                            <field name="x_customer_ids" readonly="1">
+                                <tree default_order="x_sequence">
+                                    <field name="x_sequence" string="#"/>
+                                    <field name="x_name"/>
+                                    <field name="x_prev_total"/>
+                                    <field name="x_total"/>
+                                    <field name="x_growth"/>
+                                    <field name="x_budget" optional="show"/>
+                                    <field name="x_is_new"/>
+                                    <field name="x_is_lost" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Period Figures" name="periods">
+                            <field name="x_period_ids" readonly="1">
+                                <tree default_order="x_sequence">
+                                    <field name="x_name"/>
+                                    <field name="x_invoiced"/>
+                                    <field name="x_budget"/>
+                                    <field name="x_total"/>
+                                    <field name="x_prev_total"/>
+                                    <field name="x_customers"/>
+                                    <field name="x_new_customers" optional="show"/>
+                                    <field name="x_lost_customers" optional="show"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+    <record id="view_x_invcmp_cell_tree" model="ir.ui.view">
+        <field name="name">x_invcmp_cell.tree</field>
+        <field name="model">x_invcmp_cell</field>
+        <field name="arch" type="xml">
+            <tree string="Figures" create="0" edit="0" delete="0" default_order="x_customer_id, x_year, x_month">
+                <field name="x_customer_id"/>
+                <field name="x_label"/>
+                <field name="x_year" optional="hide" options="{'enable_formatting': false}"/>
+                <field name="x_invoiced" sum="Invoiced"/>
+                <field name="x_budget" sum="Budget"/>
+                <field name="x_total" sum="Total"/>
+                <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Invoices" icon="fa-file-text-o"
+                        context="{'invcmp_open': 'invoices'}" invisible="not x_invoiced"/>
+                <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Budget lines" icon="fa-bullseye"
+                        context="{'invcmp_open': 'budget'}" invisible="not x_budget"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_invcmp_budget_tree" model="ir.ui.view">
+        <field name="name">x_invcmp_budget.tree</field>
+        <field name="model">x_invcmp_budget</field>
+        <field name="arch" type="xml">
+            <tree string="Budget behind the figure" create="0" edit="0" delete="0">
+                <field name="x_customer_id"/>
+                <field name="x_label"/>
+                <field name="x_budget_id"/>
+                <field name="x_analytic_id"/>
+                <field name="x_line_from"/>
+                <field name="x_line_to"/>
+                <field name="x_planned"/>
+                <field name="x_amount" sum="Budget counted"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_invcmp_budget_form" model="ir.ui.view">
+        <field name="name">x_invcmp_budget.form</field>
+        <field name="model">x_invcmp_budget</field>
+        <field name="arch" type="xml">
+            <form string="Budget share" create="0" edit="0" delete="0">
+                <sheet>
+                    <div class="oe_title"><h1><field name="x_name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="x_customer_id" readonly="1"/>
+                            <field name="x_partner_id" readonly="1"/>
+                            <field name="x_label" readonly="1"/>
+                            <field name="x_amount" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="x_budget_id" readonly="1"/>
+                            <field name="x_budget_line_id" readonly="1"/>
+                            <field name="x_analytic_id" readonly="1"/>
+                            <field name="x_planned" readonly="1"/>
+                            <field name="x_line_from" readonly="1"/>
+                            <field name="x_line_to" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">The budget line's planned amount is spread evenly over its days;
+                        this is the part that falls in the month shown. Only months after the current one
+                        use the budget. Change the figure on the budget itself, then refresh the dashboard.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_x_invcmp_customer_tree" model="ir.ui.view">
+        <field name="name">x_invcmp_customer.tree</field>
+        <field name="model">x_invcmp_customer</field>
+        <field name="arch" type="xml">
+            <tree string="Customers" create="0" edit="0" delete="0" default_order="x_sequence">
+                <field name="x_sequence" string="#"/>
+                <field name="x_name"/>
+                <field name="x_prev_total" sum="Last year"/>
+                <field name="x_total" sum="This year"/>
+                <field name="x_budget" sum="Budget" optional="show"/>
+                <field name="x_is_new" optional="show"/>
+                <field name="x_is_lost" optional="show"/>
+                <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Invoices this year" icon="fa-file-text-o"
+                        context="{'invcmp_open': 'invoices'}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_invcmp_customer_form" model="ir.ui.view">
+        <field name="name">x_invcmp_customer.form</field>
+        <field name="model">x_invcmp_customer</field>
+        <field name="arch" type="xml">
+            <form string="Customer" create="0" edit="0" delete="0">
+                <header>
+                    <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Invoices this year" class="btn-primary"
+                            context="{'invcmp_open': 'invoices'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="x_name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="x_dashboard_id" readonly="1"/>
+                            <field name="x_partner_id" readonly="1"/>
+                            <field name="x_partner_ids" widget="many2many_tags" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="x_total" readonly="1"/>
+                            <field name="x_prev_total" readonly="1"/>
+                            <field name="x_growth" readonly="1"/>
+                            <field name="x_budget" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="x_cell_ids" readonly="1">
+                        <tree default_order="x_year, x_month">
+                            <field name="x_label"/>
+                            <field name="x_invoiced" sum="Invoiced"/>
+                            <field name="x_budget" sum="Budget"/>
+                            <field name="x_total" sum="Total"/>
+                            <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Invoices" icon="fa-file-text-o"
+                                    context="{'invcmp_open': 'invoices'}" invisible="not x_invoiced"/>
+                            <button name="%(axiom_invoice_comparison.action_invcmp_refresh)d" type="action" string="Budget lines" icon="fa-bullseye"
+                                    context="{'invcmp_open': 'budget'}" invisible="not x_budget"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- One menu area for everything Invoice Comparison, as for the Income Statement:
+         Accounting > Reporting > Invoice Comparison > Dashboard / Dashboard Settings -->
+    <menuitem id="menu_invcmp_root" name="Invoice Comparison" parent="account.menu_finance_reports" sequence="99"/>
+    <menuitem id="menu_invcmp_dashboard_client" name="Dashboard" parent="menu_invcmp_root" action="action_invcmp_dashboard_client" sequence="1"/>
+    <menuitem id="menu_x_invcmp_dashboard" name="Dashboard Settings" parent="menu_invcmp_root" action="action_x_invcmp_dashboard"
+              groups="account.group_account_manager" sequence="30"/>
+
+    <record id="view_partner_form_invcmp_report_under" model="ir.ui.view">
+        <field name="name">res.partner.form.invcmp.report.under</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='category_id']" position="after">
+                <field name="x_invcmp_report_under_id" options="{'no_create': True}" context="{'active_test': False}"
+                       placeholder="Show this contact's sales under..."/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

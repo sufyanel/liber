@@ -1,0 +1,406 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_rbc_translations_es_mx" model="ir.actions.server">
+        <field name="name">RBC Industrial: apply es_MX translations</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# es_MX translations for the RBC Industrial theme. Stored as module data so they ship
+# with the module and are re-applied on every install/upgrade (never hand-edited in production).
+MAP = {
+"rbc_industrial_theme.rbc_home": {
+"Home": "Inicio",
+"Eliminate Downtime.<br/><span class=\"rbc-gold\">Deliver the Right Part, Every Time.</span>": "Elimine los paros.<br/><span class=\"rbc-gold\">La pieza correcta, siempre a tiempo.</span>",
+"RBC Industrial is your mission-critical partner for bearings, power transmission, fluid dynamics, and MRO supply — sourced brand-agnostically, shipped same-day from El Paso, and supported by a sales team of trained engineers.": "RBC Industrial es su socio de misión crítica en rodamientos, transmisión de potencia, sistemas de fluidos y suministro MRO: abastecimiento multimarca, envío el mismo día desde El Paso y un equipo de ventas formado por ingenieros capacitados.",
+"Request a Quote": "Solicitar cotización",
+"Same-Day Support": "Soporte el mismo día",
+"Service-Disabled Veteran-Owned (SDVOSB) · Texas HUB Certified · Founded 1946": "Empresa de veterano con discapacidad por servicio (SDVOSB) · Certificación HUB de Texas · Fundada en 1946",
+"<span class=\"rbc-kicker\">Why RBC Industrial</span>": "<span class=\"rbc-kicker\">Por qué RBC Industrial</span>",
+"Built for Plants That Can't Afford to Stop": "Hecho para plantas que no pueden detenerse",
+"Every line down costs production, and every wrong part costs a second downtime. We engineer our supply chain around one metric: uptime.": "Cada línea parada cuesta producción, y cada pieza equivocada provoca un segundo paro. Diseñamos nuestra cadena de suministro en torno a una sola métrica: la disponibilidad operativa.",
+"EN": "IN",
+"Engineer-Led Sales Team": "Equipo de ventas dirigido por ingenieros",
+"Your calls are answered by trained engineers who speak torque curves, bearing preload, and seal compatibility — not scripted order-takers.": "Sus llamadas las atienden ingenieros capacitados que dominan curvas de par, precarga de rodamientos y compatibilidad de sellos, no capturistas con guion.",
+"BA": "MM",
+"Brand-Agnostic Sourcing": "Abastecimiento multimarca",
+"No captive brand quotas. We cross-reference and source the right part from SKF, Timken, Parker, Baldor-Reliance, and beyond.": "Sin cuotas de marca cautivas. Hacemos la equivalencia y surtimos la pieza correcta de SKF, Timken, Parker, Baldor-Reliance y más.",
+"Same-Day Response from El Paso": "Respuesta el mismo día desde El Paso",
+"Our warehouse at 3950 Doniphan Dr. ships critical parts the same day you call. Line-down emergencies jump the queue.": "Nuestro almacén en 3950 Doniphan Dr. envía piezas críticas el mismo día que usted llama. Las emergencias por línea parada tienen prioridad.",
+"5M": "5M",
+"5-Minute Border Proximity to Juárez": "A 5 minutos de la frontera con Juárez",
+"Unmatched cross-border supply to Juárez maquiladoras. Downtime stops at the border — parts keep moving.": "Suministro transfronterizo sin igual para las maquiladoras de Juárez. El paro se queda en la frontera; las piezas siguen avanzando.",
+"<span class=\"rbc-kicker\">Solutions</span>": "<span class=\"rbc-kicker\">Soluciones</span>",
+"Industrial Product Lines": "Líneas de productos industriales",
+"Integrated solution families covering the mechanical and electrical side of industrial uptime — for manufacturing, refining, mining, and the maquiladora corridor.": "Familias de soluciones integradas que cubren el lado mecánico y eléctrico de la disponibilidad industrial: para manufactura, refinación, minería y el corredor maquilador.",
+"Certified. Verified. Mission-Ready.": "Certificados. Verificados. Listos para la misión.",
+"As a Service-Disabled Veteran-Owned small business, RBC Industrial carries federal and state certifications that open doors for prime contractors and government buyers alike.": "Como pequeña empresa propiedad de un veterano con discapacidad por servicio, RBC Industrial cuenta con certificaciones federales y estatales que abren puertas a contratistas principales y compradores de gobierno por igual.",
+"<span class=\"rbc-big-badge\">SDVOSB Certified</span><span class=\"rbc-big-badge\">Texas HUB</span>": "<span class=\"rbc-big-badge\">Certificación SDVOSB</span><span class=\"rbc-big-badge\">HUB de Texas</span>",
+"Founded": "Fundada",
+"Years of Legacy": "Años de trayectoria",
+"24hr": "24 h",
+"Emergency Response": "Respuesta a emergencias",
+"5min": "5 min",
+"To Juárez Border": "A la frontera con Juárez",
+"<span class=\"rbc-kicker\">Knowledge Base</span>": "<span class=\"rbc-kicker\">Centro de conocimiento</span>",
+"Engineering Intelligence, On Demand": "Conocimiento de ingeniería, cuando lo necesite",
+"Field-tested technical guidance from our team of trained engineers — the same people who answer your phones.": "Guía técnica probada en campo por nuestro equipo de ingenieros capacitados: las mismas personas que contestan sus llamadas.",
+"All engineering articles →": "Todos los artículos de ingeniería →"
+},
+"rbc_industrial_theme.rbc_about": {
+"About RBC Industrial": "Acerca de RBC Industrial",
+"A service-disabled veteran-owned distributor with a 1946 military precision legacy — now El Paso's mission-critical partner for industrial MRO and power transmission.": "Distribuidor propiedad de un veterano con discapacidad por servicio, con un legado de precisión militar desde 1946; hoy, el socio de misión crítica de El Paso en MRO industrial y transmisión de potencia.",
+"From Military Precision to <span class=\"rbc-gold\">Mission-Critical Industry.</span>": "De la precisión militar a la <span class=\"rbc-gold\">industria de misión crítica.</span>",
+"<span class=\"rbc-kicker\">Our Story</span>": "<span class=\"rbc-kicker\">Nuestra historia</span>",
+"A Legacy of Precision Since 1946": "Un legado de precisión desde 1946",
+"RBC Industrial traces its roots to <strong>1946</strong>, when a U.S. Navy Naval Engineering Officer founded the original firm on a simple but demanding standard: <strong>military precision</strong>. What began as the Roger Brown Co. legacy of exacting quality and disciplined delivery has evolved into today's RBC Industrial — a modern, service-disabled veteran-owned distributor serving heavy industry across the border region.": "RBC Industrial tiene sus raíces en <strong>1946</strong>, cuando un oficial de ingeniería naval de la Marina de los EE. UU. fundó la empresa original con un estándar sencillo pero exigente: <strong>precisión militar</strong>. Lo que comenzó como el legado de calidad rigurosa y entregas disciplinadas de Roger Brown Co. evolucionó en la RBC Industrial de hoy: un distribuidor moderno, propiedad de un veterano con discapacidad por servicio, que atiende a la industria pesada de toda la región fronteriza.",
+"Our team of <strong>trained engineers</strong> applies the same rigor a naval engineer would to a ship's drivetrain — because an idled production line has the same cost as an idled mission.": "Nuestro equipo de <strong>ingenieros capacitados</strong> aplica el mismo rigor que un ingeniero naval al tren motriz de un buque, porque una línea de producción detenida cuesta lo mismo que una misión detenida.",
+"Based in El Paso at <strong>3950 Doniphan Dr. Ste P</strong>, we operate as a <strong>brand-agnostic sourcing partner</strong>: no captive brand quotas, no sales scripts — just the right part, cross-referenced and delivered at the right time.": "Desde El Paso, en <strong>3950 Doniphan Dr. Ste P</strong>, operamos como un <strong>socio de abastecimiento multimarca</strong>: sin cuotas de marca cautivas ni guiones de venta, solo la pieza correcta, con su equivalencia verificada y entregada a tiempo.",
+"Company Timeline": "Trayectoria de la empresa",
+"<b>1946</b><span>Founded by a U.S. Navy Naval Engineering Officer on a standard of military precision.</span>": "<b>1946</b><span>Fundada por un oficial de ingeniería naval de la Marina de los EE. UU. bajo un estándar de precisión militar.</span>",
+"<b>Roger Brown Co.</b><span>The founding firm's exacting quality and delivery discipline carries forward.</span>": "<b>Roger Brown Co.</b><span>La calidad rigurosa y la disciplina en las entregas de la empresa fundadora continúan.</span>",
+"<b>Today — RBC Industrial LLC</b><span>SDVOSB distributor in El Paso serving industrial plants and Juárez maquiladoras.</span>": "<b>Hoy — RBC Industrial LLC</b><span>Distribuidor SDVOSB en El Paso que atiende plantas industriales y maquiladoras de Juárez.</span>",
+"<b>Every Day</b><span>Engineer-led sales, brand-agnostic sourcing, same-day line-down response.</span>": "<b>Todos los días</b><span>Ventas dirigidas por ingenieros, abastecimiento multimarca y respuesta el mismo día ante líneas paradas.</span>",
+"\"Delivering the right product at the right time, every time.\"": "\"Entregar el producto correcto en el momento correcto, siempre.\"",
+"The RBC Industrial Mission": "La misión de RBC Industrial",
+"<span class=\"rbc-kicker\">The Difference</span>": "<span class=\"rbc-kicker\">La diferencia</span>",
+"Engineer-Led, Not Order-Taking": "Dirigidos por ingenieros, no por capturistas",
+"When you call RBC, you reach someone who can read your spec sheet back to you — and challenge it if it's wrong for the application.": "Cuando llama a RBC, habla con alguien capaz de revisar su hoja de especificaciones y cuestionarla si no es la adecuada para la aplicación.",
+"EN": "IN",
+"Engineers on the Phone": "Ingenieros al teléfono",
+"Torque curves, bearing preload, seal chemistry — our sales team speaks your language.": "Curvas de par, precarga de rodamientos, química de sellos: nuestro equipo de ventas habla su idioma.",
+"XR": "EQ",
+"Cross-Reference Expertise": "Expertos en equivalencias",
+"Equivalent parts across manufacturers, so you are never locked into one brand or a sole-source lead time.": "Piezas equivalentes entre fabricantes, para que nunca dependa de una sola marca ni del tiempo de entrega de un proveedor único.",
+"UP": "OP",
+"Uptime-First Mentality": "La disponibilidad operativa primero",
+"Every recommendation is measured against one metric: keeping your production line running.": "Cada recomendación se mide con una sola métrica: mantener su línea de producción en marcha.",
+"<span class=\"rbc-kicker\">Certifications</span>": "<span class=\"rbc-kicker\">Certificaciones</span>",
+"Certified for Government &amp; Prime Contractors": "Certificados para gobierno y contratistas principales",
+"SDVOSB": "SDVOSB",
+"Service-Disabled Veteran-Owned": "Empresa de veterano con discapacidad por servicio",
+"Federally recognized SDVOSB certification supporting set-aside opportunities.": "Certificación SDVOSB con reconocimiento federal, que respalda oportunidades de contratación reservada.",
+"TX HUB": "HUB TX",
+"Texas Historically Underutilized Business": "Empresa Históricamente Subutilizada de Texas (HUB)",
+"State of Texas HUB certification for state procurement and cooperative contracts.": "Certificación HUB del Estado de Texas para compras estatales y contratos cooperativos.",
+"MIL": "MIL",
+"Military Precision Legacy": "Legado de precisión militar",
+"Founded on the exacting standards of a U.S. Navy Naval Engineering Officer in 1946.": "Fundada en 1946 bajo los rigurosos estándares de un oficial de ingeniería naval de la Marina de los EE. UU.",
+"<span class=\"rbc-kicker\">Values</span>": "<span class=\"rbc-kicker\">Valores</span>",
+"What We Stand On": "En qué creemos",
+"Precision": "Precisión",
+"The right part, specified correctly, the first time.": "La pieza correcta, bien especificada, a la primera.",
+"Reliability": "Confiabilidad",
+"Same-day response and delivery you can plan a shutdown around.": "Respuesta y entrega el mismo día, con las que puede planear un paro programado.",
+"Integrity": "Integridad",
+"Brand-agnostic advice — we recommend what runs, not what pays.": "Asesoría multimarca: recomendamos lo que funciona, no lo que más deja.",
+"Service": "Servicio",
+"A veteran-owned commitment to the people who keep plants running.": "El compromiso de una empresa de veteranos con quienes mantienen las plantas funcionando.",
+"Put an Engineer on Your Parts Team.": "Sume un ingeniero a su equipo de refacciones.",
+"Send us the part and the application — we'll source it, often same day from El Paso.": "Envíenos la pieza y la aplicación: la conseguimos, muchas veces el mismo día desde El Paso.",
+"Request a Quote": "Solicitar cotización"
+},
+"rbc_industrial_theme.rbc_contact": {
+"Contact RBC Industrial": "Contacto con RBC Industrial",
+"Contact": "Contacto",
+"Reach our engineer-led sales team for quotes, cross-references, and line-down emergencies. Same-day response from El Paso.": "Comuníquese con nuestro equipo de ventas de ingeniería para cotizaciones, equivalencias y emergencias por línea parada. Respuesta el mismo día desde El Paso.",
+"Phone — Line Down Emergencies": "Teléfono — Emergencias por línea parada",
+"Same-day delivery from El Paso. Emergency calls jump the queue.": "Entrega el mismo día desde El Paso. Las llamadas de emergencia tienen prioridad.",
+"Email — Sales &amp; Quotes": "Correo — Ventas y cotizaciones",
+"Sales@rbc-industrial.com": "Sales@rbc-industrial.com",
+"Include part numbers and quantities for fastest turnaround.": "Incluya números de parte y cantidades para una respuesta más rápida.",
+"Fax": "Fax",
+"Warehouse &amp; Office": "Almacén y oficina",
+"RBC Industrial LLC": "RBC Industrial LLC",
+"3950 Doniphan Dr. Ste P, El Paso, Texas 79922": "3950 Doniphan Dr. Ste P, El Paso, Texas 79922",
+"Business Hours": "Horario de atención",
+"Monday – Friday: 7:00 AM – 5:00 PM MT<br/>Emergency line: 915-845-8188": "Lunes a viernes: 7:00 a. m. – 5:00 p. m. (MT)<br/>Línea de emergencia: 915-845-8188",
+"Request a Quote": "Solicitar cotización",
+"Line down? Select \"Emergency\" for priority handling. Otherwise we respond the same business day.": "¿Línea parada? Seleccione \"Emergencia\" para atención prioritaria. De lo contrario, respondemos el mismo día hábil.",
+"Same Business Day": "El mismo día hábil",
+"Quote response on standard requests": "Respuesta de cotización en solicitudes estándar",
+"Line-down emergency line — 915-845-8188": "Línea de emergencia por línea parada — 915-845-8188",
+"Engineers": "Ingenieros",
+"Your request is handled by trained engineers, not order-takers": "Su solicitud la atienden ingenieros capacitados, no capturistas"
+},
+"rbc_industrial_theme.rbc_quote": {
+"Request a Quote": "Solicitar cotización",
+"Tell us the part you need. Our engineers confirm availability, cross-references and pricing — ideal for custom, line-down, or hard-to-find parts.": "Díganos qué pieza necesita. Nuestros ingenieros confirman disponibilidad, equivalencias y precios: ideal para piezas especiales, de línea parada o difíciles de conseguir.",
+"Quoting:": "Cotizando:"
+},
+"rbc_industrial_theme.rbc_solutions": {
+"Solutions": "Soluciones",
+"Solutions for Mission-Critical Uptime": "Soluciones para una operación de misión crítica",
+"Integrated solution families covering the mechanical and electrical side of industrial uptime — for manufacturing, refining, mining, and the maquiladora corridor.": "Familias de soluciones integradas que cubren el lado mecánico y eléctrico de la disponibilidad industrial: para manufactura, refinación, minería y el corredor maquilador.",
+"<span class=\"rbc-kicker\">Product lines</span>": "<span class=\"rbc-kicker\">Líneas de producto</span>",
+"Browse by Solution": "Explore por solución",
+"<span class=\"rbc-kicker\">Industries</span>": "<span class=\"rbc-kicker\">Industrias</span>",
+"Industries We Serve": "Industrias que atendemos",
+"Manufacturing": "Manufactura",
+"Assembly and process lines that run around the clock.": "Líneas de ensamble y de proceso que operan las 24 horas.",
+"Oil, Gas &amp; Refining": "Petróleo, gas y refinación",
+"Pumps, seals and bearings rated for heat and pressure.": "Bombas, sellos y rodamientos especificados para calor y presión.",
+"Mining &amp; Aggregates": "Minería y agregados",
+"Heavy-duty power transmission for abrasive duty cycles.": "Transmisión de potencia de servicio pesado para ciclos de trabajo abrasivos.",
+"Maquiladoras": "Maquiladoras",
+"Cross-border supply to Ciudad Juárez, five minutes away.": "Suministro transfronterizo a Ciudad Juárez, a cinco minutos.",
+"Food &amp; Beverage": "Alimentos y bebidas",
+"Wash-down rated bearings and stainless components.": "Rodamientos aptos para lavado a presión y componentes de acero inoxidable.",
+"Government &amp; Defense": "Gobierno y defensa",
+"SDVOSB and Texas HUB certified sourcing.": "Abastecimiento con certificaciones SDVOSB y HUB de Texas.",
+"Not Sure Which Part You Need?": "¿No sabe qué pieza necesita?",
+"Send the application or the part you are replacing — our team will specify and quote it the same business day.": "Envíenos la aplicación o la pieza que va a reemplazar: nuestro equipo la especifica y la cotiza el mismo día hábil.",
+"Request a Quote": "Solicitar cotización"
+},
+"rbc_industrial_theme.rbc_quote_form": {
+"Request a Quote": "Solicitar cotización",
+"For immediate line-down emergencies, call": "Para emergencias inmediatas por línea parada, llame al",
+"<span class=\"s_website_form_label_content\">Name</span><span class=\"s_website_form_mark\"> *</span>": "<span class=\"s_website_form_label_content\">Nombre</span><span class=\"s_website_form_mark\"> *</span>",
+"Your full name": "Su nombre completo",
+"<span class=\"s_website_form_label_content\">Company</span>": "<span class=\"s_website_form_label_content\">Empresa</span>",
+"Company name": "Nombre de la empresa",
+"<span class=\"s_website_form_label_content\">Email</span><span class=\"s_website_form_mark\"> *</span>": "<span class=\"s_website_form_label_content\">Correo electrónico</span><span class=\"s_website_form_mark\"> *</span>",
+"you@company.com": "usted@empresa.com",
+"<span class=\"s_website_form_label_content\">Phone</span>": "<span class=\"s_website_form_label_content\">Teléfono</span>",
+"<span class=\"s_website_form_label_content\">Part Number or Need</span>": "<span class=\"s_website_form_label_content\">Número de parte o requerimiento</span>",
+"e.g. SKF 6205-2RS / or describe application": "p. ej. SKF 6205-2RS / o describa la aplicación",
+"<span class=\"s_website_form_label_content\">Urgency</span>": "<span class=\"s_website_form_label_content\">Urgencia</span>",
+"<select id=\"rbc_f_urgency\" class=\"form-select s_website_form_input\" name=\"Urgency\"><option value=\"Standard - same business day\">Standard — same business day</option><option value=\"Expedited - 24 hours\">Expedited — 24 hours</option><option value=\"EMERGENCY - line down\">Emergency — line down</option></select>": "<select id=\"rbc_f_urgency\" class=\"form-select s_website_form_input\" name=\"Urgency\"><option value=\"Standard - same business day\">Estándar — el mismo día hábil</option><option value=\"Expedited - 24 hours\">Urgente — 24 horas</option><option value=\"EMERGENCY - line down\">Emergencia — línea parada</option></select>",
+"<span class=\"s_website_form_label_content\">Message</span>": "<span class=\"s_website_form_label_content\">Mensaje</span>",
+"Application, quantities, required specs, cross-reference info…": "Aplicación, cantidades, especificaciones requeridas, datos de equivalencia…",
+"Submit Quote Request": "Enviar solicitud de cotización",
+"instead of waiting on this form.": "en lugar de esperar la respuesta de este formulario."
+},
+"rbc_industrial_theme.rbc_breadcrumb": {
+"Home": "Inicio",
+"<span class=\"sep\">›</span>": "<span class=\"sep\">›</span>",
+"breadcrumb": "ruta de navegación"
+},
+"rbc_industrial_theme.rbc_shop": {
+"Product Catalog": "Catálogo de productos",
+"Search mission-critical bearings, power transmission, fluid dynamics and MRO parts from RBC Industrial — same-day delivery from El Paso to Juárez.": "Busque rodamientos, transmisión de potencia, sistemas de fluidos y refacciones MRO de misión crítica en RBC Industrial: entrega el mismo día de El Paso a Juárez.",
+"Engineers scan for part numbers — every row is cross-referenced, specified, and ready for order or quote. Stock status reflects our El Paso warehouse.": "Catálogo de productos pensado para ingenieros: cada número de parte tiene su equivalencia y especificación, listo para pedido o cotización. La existencia corresponde a nuestro almacén de El Paso.",
+"Don't See Your Part Number?": "¿No encuentra su número de parte?",
+"We source brand-agnostically — if it's not listed, our engineers will cross-reference it, often same day from El Paso.": "Abastecemos multimarca: si no aparece en el catálogo, nuestros ingenieros encuentran la equivalencia, muchas veces el mismo día desde El Paso.",
+"Request a Quote": "Solicitar cotización",
+"<span>Filter Products</span>": "<span>Filtrar productos</span>",
+"Clear all": "Limpiar todo",
+"Category": "Categoría",
+"All Products": "Todos los productos",
+"Search values": "Buscar valores",
+"Stock status": "Existencia",
+"<span class=\"rbc-stock in\"><i/>IN STOCK</span>\n                            <span class=\"rbc-stock low\"><i/>LOW</span>\n                            <span class=\"rbc-stock lead\"><i/>LEAD TIME</span>": "<span class=\"rbc-stock in\"><i/>EN EXISTENCIA</span> <span class=\"rbc-stock low\"><i/>POCAS PIEZAS</span> <span class=\"rbc-stock lead\"><i/>SOBRE PEDIDO</span>",
+"<span class=\"rbc-chips-label\">Active filters:</span>": "<span class=\"rbc-chips-label\">Filtros activos:</span>",
+"Part No": "No. de parte",
+"Specs": "Especificaciones",
+"Description": "Descripción",
+"Price": "Precio",
+"Stock": "Existencia",
+"Action": "Acción"
+},
+"rbc_industrial_theme.rbc_catalog_action": {
+"Select": "Elegir",
+"Choose options": "Elegir opciones",
+"<i class=\"fa fa-shopping-cart\"/> Add": "<i class=\"fa fa-shopping-cart\"/> Agregar",
+"Add to Cart": "Agregar al carrito",
+"RFQ": "Cotizar",
+"Request a quote": "Solicitar cotización"
+},
+"rbc_industrial_theme.rbc_product": {
+"<span><span class=\"rbc-pulse\"/><b>LINE DOWN?</b> Need this part dispatched today from El Paso?</span>": "<span><span class=\"rbc-pulse\"/><b>¿LÍNEA PARADA?</b> ¿Necesita esta pieza despachada hoy desde El Paso?</span>",
+"Call 915-845-8188": "Llame al 915-845-8188",
+"— EL PASO": "— EL PASO",
+"Request a Quote": "Solicitar cotización",
+"Long description: applications, cross-references and compatibility notes.": "Descripción detallada: aplicaciones, equivalencias y notas de compatibilidad.",
+"Brand-Agnostic Cross-Reference": "Equivalencias multimarca",
+"RBC Industrial sources agnostically — our engineers verify interchangeability and quote the best available cross-reference for lead time and price.": "RBC Industrial abastece multimarca: nuestros ingenieros verifican la intercambiabilidad y cotizan la mejor equivalencia disponible en tiempo de entrega y precio.",
+"<span>Supplier diversity:</span><span class=\"rbc-cert-badge\">SDVOSB</span><span class=\"rbc-cert-badge\">TX HUB</span>": "<span>Diversidad de proveedores:</span><span class=\"rbc-cert-badge\">SDVOSB</span><span class=\"rbc-cert-badge\">HUB TX</span>"
+},
+"rbc_industrial_theme.rbc_layout_header": {
+"<span class=\"rbc-pulse\"/>\n                        LINE DOWN EMERGENCY? SAME-DAY DELIVERY FROM EL PASO —": "<span class=\"rbc-pulse\"/> ¿EMERGENCIA POR LÍNEA PARADA? ENTREGA EL MISMO DÍA DESDE EL PASO —",
+"CALL 915-845-8188": "LLAME AL 915-845-8188",
+"RBC Industrial": "RBC Industrial",
+"RBC Industrial home": "Inicio de RBC Industrial",
+"Toggle navigation": "Mostrar navegación",
+"Home": "Inicio",
+"<span class=\"rbc-cert-badge\">SDVOSB</span>\n                                    <span class=\"rbc-cert-badge\">TX HUB</span>": "<span class=\"rbc-cert-badge\">SDVOSB</span> <span class=\"rbc-cert-badge\">HUB TX</span>",
+"Request a Quote": "Solicitar cotización",
+"<i class=\"fa fa-download\"/> <span class=\"d-lg-none d-xl-inline\">Line Card</span>": "<i class=\"fa fa-download\"/> <span class=\"d-lg-none d-xl-inline\">Catálogo de líneas</span>",
+"Download Line Card (PDF)": "Descargar catálogo de líneas (PDF)",
+"Cart": "Carrito"
+},
+"rbc_industrial_theme.rbc_layout_footer": {
+"RBC Industrial LLC": "RBC Industrial LLC",
+"Service-disabled veteran-owned distributor of mechanical power transmission equipment,\n                                    bearings, and MRO supplies. Founded 1946 — delivering the right product at the right time, every time.": "Distribuidor propiedad de un veterano con discapacidad por servicio, especializado en equipo mecánico de transmisión de potencia, rodamientos y suministros MRO. Fundada en 1946: el producto correcto, en el momento correcto, siempre.",
+"3950 Doniphan Dr. Ste P, El Paso, Texas 79922<br/>\n                                    Phone:": "3950 Doniphan Dr. Ste P, El Paso, Texas 79922<br/> Teléfono:",
+"| Fax: 915-845-8183<br/>": "| Fax: 915-845-8183<br/>",
+"Sales@rbc-industrial.com": "Sales@rbc-industrial.com",
+"<span class=\"rbc-cert-badge rbc-cert-badge-dark\">SDVOSB Certified</span>\n                                    <span class=\"rbc-cert-badge rbc-cert-badge-dark\">Texas HUB Certified</span>": "<span class=\"rbc-cert-badge rbc-cert-badge-dark\">Certificación SDVOSB</span> <span class=\"rbc-cert-badge rbc-cert-badge-dark\">Certificación HUB de Texas</span>",
+"Solutions": "Soluciones",
+"Line Down Support": "Soporte por línea parada",
+"Resources": "Recursos",
+"Knowledge Base": "Centro de conocimiento",
+"About RBC Industrial": "Acerca de RBC Industrial",
+"<i class=\"fa fa-download\"/> Download Line Card (PDF)": "<i class=\"fa fa-download\"/> Descargar catálogo de líneas (PDF)",
+"Request Quote": "Solicitar cotización",
+"RBC Industrial LLC. All rights reserved.": "RBC Industrial LLC. Todos los derechos reservados."
+},
+"rbc_industrial_theme.rbc_blog_index": {
+"Knowledge Base": "Centro de conocimiento",
+"Technical intelligence for plant operators, maintenance managers, and procurement officers — written by RBC Industrial's engineers.": "Información técnica para operadores de planta, gerentes de mantenimiento y compradores, escrita por los ingenieros de RBC Industrial.",
+"List view": "Vista de lista",
+"Card view": "Vista de tarjetas",
+"Layout": "Diseño",
+"No articles found.": "No se encontraron artículos."
+},
+"rbc_industrial_theme.rbc_blog_post": {
+"Home": "Inicio",
+"<span class=\"sep\">›</span>": "<span class=\"sep\">›</span>",
+"Knowledge Base": "Centro de conocimiento",
+"Blog Post Title": "Título del artículo",
+"Subtitle": "Subtítulo",
+"RBC Industrial": "RBC Industrial",
+"<span>Knowledge Base · www.rbc-industrial.com</span>": "<span>Centro de conocimiento · www.rbc-industrial.com</span>"
+},
+"rbc_industrial_theme.rbc_blog_print_fallback": {
+"<i class=\"fa fa-print\"/> Print / Save as PDF": "<i class=\"fa fa-print\"/> Imprimir / Guardar como PDF",
+"<span>Knowledge Base · www.rbc-industrial.com</span>": "<span>Centro de conocimiento · www.rbc-industrial.com</span>"
+}
+}
+MENU_ES = {"Home": "Inicio", "Products": "Productos", "Solutions": "Soluciones", "Knowledge": "Conocimiento", "About": "Nosotros", "Contact": "Contacto"}
+PAGE_META = {
+"/": [
+"RBC Industrial | Bearings, Power Transmission & MRO Supply in El Paso",
+"RBC Industrial | Rodamientos, transmisión de potencia y MRO en El Paso",
+"Engineer-led, veteran-owned distributor of bearings, power transmission and MRO parts. Same-day delivery from El Paso to Juárez. Call (915) 845-8188.",
+"Distribuidor dirigido por ingenieros y propiedad de veteranos: rodamientos, transmisión de potencia y refacciones MRO. Entrega el mismo día de El Paso a Juárez. Llame al (915) 845-8188."
+],
+"/about-us": [
+"About RBC Industrial | Veteran-Owned Since 1946",
+"Nosotros | RBC Industrial, empresa de veteranos desde 1946",
+"Service-disabled veteran-owned distributor with a 1946 military precision legacy, serving El Paso and Juárez with engineer-led MRO and power transmission supply.",
+"Distribuidor propiedad de un veterano con discapacidad por servicio, con legado de precisión militar desde 1946, que atiende El Paso y Juárez con suministro MRO y transmisión de potencia dirigido por ingenieros."
+],
+"/contactus": [
+"Contact RBC Industrial | Quotes & Line-Down Support",
+"Contacto | RBC Industrial: cotizaciones y soporte por línea parada",
+"Reach our engineer-led sales team for quotes, cross-references and line-down emergencies. Same-day response from El Paso. (915) 845-8188.",
+"Comuníquese con nuestro equipo de ingeniería para cotizaciones, equivalencias y emergencias por línea parada. Respuesta el mismo día desde El Paso. (915) 845-8188."
+],
+"/quote": [
+"Request a Quote | RBC Industrial",
+"Solicitar cotización | RBC Industrial",
+"Send your part number or application. Our engineers confirm availability, cross-references and pricing, often the same day.",
+"Envíe su número de parte o aplicación. Nuestros ingenieros confirman disponibilidad, equivalencias y precios, muchas veces el mismo día."
+],
+"/solutions": [
+"Industrial Solutions | RBC Industrial",
+"Soluciones industriales | RBC Industrial",
+"Bearings, power transmission, fluid systems, motors and MRO supply for manufacturing, refining, mining and the maquiladora corridor.",
+"Rodamientos, transmisión de potencia, sistemas de fluidos, motores y suministro MRO para manufactura, refinación, minería y el corredor maquilador."
+]
+}
+es = env['res.lang'].search([('code', '=', 'es_MX'), ('active', '=', True)], limit=1)
+Website = env['website'].sudo()
+website = Website.search([('x_rbc_theme_active', '=', True)], limit=1) or Website.search([('name', '=ilike', 'RBC Industrial%')], limit=1)
+if es and website:
+    # 1. page / template copy
+    for key, terms in MAP.items():
+        view = env.ref(key, raise_if_not_found=False)
+        if view:
+            # Odoo matches updates against the CURRENT Spanish text of each phrase, so look it up:
+            # this also corrects phrases already translated by an earlier version.
+            current = view.sudo().get_field_translations('arch_db', langs=['es_MX'])[0]
+            mapping = {}
+            for term in current:
+                wanted = terms.get(term['source'])
+                existing = term.get('value') or term['source']
+                if wanted and existing != wanted:
+                    mapping[existing] = wanted
+            if mapping:
+                view.sudo().update_field_translations('arch_db', {'es_MX': mapping})
+    # 2. menu labels
+    for menu in env['website.menu'].sudo().search([('website_id', '=', website.id)]):
+        if menu.name in MENU_ES:
+            menu.update_field_translations('name', {'es_MX': MENU_ES[menu.name]})
+    # 3. page titles (only if an English meta title exists) and meta descriptions
+    Page = env['website.page'].sudo()
+    for url, meta in PAGE_META.items():
+        t_en, t_es, d_en, d_es = meta
+        page = Page.search([('url', '=', url), ('website_id', '=', website.id)], limit=1)
+        if not page:
+            continue
+        if not page.website_meta_description:
+            page.write({'website_meta_description': d_en})
+        page.update_field_translations('website_meta_description', {'es_MX': d_es})
+        if page.website_meta_title:
+            page.update_field_translations('website_meta_title', {'es_MX': t_es})
+    # 4. one Spanish home page: /inicio is retired with a 301 to /es_MX/ and taken out of the index
+    inicio = Page.search([('url', '=', '/inicio'), ('website_id', 'in', [website.id, False])], limit=1)
+    if inicio:
+        inicio.write({'website_indexed': False, 'is_published': False})   # a published page would win over the redirect
+    Rewrite = env['website.rewrite'].sudo()
+    if not Rewrite.search([('url_from', '=', '/inicio'), ('website_id', '=', website.id)], limit=1):
+        Rewrite.create({'name': 'RBC: retire /inicio (Spanish home is /es_MX/)', 'url_from': '/inicio',
+                        'url_to': '/es_MX/', 'redirect_type': '301', 'website_id': website.id})
+    # 5. product tag shown to visitors, and blog names (quote detection uses the English name)
+    for tag in env['product.tag'].sudo().with_context(lang='en_US').search([('name', '=', 'Request Quote')]):
+        tag.update_field_translations('name', {'es_MX': 'Solicitar cotización'})
+    for blog in env['blog.blog'].sudo().with_context(lang='en_US').search([('website_id', 'in', [website.id, False])]):
+        es_name = {'Knowledge Base': 'Centro de conocimiento'}.get(blog.name)
+        if es_name:
+            blog.update_field_translations('name', {'es_MX': es_name})
+    # 6. attribute names (spec labels on product pages and filters)
+    ATTR_ES = {'Brand': 'Marca', 'Bore Diameter': 'Diámetro interior', 'Outside Diameter': 'Diámetro exterior', 'Width': 'Ancho', 'Seals': 'Sellos', 'Seal': 'Sello', 'Material': 'Material', 'Diameter': 'Diámetro', 'Length': 'Longitud', 'Hardness': 'Dureza', 'Standard': 'Norma', 'Power': 'Potencia', 'Speed': 'Velocidad', 'Voltage': 'Voltaje', 'Ratio': 'Relación', 'Type': 'Tipo', 'Size': 'Tamaño', 'Series': 'Serie', 'Weight': 'Peso', 'Color': 'Color', 'Bore': 'Diámetro interior', 'Thread': 'Rosca', 'Pitch': 'Paso', 'Teeth': 'Dientes', 'Shaft Diameter': 'Diámetro de flecha', 'Load Rating': 'Capacidad de carga', 'Housing Diameter (in) [D]': 'Diámetro de alojamiento (in) [D]', 'Rod Diameter (in) [d]': 'Diámetro de vástago (in) [d]', 'Free Length (in) [Lo]': 'Longitud libre (in) [Lo]', 'Rate (lbs/in) [R]': 'Constante (lbs/in) [R]', 'Unit Weight (lbs)': 'Peso unitario (lbs)'}
+    for attr in env['product.attribute'].sudo().with_context(lang='en_US').search([('name', 'in', list(ATTR_ES))]):
+        attr.update_field_translations('name', {'es_MX': ATTR_ES[attr.name]})
+    # 7. Variant Sales Description: see data/variant_documents.xml
+# 8. product page template: use Odoo's current template on this site.
+# Editing a product page with the website editor makes Odoo keep a private copy of the product template for
+# that site. An imported theme cannot keep such a copy in step with its changes, and an old copy breaks the
+# product page (plain page, or a 500 error). Archive this site's copy so the current template - with this
+# theme's changes - is used. It is archived, not deleted: Settings > Technical > Views > Archived to restore.
+View = env['ir.ui.view'].sudo().with_context(active_test=False)
+own_site = env['website'].sudo().search([('x_rbc_theme_active', '=', True)], limit=1) or env['website'].sudo().search([('name', '=ilike', 'RBC Industrial%')], limit=1)
+my_keys = env['ir.model.data'].sudo().search([('module', '=', 'rbc_industrial_theme'), ('model', '=', 'ir.ui.view')]).mapped('complete_name')
+other_keys = env['ir.model.data'].sudo().search([('module', '=', 'tooling_components_theme'), ('model', '=', 'ir.ui.view')]).mapped('complete_name')
+# remove theme copies created by earlier versions (this theme's anywhere, the other theme's on this site)
+stray = View.search([('key', 'in', my_keys), ('website_id', '!=', False)])
+if own_site:
+    stray |= View.search([('key', 'in', other_keys), ('website_id', '=', own_site.id)])
+stray.unlink()
+if own_site:
+    View.search([('key', '=', 'website_sale.product'), ('website_id', '=', own_site.id), ('active', '=', True)]).write({'active': False})
+# 9 + 10. "Translate to Spanish" on products and blog posts. Existing entries (including any from the older
+# separate translator module) are pointed at this theme's translator, so the newest version always runs.
+Actions = env['ir.actions.server'].sudo()
+for model_name, extra in (('product.template', ''), ('blog.post', ", 'model': 'blog.post'")):
+    model = env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+    if not model:
+        continue
+    code = "action = {'type': 'ir.actions.client', 'tag': 'rbc_tc_translate_es', 'params': {'ids': records.ids%s}}" % extra
+    existing = Actions.search([('name', '=', 'Translate to Spanish'), ('model_id', '=', model.id)])
+    if existing:
+        existing.write({'code': code})
+        existing[:1].write({'binding_model_id': model.id, 'binding_view_types': 'list,form'})
+        existing[1:].write({'binding_model_id': False})   # one menu entry only
+    else:
+        Actions.create({'name': 'Translate to Spanish', 'model_id': model.id, 'binding_model_id': model.id,
+                        'binding_view_types': 'list,form', 'state': 'code', 'code': code})
+# 11. "Translate ALL to Spanish": every blog post / product on all websites (independent of the list selection)
+for model_name, extra in (('product.template', ''), ('blog.post', ", 'model': 'blog.post'")):
+    model = env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+    if not model:
+        continue
+    code = "action = {'type': 'ir.actions.client', 'tag': 'rbc_tc_translate_es', 'params': {'ids': [], 'all': True%s}}" % extra
+    act = Actions.search([('name', '=', 'Translate ALL to Spanish'), ('model_id', '=', model.id)], limit=1)
+    if act:
+        act.write({'code': code})
+    else:
+        Actions.create({'name': 'Translate ALL to Spanish', 'model_id': model.id, 'binding_model_id': model.id,
+                        'binding_view_types': 'list', 'state': 'code', 'code': code})
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run">
+        <value eval="[ref('rbc_industrial_theme.action_rbc_translations_es_mx')]"/>
+    </function>
+</odoo>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_x_isr_dashboard" model="ir.actions.act_window">
+        <field name="name">Income Statement Dashboards</field>
+        <field name="res_model">x_isr_dashboard</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an Income Statement dashboard</p>
+            <p>One dashboard per company and year, e.g. RBC Industrial 2026 and Tooling Components 2026.
+                The statement lines are filled in automatically on the first refresh.</p>
+        </field>
+    </record>
+
+    <record id="action_isr_dashboard_client" model="ir.actions.client">
+        <field name="name">Income Statement Dashboard</field>
+        <field name="tag">x_isr_dashboard</field>
+        <field name="params" eval="{
+            'refresh_action_id': ref('axiom_income_statement.action_isr_refresh'),
+            'export_action_id': ref('axiom_income_statement.action_isr_export'),
+            'settings_action_id': ref('axiom_income_statement.action_x_isr_dashboard'),
+        }"/>
+    </record>
+
+    <record id="view_x_isr_dashboard_tree" model="ir.ui.view">
+        <field name="name">x_isr_dashboard.tree</field>
+        <field name="model">x_isr_dashboard</field>
+        <field name="arch" type="xml">
+            <tree string="Income Statement Dashboards">
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <field name="x_year" options="{'enable_formatting': false}"/>
+                <field name="x_prior_years"/>
+                <field name="x_refreshed"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_isr_dashboard_form" model="ir.ui.view">
+        <field name="name">x_isr_dashboard.form</field>
+        <field name="model">x_isr_dashboard</field>
+        <field name="arch" type="xml">
+            <form string="Income Statement Dashboard">
+                <header>
+                    <button name="%(axiom_income_statement.action_isr_refresh)d" type="action"
+                            string="Refresh Data" class="btn-primary" invisible="not id"/>
+                    <button name="%(axiom_income_statement.action_isr_dashboard_client)d" type="action"
+                            string="Open Dashboard" invisible="not id"/>
+                    <button name="%(axiom_income_statement.action_isr_export)d" type="action"
+                            string="Download Spreadsheet" invisible="not id"/>
+                    <button name="%(axiom_income_statement.action_isr_seed)d" type="action"
+                            string="Load Standard Lines" invisible="not id"/>
+                    <button name="%(axiom_income_statement.action_isr_import_old)d" type="action"
+                            string="Import from Old Income Statement" invisible="not id"
+                            confirm="Copy the account mapping and this year's budget from the old Income Statement module. Do this before uninstalling it."/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="x_name"/>
+                        <h1><field name="x_name" placeholder="e.g. RBC Industrial 2026"/></h1>
+                    </div>
+                    <group>
+                        <group string="Scope">
+                            <field name="x_company_id" options="{'no_create': True}"/>
+                            <field name="x_year" options="{'enable_formatting': false}"/>
+                            <field name="x_prior_years"/>
+                            <field name="x_peer_company_ids" widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                            <field name="x_active" invisible="1"/>
+                        </group>
+                        <group string="Budget: Planned Revenue (if no Budget Allocation)">
+                            <field name="x_budget_q1"/>
+                            <field name="x_budget_q2"/>
+                            <field name="x_budget_q3"/>
+                            <field name="x_budget_q4"/>
+                        </group>
+                        <group string="Custom Range (optional)">
+                            <field name="x_custom_from"/>
+                            <field name="x_custom_to"/>
+                        </group>
+                    </group>
+                    <div class="text-muted small">When Accounting → Reporting → Budget Allocation has confirmed budgets for this company
+                        and year, the dashboard uses them, exactly as the Income Statement report does. Otherwise the budget of each line is its Budget % of Sales times the
+                        planned revenue, on the Statement Lines tab. Set the percentages from the % of sales of
+                        the earlier years shown on the dashboard. A new year's dashboard starts from the lines,
+                        percentages and companies of the year before.</div>
+                    <group>
+                        <field name="x_refreshed" readonly="1"/>
+                        <field name="x_note" placeholder="Notes..."/>
+                    </group>
+                    <notebook>
+                        <page string="Statement Lines" name="lines">
+                            <field name="x_line_ids">
+                                <tree editable="bottom" default_order="x_sequence">
+                                    <field name="x_sequence" widget="handle"/>
+                                    <field name="x_name"/>
+                                    <field name="x_key" optional="show"/>
+                                    <field name="x_kind"/>
+                                    <field name="x_account_ids" widget="many2many_tags"
+                                           options="{'no_create': True}" readonly="x_key in ['sales_revenue', 'cost_purchased_finished_goods', 'variable_overhead_landed_costs', 'add_back_fixed_overhead', 'less_variable_operating_expense', 'interest_expense', 'taxes']"/>
+                                    <field name="x_auto_types" optional="hide"/>
+                                    <field name="x_formula" optional="show"/>
+                                    <field name="x_sign"/>
+                                    <field name="x_budget_pct"/>
+                                    <field name="x_show_pct" optional="hide"/>
+                                    <field name="x_bold" optional="hide"/>
+                                    <field name="x_is_revenue" optional="hide"/>
+                                    <field name="x_bridge" optional="hide"/>
+                                    <field name="x_kpi" optional="hide"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted small">The accounts of the seven standard lines (Sales Revenue, the two cost lines,
+                                Fixed Overhead, Variable Operating Expense, Interest and Taxes) come from Income Statement Accounts, the
+                                same mapping the Income Statement report uses: change them there, then Refresh Data. A line you add
+                                yourself keeps its own accounts here. An account of another company counts wherever it is mapped.
+                                A formula adds and subtracts other line keys, e.g.
+                                <b>sales_revenue - less_cost_of_sales</b>. The catch-all line takes every expense
+                                account that is on no other line; the Catch-All Check tab lists them.</div>
+                        </page>
+                        <page string="Catch-All Check" name="catchall">
+                            <field name="x_unmapped_account_ids" readonly="1">
+                                <tree>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="account_type"/>
+                                    <field name="company_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Not On The Statement" name="missing">
+                            <div class="text-muted small">Income and expense accounts with postings in the years shown
+                                that no line reads. Add each one to a line, or leave it out on purpose.</div>
+                            <field name="x_missing_account_ids" readonly="1">
+                                <tree>
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="account_type"/>
+                                    <field name="company_id"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Period Figures" name="periods">
+                            <field name="x_period_ids" readonly="1">
+                                <tree default_order="x_sequence">
+                                    <field name="x_name"/>
+                                    <field name="x_revenue"/>
+                                    <field name="x_budget_revenue"/>
+                                    <field name="x_is_future" optional="hide"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_x_isr_part_tree" model="ir.ui.view">
+        <field name="name">x_isr_part.tree</field>
+        <field name="model">x_isr_part</field>
+        <field name="arch" type="xml">
+            <tree string="What the subtotal is made of" create="0" edit="0" delete="0" default_order="x_sequence">
+                <field name="x_line_id" optional="hide"/>
+                <field name="x_period_id" optional="hide"/>
+                <field name="x_name"/>
+                <field name="x_leaf_amount"/>
+                <field name="x_coef" optional="hide"/>
+                <field name="x_amount" sum="Subtotal"/>
+                <field name="x_budget" sum="Budget" optional="show"/>
+                <button name="%(axiom_income_statement.action_isr_refresh)d" type="action" string="Journal Items" icon="fa-list"
+                        context="{'isr_open': 'actual'}"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_x_isr_line_form" model="ir.ui.view">
+        <field name="name">x_isr_line.form</field>
+        <field name="model">x_isr_line</field>
+        <field name="arch" type="xml">
+            <form string="Statement Line">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="x_name"/>
+                        <h1><field name="x_name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="x_dashboard_id" readonly="1"/>
+                            <field name="x_key"/>
+                            <field name="x_kind"/>
+                            <field name="x_formula" invisible="x_kind != 'computed'"/>
+                            <field name="x_auto_types" invisible="x_kind == 'computed'"/>
+                            <field name="x_account_ids" widget="many2many_tags"
+                                   invisible="x_kind == 'computed'" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="x_sequence"/>
+                            <field name="x_sign"/>
+                            <field name="x_budget_pct"/>
+                            <field name="x_show_pct"/>
+                            <field name="x_bold"/>
+                            <field name="x_is_revenue"/>
+                            <field name="x_bridge"/>
+                            <field name="x_kpi"/>
+                        </group>
+                    </group>
+                    <separator string="Accounts used at the last refresh"/>
+                    <field name="x_resolved_account_ids" readonly="1">
+                        <tree>
+                            <field name="code"/>
+                            <field name="name"/>
+                            <field name="company_id"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- One menu area for everything Income Statement (Dale, 14 Aug 2026): Accounting > Reporting > Income Statement -->
+    <menuitem id="menu_isr_root" name="Income Statement" parent="account.menu_finance_reports" sequence="100"/>
+    <menuitem id="menu_isr_dashboard_client" name="Dashboard" parent="menu_isr_root" action="action_isr_dashboard_client" sequence="1"/>
+    <menuitem id="menu_x_isr_dashboard" name="Dashboard Settings" parent="menu_isr_root" action="action_x_isr_dashboard"
+              groups="account.group_account_manager" sequence="30"/>
+</odoo>

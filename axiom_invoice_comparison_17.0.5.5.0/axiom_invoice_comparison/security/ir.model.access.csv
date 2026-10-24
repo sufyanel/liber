@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_x_invcmp_dashboard_manager,x_invcmp_dashboard manager,model_x_invcmp_dashboard,account.group_account_manager,1,1,1,1
+access_x_invcmp_dashboard_user,x_invcmp_dashboard user,model_x_invcmp_dashboard,account.group_account_user,1,1,0,0
+access_x_invcmp_period_manager,x_invcmp_period manager,model_x_invcmp_period,account.group_account_manager,1,1,1,1
+access_x_invcmp_period_user,x_invcmp_period user,model_x_invcmp_period,account.group_account_user,1,1,1,1
+access_x_invcmp_customer_manager,x_invcmp_customer manager,model_x_invcmp_customer,account.group_account_manager,1,1,1,1
+access_x_invcmp_customer_user,x_invcmp_customer user,model_x_invcmp_customer,account.group_account_user,1,1,1,1
+access_x_invcmp_cell_manager,x_invcmp_cell manager,model_x_invcmp_cell,account.group_account_manager,1,1,1,1
+access_x_invcmp_cell_user,x_invcmp_cell user,model_x_invcmp_cell,account.group_account_user,1,1,1,1
+access_x_invcmp_budget_manager,x_invcmp_budget manager,model_x_invcmp_budget,account.group_account_manager,1,1,1,1
+access_x_invcmp_budget_user,x_invcmp_budget user,model_x_invcmp_budget,account.group_account_user,1,1,1,1
+access_x_invcmp_report_user,x_invcmp_report user,model_x_invcmp_report,account.group_account_user,1,1,1,1
+access_x_invcmp_report_invoice,x_invcmp_report billing,model_x_invcmp_report,account.group_account_invoice,1,1,1,1

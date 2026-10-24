@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="field_website__x_liber_url_rbc" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_rbc</field>
+        <field name="field_description">RBC Industrial link</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_liber_url_tc" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_tc</field>
+        <field name="field_description">Tooling Components link</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_liber_url_li" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_li</field>
+        <field name="field_description">Liber Industrial link</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_liber_url_rb" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_rb</field>
+        <field name="field_description">Roger Brown Co link</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_liber_url_ll" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_ll</field>
+        <field name="field_description">Liber Land link</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_website__x_liber_url_ge" model="ir.model.fields">
+        <field name="model_id" ref="website.model_website"/>
+        <field name="name">x_liber_url_ge</field>
+        <field name="field_description">Globe Electric Supply link</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="action_liber_company_links" model="ir.actions.server">
+        <field name="name">Liber: correct the company links</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Puts the right address behind each company in the "A Family of Companies"
+# block, which is page content rather than module markup.
+# The addresses come from the website record, so they can be edited in
+# Website > Configuration > Settings without touching the module.
+# Matching ignores whitespace and line breaks around the name, and is not
+# case sensitive.
+DEFAULTS = [('RBC Industrial', 'x_liber_url_rbc', 'https://www.rbc-industrial.com'), ('Tooling Components', 'x_liber_url_tc', 'https://www.toolingcomponent.com'), ('Liber Industrial', 'x_liber_url_li', 'https://www.liberindustrial.com'), ('Roger Brown Co', 'x_liber_url_rb', 'https://www.rogerbrownco.com'), ('Liber Land', 'x_liber_url_ll', '/contactus'), ('Globe Electric Supply', 'x_liber_url_ge', 'https://www.globeelectricsupply.com')]
+
+site = env["website"].sudo().search([], limit=1)
+links = []
+for name, field, default in DEFAULTS:
+    url = (field in site and site[field]) or default
+    if url:
+        links.append((name, url))
+    if field in site and not site[field]:
+        site.write({field: default})
+
+View = env["ir.ui.view"].sudo().with_context(active_test=False, lang="en_US")
+report = []
+count = 0
+
+for page in env["website.page"].sudo().search([]):
+    if not page.view_id:
+        continue
+    arch = View.browse(page.view_id.id).arch_db or ""
+    if "Family of Companies" not in arch and "Family of Operating Companies" not in arch:
+        continue
+    out = arch
+    for name, url in links:
+        low = out.lower()
+        key = name.lower()
+        pos = 0
+        while True:
+            at = low.find(key, pos)
+            if at == -1:
+                break
+            pos = at + len(key)
+            # the name must be text, so the nearest tag before it must close
+            open_tag = out.rfind("<", 0, at)
+            close_tag = out.rfind(">", 0, at)
+            if close_tag < open_tag:
+                continue
+            between = out[close_tag + 1:at]
+            if between.strip():
+                continue
+            after_end = out.find("<", pos)
+            if after_end == -1 or out[pos:after_end].strip():
+                continue
+            start_tag = out.rfind("<", 0, close_tag)
+            tag = out[start_tag:close_tag + 1]
+            target = 'target="_blank" rel="noopener" ' if url.startswith("http") else ""
+            if tag.startswith("<a "):
+                if url in tag:
+                    continue
+                out = out[:start_tag] + '<a href="' + url + '" ' + target + 'class="o_liber_co_link">' + out[close_tag + 1:]
+            else:
+                label = out[close_tag + 1:after_end]
+                out = (out[:close_tag + 1] + '<a href="' + url + '" ' + target +
+                       'class="o_liber_co_link">' + label + "</a>" + out[after_end:])
+            count += 1
+            low = out.lower()
+    if out != arch:
+        page.view_id.sudo().write({"arch_db": out})
+        report.append(page.url)
+
+env["ir.attachment"].sudo().search([("name", "like", "web.assets_frontend%")]).unlink()
+env.registry.clear_cache()
+
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {"title": "Company links", "type": "success" if count else "warning", "sticky": True,
+               "message": ("%s link(s) set on: %s" % (count, ", ".join(report))) if count else
+                          "No company names found to link. The block may use different wording."},
+}
+]]></field>
+    </record>
+
+    <function model="ir.actions.server" name="run" eval="[[ref('action_liber_company_links')]]"/>
+
+    <menuitem id="menu_liber_company_links" name="Liber: fix company links"
+              parent="website.menu_website_configuration" action="action_liber_company_links"
+              groups="website.group_website_designer" sequence="95"/>
+</odoo>

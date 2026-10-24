@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_translate_blog_posts" model="ir.actions.server">
+        <field name="name">Translate Existing Blog Posts</field>
+        <field name="model_id" ref="website_blog.model_blog_post"/>
+        <field name="binding_model_id" ref="website_blog.model_blog_post"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Translate every existing blog record into each website language, in one run.
+Post = env["blog.post"].with_context(active_test=False)
+posts = records or Post.search([])
+blogs = posts.blog_id | env["blog.blog"].search([])
+tags = env["blog.tag"].search([])
+cats = env["blog.tag.category"].search([])
+
+source = posts[:1]._get_base_lang() if posts else env["res.lang"]._lang_get_code(env.user.lang)
+langs = set()
+for site in env["website"].sudo().search([]):
+    for lang in site.language_ids:
+        if lang.code != source:
+            langs.add(lang.code)
+if not langs:
+    raise UserError("No other language is published on any website. Add one in Website > Configuration > Settings > Languages.")
+
+MAX_PASSES = 12   # each pass translates one render budget worth of text
+done, partial, failed, skipped = [], [], [], []
+
+for lang in sorted(langs):
+    for group in (blogs, tags, cats):
+        for _ in range(MAX_PASSES):
+            before = [(r.id, (r.auto_translate_source or {}).get(lang)) for r in group]
+            group.with_context(lang=lang)._auto_translate()
+            group.invalidate_recordset(["auto_translate_source"])
+            if [(r.id, (r.auto_translate_source or {}).get(lang)) for r in group] == before:
+                break
+    for post in posts:
+        if not post.auto_translate:
+            continue
+        wanted = [f for f in post._auto_translate_fields if post.with_context(lang=source)[f]]
+        before = dict((post.auto_translate_source or {}).get(lang, {}))
+        for _ in range(MAX_PASSES):
+            previous = dict((post.auto_translate_source or {}).get(lang, {}))
+            post.with_context(lang=lang)._auto_translate()
+            post.invalidate_recordset(["auto_translate_source"])
+            stored = (post.auto_translate_source or {}).get(lang, {})
+            if all(f in stored for f in wanted) and stored == previous:
+                break
+        stored = (post.auto_translate_source or {}).get(lang, {})
+        got = [f for f in wanted if f in stored]
+        if len(got) == len(wanted):
+            (skipped if stored == before else done).append((lang, post.id))
+        elif got:
+            partial.append("%s [%s]: %s of %s fields" % (post.name, lang, len(got), len(wanted)))
+        else:
+            failed.append("%s [%s]" % (post.name, lang))
+
+# Knowledge Base page labels, so the blog pages read Spanish end to end
+LABELS = {
+    "es": {
+        "Knowledge Base": "Base de conocimiento",
+        "Home": "Inicio",
+        "No articles found.": "No se encontraron art&#237;culos.",
+        "Print / Save as PDF": "Imprimir / Guardar como PDF",
+        "Technical intelligence for plant operators, maintenance managers, and procurement officers":
+            "Informaci&#243;n t&#233;cnica para operadores de planta, jefes de mantenimiento y responsables de compras",
+    },
+}
+labels_done = 0
+for lang in sorted(langs):
+    words = LABELS.get(lang.split("_")[0])
+    if not words:
+        continue
+    for view in env["ir.ui.view"].sudo().search([("type", "=", "qweb"), ("key", "like", "%blog%")]):
+        arch = view.with_context(lang=source).arch_db or ""
+        new = arch
+        for src, dst in words.items():
+            if src in new:
+                new = new.replace(src, dst)
+        if new != arch:
+            view.with_context(lang=lang).update_field_translations("arch_db", {lang: new})
+            labels_done += 1
+
+msg = "Translated %s post/language pair(s) into: %s." % (len(done), ", ".join(sorted(langs)))
+if skipped:
+    msg += " Already up to date: %s pair(s)." % len(skipped)
+if labels_done:
+    msg += " Page labels translated on %s view(s)." % labels_done
+if partial:
+    msg += " Partly translated (run again to finish): " + "; ".join(partial[:10]) + ("..." if len(partial) > 10 else "")
+if failed:
+    msg += " Not translated (the free endpoint refused; run again later): " + "; ".join(failed[:10]) + ("..." if len(failed) > 10 else "")
+if not done and not partial and not failed:
+    msg = "Nothing to translate: all %s post/language pair(s) are already up to date in %s." % (len(skipped), ", ".join(sorted(langs)))
+
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {
+        "title": "Blog translation finished",
+        "type": "warning" if (partial or failed) else "success",
+        "sticky": True,
+        "message": msg,
+    },
+}
+]]></field>
+    </record>
+
+    <menuitem id="menu_translate_blog_posts"
+              name="Translate Existing Blog Posts"
+              parent="website.menu_website_configuration"
+              action="action_translate_blog_posts"
+              groups="website.group_website_designer"
+              sequence="95"/>
+</odoo>

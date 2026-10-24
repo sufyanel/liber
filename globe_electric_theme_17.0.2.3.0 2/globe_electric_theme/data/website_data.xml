@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_globe_setup" model="ir.actions.server">
+        <field name="name">Globe: set up the website</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Builds the Globe Electric website. Runs on install and on every upgrade, and
+# again from Website > Configuration > Globe: set up the website. Idempotent.
+PAGES = [('/', 'globe_electric_theme.globe_home', 'Home'), ('/government', 'globe_electric_theme.globe_government', 'Government'), ('/quote', 'globe_electric_theme.globe_quote', 'Request a Quote'), ('/quote-received', 'globe_electric_theme.globe_quote_received', 'Quote Received'), ('/line-card', 'globe_electric_theme.globe_linecard', 'Line Card'), ('/solutions', 'globe_electric_theme.globe_solution', 'Solutions'), ('/capabilities', 'globe_electric_theme.globe_capability', 'Capabilities'), ('/manufacturers', 'globe_electric_theme.globe_manufacturers', 'Manufacturers'), ('/resources', 'globe_electric_theme.globe_resources', 'Resources'), ('/resources/case-studies', 'globe_electric_theme.globe_case_studies', 'Case Studies'), ('/about-us', 'globe_electric_theme.globe_about', 'About'), ('/locations', 'globe_electric_theme.globe_about', 'Locations'), ('/contact', 'globe_electric_theme.globe_contact', 'Contact'), ('/privacy', 'globe_electric_theme.globe_privacy', 'Privacy Policy'), ('/terms-of-use', 'globe_electric_theme.globe_terms', 'Terms of Use'), ('/line-card/lighting', 'globe_electric_theme.globe_line_lighting', 'Lighting'), ('/line-card/rail-communications', 'globe_electric_theme.globe_line_rail_communications', 'Rail Communications'), ('/line-card/traffic-signals', 'globe_electric_theme.globe_line_traffic_signals', 'Traffic Signals'), ('/line-card/rail-switches', 'globe_electric_theme.globe_line_rail_switches', 'Rail Switches'), ('/line-card/airport-lighting', 'globe_electric_theme.globe_line_airport_lighting', 'Airport Lighting'), ('/line-card/adhesives-sealants', 'globe_electric_theme.globe_line_adhesives_sealants', 'Adhesives & Sealants'), ('/line-card/electrical-distribution', 'globe_electric_theme.globe_line_electrical_distribution', 'Electrical Distribution'), ('/solutions/rail-transit', 'globe_electric_theme.globe_sol_rail_transit', 'Rail & Transit'), ('/solutions/traffic-highway', 'globe_electric_theme.globe_sol_traffic_highway', 'Traffic & Highway'), ('/solutions/aviation-airport', 'globe_electric_theme.globe_sol_aviation_airport', 'Aviation & Airport'), ('/solutions/industrial-electrical', 'globe_electric_theme.globe_sol_industrial_electrical', 'Industrial Electrical'), ('/solutions/obsolete-hard-to-find', 'globe_electric_theme.globe_sol_obsolete_hard_to_find', 'Obsolete & Hard to Find'), ('/capabilities/reverse-engineering', 'globe_electric_theme.globe_cap_reverse_engineering', 'Reverse Engineering'), ('/capabilities/spec-sourcing', 'globe_electric_theme.globe_cap_spec_sourcing', 'Spec Sourcing'), ('/capabilities/labeled-bom-fulfillment', 'globe_electric_theme.globe_cap_labeled_bom_fulfillment', 'Labeled BOM Fulfillment')]
+TITLES = {'/': 'Critical-Infrastructure Electrical Supply for Rail, Traffic and Aviation', '/government': 'Government Certifications and Contract Readiness', '/quote': 'Request a Quote', '/quote-received': 'Request Received'}
+MENU = [('Home', '/', 5), ('Line Card', '/line-card', 10), ('Catalog', '/shop', 15), ('Solutions', '/solutions', 20), ('Manufacturers', '/manufacturers', 30), ('Capabilities', '/capabilities', 40), ('Government', '/government', 50), ('Resources', '/resources', 60)]
+SUFFIX = " | Globe Electric Supply"
+PAGES = PAGES + [('/manufacturers/sportworks', 'globe_electric_theme.globe_mfr_sportworks', 'Sportworks'), ('/manufacturers/avire-rath-janus', 'globe_electric_theme.globe_mfr_avire_rath_janus', 'Avire / Rath Janus'), ('/manufacturers/swarco', 'globe_electric_theme.globe_mfr_swarco', 'SWARCO'), ('/manufacturers/3m', 'globe_electric_theme.globe_mfr_3m', '3M'), ('/manufacturers/nvent', 'globe_electric_theme.globe_mfr_nvent', 'nVent'), ('/manufacturers/siemens', 'globe_electric_theme.globe_mfr_siemens', 'Siemens'), ('/manufacturers/nmc-powerswitch', 'globe_electric_theme.globe_mfr_nmc_powerswitch', 'NMC Powerswitch (Normandy Machine)'), ('/manufacturers/honeywell', 'globe_electric_theme.globe_mfr_honeywell', 'Honeywell'), ('/manufacturers/hitachi-rail', 'globe_electric_theme.globe_mfr_hitachi_rail', 'Hitachi Rail'), ('/manufacturers/otn-belden', 'globe_electric_theme.globe_mfr_otn_belden', 'OTN / Belden'), ('/manufacturers/led-smart', 'globe_electric_theme.globe_mfr_led_smart', 'LED Smart'), ('/manufacturers/harsco-rail', 'globe_electric_theme.globe_mfr_harsco_rail', 'Harsco Rail')]
+
+Company = env["res.company"].sudo()
+Website = env["website"].sudo()
+View = env["ir.ui.view"].sudo()
+Page = env["website.page"].sudo()
+ICP = env["ir.config_parameter"].sudo()
+report = []
+
+company = Company.search([("name", "ilike", "globe electric")], limit=1)
+if not company:
+    report.append("No company named Globe Electric was found, so nothing was created. Create or rename the company, then run Website > Configuration > Globe: set up the website.")
+else:
+    site = Website.search([("x_globe_theme_active", "=", True)], limit=1) or Website.search([("name", "ilike", "globe electric")], limit=1)
+    if not site:
+        site = Website.create({"name": "Globe Electric Supply Co Inc", "company_id": company.id})
+        report.append("website created")
+    site.write({"x_globe_theme_active": True})
+    if site.company_id != company:
+        site.write({"company_id": company.id})
+
+    # menu: built once, never overwritten, so edits made in the website builder survive
+    key = "globe_electric_theme.menu_done_v3.%s" % site.id
+    if not ICP.get_param(key) and site.menu_id:
+        Menu = env["website.menu"].sudo()
+        Menu.search([("parent_id", "=", site.menu_id.id), ("website_id", "=", site.id)]).unlink()
+        for name, url, seq in MENU:
+            Menu.create({"name": name, "url": url, "sequence": seq, "parent_id": site.menu_id.id, "website_id": site.id})
+        ICP.set_param(key, "1")
+        report.append("menu built")
+    # view-only catalog (Dale, 14 Oct 2026): add the Catalog menu item once, after Line Card
+    ckey = "globe_electric_theme.catalog_menu.%s" % site.id
+    if not ICP.get_param(ckey) and site.menu_id:
+        CMenu = env["website.menu"].sudo()
+        if not CMenu.search([("website_id", "=", site.id), ("url", "in", ["/shop", "/catalog"])], limit=1):
+            CMenu.create({"name": "Catalog", "url": "/shop", "sequence": 15, "parent_id": site.menu_id.id, "website_id": site.id})
+            report.append("Catalog menu item added")
+        ICP.set_param(ckey, "1")
+
+    # pages: a website-specific wrapper calling the shared module template
+    made = 0
+    for url, view_key, name in PAGES:
+        template = env.ref(view_key)
+        wrapper_key = "%s_page_w%s" % (view_key, site.id)
+        wrapper = View.search([("key", "=", wrapper_key), ("website_id", "=", site.id)], limit=1)
+        if not wrapper:
+            wrapper = View.create({"name": name, "type": "qweb", "key": wrapper_key, "website_id": site.id,
+                                   "arch": '<t t-name="%s"><t t-call="%s"/></t>' % (wrapper_key, view_key)})
+        page = Page.search([("url", "=", url), ("website_id", "=", site.id)], limit=1)
+        if page:
+            if page.view_id != wrapper:
+                page.write({"view_id": wrapper.id})
+        else:
+            page = Page.create({"url": url, "view_id": wrapper.id, "name": name, "website_id": site.id,
+                                "is_published": True, "website_indexed": url != "/quote-received"})
+            made += 1
+        # per-site title suffix, set once so later edits in Promote are kept
+        if not page.website_meta_title:
+            page.write({"website_meta_title": TITLES.get(url, name) + SUFFIX})
+    report.append("%s page(s) created, %s in place" % (made, len(PAGES)))
+
+    # Addresses the other sites publish as shared pages. Odoo lists the shared page in
+    # this site's sitemap unless Globe has its own published page at the same address,
+    # so Globe serves its own equivalent there: brands are its manufacturers, and the
+    # stock Contact Us address shows the Globe contact page.
+    for url, target, name, title in (("/brands", "globe_electric_theme.globe_manufacturers", "Brands", "Manufacturers"),
+                                     ("/contactus", "globe_electric_theme.globe_contact", "Contact Us", "Contact")):
+        key = "%s_alias_%s_w%s" % (target, url.strip("/"), site.id)
+        view = View.search([("key", "=", key), ("website_id", "=", site.id)], limit=1) or View.create({
+            "name": name, "type": "qweb", "key": key, "website_id": site.id,
+            "arch": '<t t-name="%s"><t t-call="%s"/></t>' % (key, target)})
+        own = Page.search([("url", "=", url), ("website_id", "=", site.id)], limit=1)
+        values = {"view_id": view.id, "is_published": True, "website_indexed": True}
+        if own:
+            own.write(values)
+        else:
+            own = Page.create(dict(values, url=url, name=name, website_id=site.id))
+        if not own.website_meta_title:
+            own.write({"website_meta_title": title + SUFFIX})
+    # an earlier version redirected /contactus; the page now answers directly
+    env["website.rewrite"].sudo().search([("url_from", "=", "/contactus"), ("website_id", "=", site.id)]).unlink()
+
+
+    # meta descriptions, set once so later edits in Promote are kept
+    DESC = {'/line-card': 'Globe Electric Supply line card: lighting, rail communications, traffic signals, rail switches, airport lighting, adhesives and sealants, electrical.', '/solutions': 'Supply solutions for rail and transit, traffic and highway, aviation and airports, industrial electrical, and obsolete or hard-to-find parts.', '/capabilities': 'What we do beyond supplying the part on the purchase order. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers': 'Manufacturers represented by Globe Electric Supply, including SWARCO, Siemens, nVent, 3M, Honeywell, Hitachi Rail and Harsco Rail.', '/resources': 'Articles and case studies from the work we do in rail, traffic and aviation. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/resources/case-studies': 'Case studies are being prepared. In the meantime, ask us about work in your sector. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/about-us': 'Globe Electric Supply, founded in Houston in 1972: critical-infrastructure supply for rail, traffic and aviation customers nationwide.', '/locations': 'Critical-infrastructure supply for rail, traffic and aviation since 1972. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/contact': 'Contact Globe Electric Supply: 20333 State Highway 249, Ste 200, Houston, TX 77070. Call (832) 791-2940 or email sales@globelectric.com.', '/privacy': 'How Globe Electric Supply Co Inc handles information you give us. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/line-card/lighting': 'Roadway, tunnel, facility and LED retrofit lighting for public infrastructure. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/line-card/rail-communications': 'Wayside and onboard communications hardware, cabling and enclosures for rail and transit. Same-day quotes from Globe Electric Supply.', '/line-card/traffic-signals': 'Signal heads, controllers, cabinets and detection for traffic and highway agencies. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/line-card/rail-switches': 'Power switch machines, switch heaters and switch hardware to keep the track moving. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/line-card/airport-lighting': 'Airfield lighting, fixtures and isolation transformers for runways, taxiways and aprons. Same-day quotes from Globe Electric Supply.', '/line-card/adhesives-sealants': 'Adhesives, sealants and tapes specified for infrastructure, electrical and transit work. Same-day quotes from Globe Electric Supply.', '/line-card/electrical-distribution': 'Breakers, motor controls, safety switches, lugs and fittings for plant and facility distribution.', '/solutions/rail-transit': 'Transit agencies and rail operators need parts that match the original specification, delivered before an outage turns into a service disruption.', '/solutions/traffic-highway': 'Traffic and highway agencies replace signals, controllers and lighting on tight maintenance windows, often against a bid specification.', '/solutions/aviation-airport': 'Airfield work runs to strict standards and short closures, so every fixture and transformer has to be right the first time.', '/solutions/industrial-electrical': 'Plants and facilities need distribution and control equipment that fits what is already installed, without a redesign.', '/solutions/obsolete-hard-to-find': 'Discontinued or hard-to-find infrastructure parts traced, cross-referenced to a qualified equivalent, or reverse-engineered to your drawing.', '/capabilities/reverse-engineering': 'When no current part exists, we work from the original sample or drawing to produce a qualified replacement.', '/capabilities/spec-sourcing': 'We source to the specification as written, including approved-equal requests, and document what was supplied against what was asked for.', '/capabilities/labeled-bom-fulfillment': 'We kit and label a full bill of materials so it arrives ready to install, matched line by line to your BOM.', '/manufacturers/sportworks': 'Bicycle racks and accessories for transit buses and rail vehicles. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/avire-rath-janus': 'Emergency communication equipment for elevators, refuge areas and transit facilities. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/swarco': 'Traffic signal heads, LED modules and intelligent transportation equipment. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/3m': 'Adhesives, sealants, electrical tapes and traffic safety materials. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/nvent': 'Enclosures, electrical connections and heat tracing for infrastructure and industry. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/siemens': 'Electrical distribution, controls and transportation equipment. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/nmc-powerswitch': 'Rail switch machines and switch components. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/honeywell': 'Controls, sensing and safety products for facilities and infrastructure. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/hitachi-rail': 'Rail signalling and train control equipment. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/otn-belden': 'Industrial networking and communications for rail and transit. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/led-smart': 'LED lighting and retrofit solutions. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/manufacturers/harsco-rail': 'Rail maintenance equipment and components. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/brands': 'The manufacturers we represent, across rail, traffic, aviation and electrical distribution.', '/contactus': 'Call, email or send us a request for quote. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.', '/': 'Critical-infrastructure electrical supply for rail, traffic and aviation since 1972. Same-day quotes, 20+ authorized manufacturers, nationwide shipping.', '/government': 'Globe Electric Supply certifications for public-sector work: MBE, SBE and WBE (City of Houston), SBE (LA Metro, Port Houston, TxDOT) and DBE. B2G Vendor ID.', '/quote': 'Request a quote from Globe Electric Supply. Send part numbers, specifications and quantities; a specialist replies the same business day.', '/terms-of-use': 'The terms that apply to using this website. Globe Electric Supply, Houston: same-day quotes and nationwide shipping.'}
+    for url, text in DESC.items():
+        pg = Page.search([("url", "=", url), ("website_id", "=", site.id)], limit=1)
+        if pg and not pg.website_meta_description:
+            pg.write({"website_meta_description": text})
+
+    # Globe favicon, only if none has been uploaded
+    if not site.favicon or ICP.get_param("globe_electric_theme.favicon_v") != "2":
+        ICP.set_param("globe_electric_theme.favicon_v", "2")
+        site.write({"favicon": "iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAIAAABMXPacAAACc0lEQVR4nO3czU1CYRSE4cEaNHFjV5ZJVyxpwsWXkBuiBC7E+TnzVmDmOXADRg/vn19ovN7YP8D0CkCuAOQKQK4A5ApArgDkCkCuAOQKQK4A5ApArgDkCkCuAOQKQC4T4Hw8nY8n9k9xV4EAa/qPb4/f9AUCeJUG4PLOcykKwG59hAE4lgOwPX+XJzBiABzffFYhAL4lAPiePwIArNeHO4D7+nAHCMgYIOD84QuQsT58AWKyBLh9/kYfg+EIEPPms/IDCMsMIOz84QWQtz68ACKzAYg8f7gApK4PF4DgDACCzx/6AI+u7/UxGOIA2be/kgaYkC7AhPOHLMCQ9SELMCdFgDnnD0GAUetDEGBaWgDTzh9SAM+vb/cxGFIAM1MBGPjms5IAGLs+RAAmd6D/51zB8//Phzn5FTB8fXABuj7or4BGA+j5rzgAXf9S34IA6ncYBADB8yfG/xywrxcqcr/Cm/4WRP8C1RLgVedPXx+mAEnNBVA4f4wFEFkfMwF01ocjQNjHCD+AJ5M6f0wDUFsfowAE18coAM3MAHY/gTXPH3YA+5JdHxMAlNfHBADxwgHEzx9eAJF/M+wE8FAW6yMYwKVMAJfzRySA0fowArjzCey1PowAUosCsDt/JAE4ro8YANP14QIQ9nvgbR4At/M9fwQAWK8PdwD39eEOEJABwF9P4IDzhwXAr2WsD1OAmPVhCpCUH0DS+UMf4OoJHLY+9AG25a0PL4DIbAAizx8uAKnrQxxgPYGD14c4wIR0ASacP3z/WUdMuq+AIRWAXAHIFYBcAcgVgFwByBWAXAHIFYBcAcgVgFwByBWAXAHIFYDcD/Qii5tYsbgkAAAAAElFTkSuQmCC"})
+
+    # brand palette in Odoo's own editor, so blocks added in the builder stay on brand
+    PALETTE_URL = "/website/static/src/scss/options/colors/user_color_palette.scss"
+    PALETTE_SCSS = """
+$o-user-color-palette: map-merge($o-user-color-palette, o-map-omit((
+    'o-color-1': #14181D,
+    'o-color-2': #FFC400,
+    'o-color-3': #F7F8F9,
+    'o-color-4': #FFFFFF,
+    'o-color-5': #14181D,
+    'o-cc1-btn-primary': 'o-color-2',
+    'o-cc1-btn-primary-border': 'o-color-2',
+    'o-cc1-link': 'o-color-1',
+)));
+"""
+    try_palette = env["web_editor.assets"].with_context(website_id=site.id)
+    try_palette.save_asset(PALETTE_URL, "web.assets_frontend", PALETTE_SCSS, "scss")
+
+    # the legacy government line card cited by Yellow Pages
+    Rewrite = env["website.rewrite"].sudo()
+    if not Rewrite.search([("url_from", "=", "/linecard/govt.html"), ("website_id", "=", site.id)], limit=1):
+        Rewrite.create({"name": "Globe: legacy government line card", "url_from": "/linecard/govt.html",
+                        "url_to": "/government", "redirect_type": "301", "website_id": site.id})
+
+    # Globe's own knowledge base, with three seed articles left unpublished for review
+    Blog = env["blog.blog"].sudo()
+    blog = Blog.search([("website_id", "=", site.id)], limit=1)
+    if not blog:
+        blog = Blog.create({"name": "Globe Knowledge Base", "subtitle": "Rail, traffic and aviation supply", "website_id": site.id})
+        report.append("blog created")
+    SEED = [
+        ("Reading a spec sheet when the OEM part number is dead", "Cross-Reference",
+         "How to work backwards from a drawing to an available equivalent, and when to stop and reverse-engineer instead.",
+         "<p>A discontinued part number is a dead end only if the part number is all you have. The specification behind it usually is not dead.</p>"
+         "<h2>Start from the drawing, not the catalogue</h2><p>Pull the original specification sheet or drawing: dimensions, ratings, materials, mounting, connectors and the environment the part works in. Those are what any replacement has to meet.</p>"
+         "<h2>Cross-reference against active and legacy lines</h2><p>With the specification in hand, compare it against current manufacturer lines and against legacy stock still held in distribution. A match on the specification is a better answer than a near match on the part number.</p>"
+         "<h2>Know when to stop</h2><p>If no available part meets the specification, keep searching only while the search is cheaper than the alternative. Past that point, reverse engineering a drop-in replacement from the original sample or drawing is usually faster than a redesign of the assembly around it.</p>"
+         "<p>Send us the drawing or the old part number and we will tell you which of these you are in.</p>"),
+        ("Why obsolete isn't the same as unavailable", "Obsolescence",
+         "The four outcomes when a part goes out of production, and how to tell which one you are actually in.",
+         "<p>When a manufacturer marks a part obsolete, buyers often assume it is gone. In practice there are four different situations, and each has a different answer.</p>"
+         "<h2>1. Still in the channel</h2><p>The part is no longer made, but distribution and surplus stock still hold it. Buy what you need now, including spares.</p>"
+         "<h2>2. A successor exists</h2><p>The manufacturer has a replacement. Check that it is a true drop-in: form, fit, function and any certifications the original carried.</p>"
+         "<h2>3. An equivalent exists elsewhere</h2><p>Another manufacturer makes a part that meets the same specification. Confirm it against the drawing before it goes into a safety-critical system.</p>"
+         "<h2>4. Nothing exists</h2><p>No successor and no equivalent. The part can often be reverse-engineered from the original sample or drawing.</p>"
+         "<p>Tell us the part and we will tell you which situation you are in.</p>"),
+        ("What a DBE certification actually unlocks on a transit bid", "Public Sector",
+         "Supplier-diversity goals, counting rules, and what buyers need from you at pre-qualification.",
+         "<p>Transit and airport contracts funded by the US Department of Transportation often carry a Disadvantaged Business Enterprise goal. A DBE certification is what lets a supplier's participation be considered against that goal.</p>"
+         "<h2>Certification and counting are separate</h2><p>Holding a certification and having participation counted toward a goal are not the same thing. Counting follows the rules in force at the time of award, so prime contractors should confirm counting with the certifying program before relying on it.</p>"
+         "<h2>The 2025 reevaluation</h2><p>The USDOT Interim Final Rule (49 CFR Parts 23 and 26, effective 3 October 2025) required existing DBE certifications to be reevaluated nationwide and suspended counting while reevaluation is incomplete. It did not revoke certifications.</p>"
+         "<h2>What buyers ask for at pre-qualification</h2><p>Certification evidence, identifiers such as DUNS, UEI and CAGE, insurance certificates, and references. Globe keeps all of these on the <a href=\"/government\">Government page</a>.</p>"),
+    ]
+    Tag = env["blog.tag"].sudo()
+    Post = env["blog.post"].sudo()
+    for title, tag_name, sub, body in SEED:
+        if not Post.search([("blog_id", "=", blog.id), ("name", "=", title)], limit=1):
+            tag = Tag.search([("name", "=", tag_name)], limit=1) or Tag.create({"name": tag_name})
+            Post.create({"blog_id": blog.id, "name": title, "subtitle": sub, "content": body,
+                         "is_published": False, "website_id": site.id, "tag_ids": [(6, 0, tag.ids)]})
+
+    # the thank-you page must not be indexed or listed in the sitemap
+    received = Page.search([("url", "=", "/quote-received"), ("website_id", "=", site.id)], limit=1)
+    if received and received.website_indexed:
+        received.write({"website_indexed": False})
+
+    # robots.txt pointing at the sitemap of the canonical apex domain
+    # the catalog is kept out of search with a noindex tag on every catalog page and by leaving it out of the
+    # sitemap; robots.txt must NOT block it, or crawlers never see the noindex
+    if "robots_txt" in site._fields and site.robots_txt and "Disallow: /shop" in site.robots_txt:
+        site.write({"robots_txt": "\n".join(l for l in site.robots_txt.split("\n") if l.strip() != "Disallow: /shop").rstrip("\n") + "\n"})
+    if "robots_txt" in site._fields and not site.robots_txt:
+        host = (site.domain or "https://globelectric.com").rstrip("/")
+        if not host.startswith("http"):
+            host = "https://" + host
+        site.write({"robots_txt": "User-agent: *\nAllow: /\nDisallow: /quote-received\nSitemap: %s/sitemap.xml\n" % host})
+        report.append("robots.txt set")
+
+    env["ir.attachment"].sudo().search([("name", "like", "web.assets_frontend%")]).unlink()
+    env.registry.clear_cache()
+
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {"title": "Globe Electric website", "type": "success" if company else "warning", "sticky": True,
+               "message": "; ".join(report) or "Nothing to change."},
+}
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run" eval="[[ref('action_globe_setup')]]"/>
+    <menuitem id="menu_globe_setup" name="Globe: set up the website" parent="website.menu_website_configuration"
+              action="action_globe_setup" groups="website.group_website_designer" sequence="99"/>
+</odoo>

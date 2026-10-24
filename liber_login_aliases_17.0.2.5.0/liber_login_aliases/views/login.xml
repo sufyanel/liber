@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Login page: an alternative login typed by the user is replaced by the user's real login just before the
+         form is submitted. If the lookup fails for any reason, the form is submitted exactly as typed. -->
+
+
+    <!-- Server-side fallback (no script, no lookup page, nothing a proxy can cache): when a sign-in fails because
+         the address typed is an alternative login, sign in again straight away with the user's real login. Runs only
+         on the POST answer of a failed sign-in; if the real login is refused too (wrong password) it stops. -->
+    <template id="login_alias_server_fallback" inherit_id="web.login" name="Liber: alternative logins (server fallback)" priority="90">
+        <xpath expr="//form[hasclass('oe_login_form')]" position="before">
+            <t t-set="la_post" t-value="request and request.httprequest.method == 'POST' and error"/>
+            <t t-set="la_typed" t-value="(request.params.get('login') or '').strip() if la_post else ''"/>
+            <t t-set="la_pwd" t-value="request.params.get('password') if la_typed else ''"/>
+            <t t-set="la_pattern" t-value="la_typed.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')"/>
+            <t t-set="la_is_login" t-value="la_typed and request.env['res.users'].sudo().with_context(active_test=False).search_count([('login', '=ilike', la_pattern)])"/>
+            <t t-set="la_alias" t-value="(la_typed and la_pwd and not la_is_login) and request.env['x_login_alias'].sudo().search([('x_name', '=ilike', la_pattern)], limit=1)"/>
+            <t t-if="la_alias and la_alias.x_user_id.active">
+                <style>.oe_login_form { display: none !important; }</style>
+                <form id="liber_alias_resubmit" method="post" action="/web/login" class="d-none">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token(None)"/>
+                    <input type="hidden" name="login" t-att-value="la_alias.x_user_id.login"/>
+                    <input type="hidden" name="password" t-att-value="la_pwd"/>
+                    <input type="hidden" name="redirect" t-att-value="redirect"/>
+                    <input type="hidden" name="login_alias_typed" t-att-value="la_typed"/>
+                </form>
+                <p class="text-muted text-center my-5">Signing you in...</p>
+                <script type="text/javascript">document.getElementById("liber_alias_resubmit").submit();</script>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- The login field shows what the user typed: when a sign-in with an alternative login fails (wrong password),
+         the alias is shown again, not the user's real login. -->
+    <template id="login_alias_keep_typed" inherit_id="web.login" name="Liber: keep the alternative login typed" priority="91">
+        <xpath expr="//form[hasclass('oe_login_form')]//input[@name='login']" position="attributes">
+            <attribute name="t-att-value">(request and request.params.get('login_alias_typed')) or login</attribute>
+        </xpath>
+    </template>
+</odoo>

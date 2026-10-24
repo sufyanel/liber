@@ -1,0 +1,35 @@
+{
+    "name": "Income Statement - Dashboard",
+    "version": "17.0.6.1.0",
+    "category": "Accounting",
+    "summary": "Margin income statement with budget, % of sales, custom range and spreadsheet "
+               "(frontend-importable, built like the Threshold Dashboard)",
+    "author": "Axiom World",
+    "website": "https://axiomworld.net",
+    "license": "LGPL-3",
+    "depends": ["account", "mail"],
+    "data": [
+        "data/models.xml",
+        "data/legacy_models.xml",
+        "data/legacy_defaults.xml",
+        "data/defaults.xml",
+        "security/ir.model.access.csv",
+        "security/rules.xml",
+        "data/server_actions.xml",
+        "data/extra_actions.xml",
+        "views/views.xml",
+        "data/legacy_actions.xml",
+        "views/legacy_views.xml",
+        "data/cron.xml",
+        "data/setup.xml", "data/refresh_on_upgrade.xml",
+    ],
+    "assets": {
+        "web.assets_backend": [
+            "axiom_income_statement/static/src/dashboard.css",
+            "axiom_income_statement/static/src/dashboard.xml",
+            "axiom_income_statement/static/src/dashboard.js",
+        ],
+    },
+    "installable": True,
+    "application": False,
+}

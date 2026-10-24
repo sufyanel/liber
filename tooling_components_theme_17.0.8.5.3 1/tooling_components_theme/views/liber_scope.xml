@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- liber_holdings_theme applies to every website: keep it off the TC website -->
+    <template id="tc_no_liber_flag" inherit_id="website.layout" name="TC: no Liber theme flag" priority="61">
+        <xpath expr="//html" position="attributes">
+            <attribute name="data-liber-theme"/>
+            <attribute name="t-att-data-liber-theme">None if (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active))) else '1'</attribute>
+        </xpath>
+    </template>
+    <template id="tc_no_liber_product" inherit_id="website_sale.product" name="TC: no Liber product CTAs" priority="70">
+        <xpath expr="//a[hasclass('o_liber_signin_buy')]" position="attributes">
+            <attribute name="t-if">show_sign_in and not (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active)))</attribute>
+        </xpath>
+        <xpath expr="//a[hasclass('o_liber_quote_btn')]" position="attributes">
+            <attribute name="t-if">show_quote and not (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active)))</attribute>
+        </xpath>
+        <xpath expr="//a[@href='tel:+18327912535']" position="attributes">
+            <attribute name="t-if">not (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active)))</attribute>
+        </xpath>
+        <xpath expr="//div[@id='add_to_cart_wrap']" position="attributes">
+            <attribute name="t-attf-class">{{'d-none' if (combination_info['prevent_zero_price_sale'] or product._liber_has_quote_tag() or (not product._liber_user_can_shop() and not (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active))))) else 'd-inline-flex'}} align-items-center mb-2 me-auto</attribute>
+        </xpath>
+        <xpath expr="//script[contains(@t-out, '_liber_product_json_ld')]" position="attributes">
+            <attribute name="t-if">not (website and (('x_rbc_theme_active' in website and website.x_rbc_theme_active) or ('x_tc_theme_active' in website and website.x_tc_theme_active)))</attribute>
+        </xpath>
+    </template>
+</odoo>

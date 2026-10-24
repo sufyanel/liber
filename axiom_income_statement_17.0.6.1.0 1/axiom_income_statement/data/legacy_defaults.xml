@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="default_budget_state" model="ir.default">
+        <field name="field_id" ref="field_x_isr_budget__x_state"/>
+        <field name="json_value">"draft"</field>
+    </record>
+    <record id="default_budget_quarter" model="ir.default">
+        <field name="field_id" ref="field_x_isr_budget__x_quarter"/>
+        <field name="json_value">"q1"</field>
+    </record>
+    <record id="default_report_mode" model="ir.default">
+        <field name="field_id" ref="field_x_isr_report__x_report_mode"/>
+        <field name="json_value">"quarterly"</field>
+    </record>
+    <record id="default_report_pct" model="ir.default">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="json_value">"5"</field>
+    </record>
+</odoo>
