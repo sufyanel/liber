@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="tc_product" inherit_id="website_sale.product" name="Tooling Components: product spec sheet" priority="60">
+        <!-- Line-down strip above the product -->
+        <xpath expr="//section[@id='product_detail']" position="before">
+            <div t-if="website.x_tc_theme_active" class="container">
+                <div class="tc-product-alert">
+                    <span><span class="tc-pulse"/><b>MOLD DOWN?</b> Need this part shipped today from Union City, PA?</span>
+                    <a href="tel:+18144387657" class="tc-btn-gold tc-btn-sm">Call 814-438-7657</a>
+                </div>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']" position="attributes">
+            <attribute name="t-attf-class" add="#{'tc-quote-item' if (website.x_tc_theme_active and (('Request Quote' in product.product_tag_ids.with_context(lang='en_US').mapped('name')) or not product.list_price)) else ''}" separator=" "/>
+        </xpath>
+
+        <!-- Category chip + stock LED under the part number (title) -->
+        <xpath expr="//div[@id='product_details']/h1" position="after">
+            <div t-if="website.x_tc_theme_active" class="tc-product-meta">
+                <t t-set="p_lines" t-value="product.attribute_line_ids.filtered(lambda l: l.value_ids).sorted(lambda l: (l.attribute_id.sequence, l.attribute_id.id))"/><t t-set="p_qty" t-value="product.sudo().qty_available if product.type == 'product' else 99"/><t t-set="tc_stock" t-value="('in', 'EN EXISTENCIA' if ((request.env.lang or '')[:2] == 'es') else 'IN STOCK') if p_qty &gt; 10 else (('low', 'POCAS PIEZAS' if ((request.env.lang or '')[:2] == 'es') else 'LOW') if p_qty &gt; 0 else ('lead', 'SOBRE PEDIDO' if ((request.env.lang or '')[:2] == 'es') else 'LEAD TIME'))"/><t t-set="tc_quote" t-value="('Request Quote' in product.product_tag_ids.with_context(lang='en_US').mapped('name')) or (not product._is_add_to_cart_possible()) or (not product.list_price)"/><t t-set="p_cat" t-value="product.public_categ_ids[:1].name or ''"/><t t-set="p_spec" t-value="' · '.join([', '.join(l.value_ids.mapped('name')) for l in p_lines[:4]])"/>
+                <span t-if="p_cat" class="tc-chip" t-out="p_cat"/>
+                <span t-attf-class="tc-stock #{tc_stock[0]}"><i/><t t-out="tc_stock[1]"/><t t-if="tc_stock[0] != 'lead'"> — UNION CITY</t></span>
+            </div>
+        </xpath>
+
+        <!-- Long description moves below the price / cart (Dale: image, short desc, price, long desc, attributes) -->
+        <xpath expr="//div[@t-field='product.description_ecommerce']" position="attributes">
+            <attribute name="t-if">not website.x_tc_theme_active</attribute>
+        </xpath>
+
+        <xpath expr="//div[@id='product_details']/form[@action='/shop/cart/update']" position="after">
+            <t t-if="website.x_tc_theme_active">
+                <div class="tc-cta-row">
+                    <t t-set="p_lines" t-value="product.attribute_line_ids.filtered(lambda l: l.value_ids).sorted(lambda l: (l.attribute_id.sequence, l.attribute_id.id))"/><t t-set="p_qty" t-value="product.sudo().qty_available if product.type == 'product' else 99"/><t t-set="tc_stock" t-value="('in', 'EN EXISTENCIA' if ((request.env.lang or '')[:2] == 'es') else 'IN STOCK') if p_qty &gt; 10 else (('low', 'POCAS PIEZAS' if ((request.env.lang or '')[:2] == 'es') else 'LOW') if p_qty &gt; 0 else ('lead', 'SOBRE PEDIDO' if ((request.env.lang or '')[:2] == 'es') else 'LEAD TIME'))"/><t t-set="tc_quote" t-value="('Request Quote' in product.product_tag_ids.with_context(lang='en_US').mapped('name')) or (not product._is_add_to_cart_possible()) or (not product.list_price)"/><t t-set="p_cat" t-value="product.public_categ_ids[:1].name or ''"/><t t-set="p_spec" t-value="' · '.join([', '.join(l.value_ids.mapped('name')) for l in p_lines[:4]])"/><a t-att-href="'/quote?product_id=%s' % product.id" t-attf-class="#{'tc-btn-gold' if tc_quote else 'tc-btn-outline-dark'}">Request a Quote</a>
+                    <a href="tel:+18144387657" class="tc-btn-outline-dark">Call 814-438-7657</a>
+                </div>
+                <div t-field="product.description_ecommerce" class="oe_structure tc-long-desc"
+                     placeholder="Long description: applications, cross-references and compatibility notes."/>
+                <t t-set="pv_list" t-value="product.product_variant_ids if 1 &lt; len(product.product_variant_ids) &lt;= 60 else product.product_variant_ids[:0]"/>
+                <!-- Variant Sales Description: shown under the Sales Description for the selected variant, on every
+                     product including single-variant ones. The default variant's text is rendered server-side
+                     so search engines index it; the theme script swaps it when another variant is chosen. -->
+                <t t-set="pd_list" t-value="product.product_variant_ids if len(product.product_variant_ids) &lt;= 60 else product.product_variant_ids[:0]"/>
+                <t t-set="pd_first_desc" t-value="(pd_list and 'x_variant_description' in product.product_variant_id and product.product_variant_id.x_variant_description) or ''"/>
+                <div class="tc-variant-desc" t-att-style="None if pd_first_desc else 'display:none'" t-out="pd_first_desc"/>
+                <div class="tc-variant-data d-none" t-if="pd_list">
+                    <t t-foreach="pd_list" t-as="pv">
+                        <div t-if="'x_variant_description' in pv and pv.x_variant_description" t-att-data-variant-desc="pv.id" t-out="pv.x_variant_description"/>
+                    </t>
+                </div>
+                <t t-foreach="pv_list" t-as="pv">
+                    <table class="tc-spec-table tc-spec-variant" t-att-data-variant="pv.id" style="display:none">
+                        <tbody>
+                            <tr t-foreach="pv.product_template_attribute_value_ids" t-as="ptav"><th t-out="ptav.attribute_id.name"/><td t-out="ptav.name"/></tr>
+                            <tr t-foreach="p_lines.filtered(lambda l: l.attribute_id.create_variant == 'no_variant')" t-as="line"><th t-out="line.attribute_id.name"/><td t-out="', '.join(line.value_ids.mapped('name'))"/></tr>
+                        </tbody>
+                    </table>
+                </t>
+                <table t-if="p_lines" class="tc-spec-table"><tbody><tr t-foreach="p_lines" t-as="line"><th t-out="line.attribute_id.name"/><td t-out="', '.join(line.value_ids.mapped('name'))"/></tr>
+                    </tbody>
+                </table>
+                <div class="tc-xref">
+                    <h3>Standards &amp; Equivalents</h3>
+                    <p>Inch, DIN and JIS equivalents cross-referenced by our engineers. CAD files, material certificates and dimensional reports available on request.</p>
+                    <div class="tc-diversity"><span>Quality:</span><span class="tc-cert-badge">Inspected to Print</span><span class="tc-cert-badge">Veteran-Owned</span></div>
+                </div>
+                <t t-set="base" t-value="website.get_base_url()"/><t t-set="brand_line" t-value="p_lines.filtered(lambda l: (l.attribute_id.name or '').strip().lower() in ('brand', 'manufacturer'))[:1]"/><t t-set="ld_offer" t-value="{'@type': 'Offer', 'url': base + product.website_url, 'availability': 'https://schema.org/' + {'in': 'InStock', 'low': 'LimitedAvailability', 'lead': 'PreOrder'}[tc_stock[0]], 'itemCondition': 'https://schema.org/NewCondition', 'seller': {'@type': 'Organization', 'name': 'Tooling Components LLC'}}"/><t t-if="not tc_quote" t-set="ld_offer" t-value="dict(ld_offer, price='%.2f' % product.list_price, priceCurrency=website.currency_id.name)"/><t t-set="ld" t-value="{'@context': 'https://schema.org/', '@type': 'Product', 'name': product.name, 'sku': product.name, 'mpn': product.name, 'category': p_cat, 'description': (product.description_sale or product.name or '')[:500], 'image': base + '/web/image/product.template/%s/image_1024' % product.id, 'offers': ld_offer, 'additionalProperty': [{'@type': 'PropertyValue', 'name': l.attribute_id.name, 'value': ', '.join(l.value_ids.mapped('name'))} for l in p_lines]}"/><t t-if="brand_line" t-set="ld" t-value="dict(ld, brand={'@type': 'Brand', 'name': brand_line.value_ids[:1].name})"/><script type="application/ld+json" t-out="json.dumps(ld)"/>
+            </t>
+        </xpath>
+    </template>
+
+
+    <template id="tc_hide_combination_warning" inherit_id="website_sale.product" name="TC: hide combination warning" priority="72">
+        <xpath expr="//p[last()][hasclass('alert-warning')]" position="attributes">
+            <attribute name="class" add="tc-no-combination" separator=" "/>
+        </xpath>
+    </template>
+
+    <template id="tc_no_zoomodoo" inherit_id="website_sale.product" name="TC: use theme magnifier only" priority="74">
+        <xpath expr="//div[hasclass('o_wsale_product_page')]" position="attributes">
+            <attribute name="data-ecom-zoom-auto"/>
+            <attribute name="data-ecom-zoom-click"/>
+            <attribute name="class" remove="ecom-zoomable zoomodoo-next" separator=" "/>
+        </xpath>
+    </template>
+</odoo>

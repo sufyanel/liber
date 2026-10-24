@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="rbc_catalog_action" name="RBC catalog action buttons">
+        <div class="rbc-actions">
+            <t t-if="product.product_variant_count &gt; 1">
+                <a t-att-href="product.website_url" class="rbc-btn-cart" title="Choose options">Select</a>
+            </t>
+            <t t-else="">
+                <form action="/shop/cart/update" method="post" class="m-0">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="product_id" t-att-value="product.product_variant_id.id"/>
+                    <button type="submit" class="rbc-btn-cart" title="Add to Cart"><i class="fa fa-shopping-cart"/> Add</button>
+                </form>
+            </t>
+            <a t-att-href="'/quote?product_id=%s' % product.id" class="rbc-btn-rfq" title="Request a quote">RFQ</a>
+        </div>
+    </template>
+
+    <template id="rbc_shop" inherit_id="website_sale.products" name="RBC Industrial: product catalog" priority="60">
+        <xpath expr="//t[@t-set='additional_title']" position="after">
+            <t t-if="website.x_rbc_theme_active">
+                <t t-if="category" t-set="additional_title" t-value="category.name"/>
+                <t t-else="" t-set="additional_title">Product Catalog</t>
+                <t t-set="meta_description">Search mission-critical bearings, power transmission, fluid dynamics and MRO parts from RBC Industrial — same-day delivery from El Paso to Juárez.</t>
+            </t>
+        </xpath>
+
+        <!-- Page title + intro above Odoo's search / sort / layout toolbar -->
+        <xpath expr="//div[@id='products_grid']//div[hasclass('products_header')]" position="before">
+            <div t-if="website.x_rbc_theme_active" class="rbc-catalog-head">
+                <t t-set="rbc_tiles" t-value="{1: 'rbc_category_bearings_1.webp', 2: 'rbc_category_couplings_2.webp', 3: 'rbc_category_sheaves_3.webp', 5: 'rbc_category_timing-belts_5.webp', 6: 'rbc_category_v-belts_6.webp', 7: 'rbc_category_roller-chain_7.webp', 9: 'rbc_category_gearboxes_9.webp', 10: 'rbc_category_abrasives_10.webp', 11: 'rbc_category_security-cameras_11.webp', 12: 'rbc_category_press-die-components_12.webp', 13: 'rbc_category_punches-and-dies_13.webp', 14: 'rbc_category_enclosures_14.webp', 15: 'rbc_category_tools_15.webp', 16: 'rbc_category_seals_16.webp', 17: 'rbc_category_adhesives-and-tape_17.webp', 18: 'rbc_category_safety_18.webp', 19: 'rbc_category_circuit-breakers_19.webp', 20: 'rbc_category_relays_20.webp', 21: 'rbc_category_angular-contact-ball-bearings_21.webp', 22: 'rbc_category_electrical_22.webp', 24: 'rbc_category_contactors_24.webp', 25: 'rbc_category_overload-relays_25.webp', 26: 'rbc_category_switches_26.webp', 27: 'rbc_category_deep-groove-ball-bearings_27.webp', 29: 'rbc_category_chain-and-sprockets_29.webp', 30: 'rbc_category_sprockets_30.webp', 31: 'rbc_category_belts-and-sheaves_31.webp', 32: 'rbc_category_motors-and-controls_32.webp', 33: 'rbc_category_disc-couplings_33.webp', 34: 'rbc_category_chain-couplings_34.webp', 35: 'rbc_category_bushings_35.webp', 36: 'rbc_category_split-taper-bushings_36.webp', 37: 'rbc_category_qd-bushings_37.webp', 38: 'rbc_category_torque-limiters_38.webp', 39: 'rbc_category_mold-components_39.webp', 43: 'rbc_category_general-mold-components_43.webp', 44: 'rbc_category_leader-pins_44.webp', 45: 'rbc_category_straight-leader-pins_45.webp', 46: 'rbc_category_straight-leader-pins-standard_46.webp', 47: 'rbc_category_shoulder-bushings_47.webp', 48: 'rbc_category_straight-leader-pins-guided_48.webp', 49: 'rbc_category_conveyor-components_49.webp', 50: 'rbc_category_self-aligning-ball-bearing_50.webp', 51: 'rbc_category_sleeve-couplings_51.webp', 52: 'rbc_category_pillow-block-bearings_52.webp', 53: 'rbc_category_spherical-roller-bearings_53.webp', 54: 'rbc_category_flange-bearings_54.webp', 55: 'rbc_category_cylindrical-roller-bearings_55.webp', 56: 'rbc_category_bearing-components_56.webp', 57: 'rbc_category_alignment-tools_57.webp', 58: 'rbc_category_thrust-bearings_58.webp', 59: 'rbc_category_angular-contact-thrust-bearings_59.webp', 60: 'rbc_category_cam-followers_60.webp', 61: 'rbc_category_insert-bearings_61.webp', 62: 'rbc_category_take-up-bearings_62.webp', 63: 'rbc_category_needle-roller-bearings_63.webp', 64: 'rbc_category_tapered-roller-bearings_64.webp', 65: 'rbc_category_speed-reducers_65.webp', 66: 'rbc_category_die-springs_66.webp', 67: 'rbc_category_lubricant_67.webp', 68: 'rbc_category_power-transmission_68.webp', 69: 'rbc_category_industrial-mro_69.webp', 70: 'rbc_category_fluid-power_70.webp', 71: 'rbc_category_rod-end-bearings_71.webp', 72: 'rbc_category_gear-couplings_72.webp', 73: 'rbc_category_wear-plates_73.webp', 74: 'rbc_category_gas-springs_74.webp', 75: 'rbc_category_support-pillars_75.webp'}"/>
+                <img t-if="category and category.id in rbc_tiles" class="rbc-cat-head-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/' + (rbc_tiles[category.id].replace('.webp', '_es.webp') if ((request.env.lang or '')[:2] == 'es') else rbc_tiles[category.id])" t-att-alt="category.name" loading="lazy" decoding="async" width="400" height="400"/>
+                <h1><t t-if="category" t-out="category.name"/><t t-else="">Product Catalog</t></h1>
+                <p>Engineers scan for part numbers — every row is cross-referenced, specified, and ready for order or quote. Stock status reflects our El Paso warehouse.</p>
+            </div>
+            <div t-if="website.x_rbc_theme_active and not category and not search and categories" class="rbc-cat-tiles">
+                <t t-foreach="categories" t-as="tc_cat">
+                    <a t-if="tc_cat.id in rbc_tiles" t-att-href="'/shop/category/%s' % slug(tc_cat)" class="rbc-cat-tile">
+                        <img t-att-src="'/rbc_industrial_theme/static/src/img/categories/' + (rbc_tiles[tc_cat.id].replace('.webp', '_es.webp') if ((request.env.lang or '')[:2] == 'es') else rbc_tiles[tc_cat.id])" t-att-alt="tc_cat.name" loading="lazy" decoding="async" width="400" height="400"/>
+                        <span t-out="tc_cat.name"/>
+                    </a>
+                </t>
+            </div>
+        </xpath>
+
+        <xpath expr="//div[@id='products_grid']" position="inside">
+            <div t-if="website.x_rbc_theme_active" class="rbc-cta-band rbc-cta-band-sm">
+                <div><h2>Don't See Your Part Number?</h2><p>We source brand-agnostically — if it's not listed, our engineers will cross-reference it, often same day from El Paso.</p></div>
+                <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+            </div>
+        </xpath>
+
+
+        <!-- Result bar: count + active filter chips (each chip removes its filter) -->
+        
+
+        <!-- Compact filter card (replaces Odoo's long filter rail on RBC only) -->
+        <xpath expr="//aside[@id='products_grid_before'][not(hasclass('tc-filter-aside'))]" position="replace">
+            <t t-if="website.x_rbc_theme_active">
+                <aside t-if="hasLeftColumn" id="products_grid_before" class="d-none d-lg-block col-3 rbc-filter-aside">
+                    <div class="rbc-filter-card">
+                        <div class="rbc-filter-title">
+                            <span>Filter Products</span>
+                            <a t-if="attrib_set or category" href="/shop" class="rbc-filter-clear">Clear all</a>
+                        </div>
+                        <div class="rbc-filter-group">
+                            <div class="rbc-filter-label">Category</div>
+                            <ul class="rbc-cat-list">
+                                <li><a href="/shop" t-attf-class="#{'active' if not category else ''}">All Products</a></li>
+                                <t t-foreach="request.env['product.public.category'].search([('parent_id', '=', False)] + request.website.website_domain())" t-as="c">
+                                    <li>
+                                        <a t-attf-href="/shop/category/#{slug(c)}" t-attf-class="#{'active' if category and category.id == c.id else ''}" t-out="c.name"/>
+                                        <ul t-if="c.child_id and category and (category.id == c.id or category.parent_id.id == c.id)" class="rbc-cat-sub">
+                                            <li t-foreach="c.child_id" t-as="cc">
+                                                <a t-attf-href="/shop/category/#{slug(cc)}" t-attf-class="#{'active' if category.id == cc.id else ''}" t-out="cc.name"/>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </t>
+                            </ul>
+                        </div>
+                        <form t-if="attributes" class="js_attributes rbc-attr-form" method="get">
+                            <input t-if="category" type="hidden" name="category" t-att-value="category.id"/>
+                            <input type="hidden" name="search" t-att-value="search"/>
+                            <input type="hidden" name="order" t-att-value="order"/>
+                            <t t-set="used_vals" t-value="set(search_product.attribute_line_ids.value_ids.ids) if search_product else False"/>
+                            <t t-foreach="attributes" t-as="a">
+                                <t t-set="a_vals" t-value="[v for v in a.value_ids if (used_vals is False) or (v.id in used_vals) or (v.id in attrib_set)]"/>
+                                <t t-set="a_selected" t-value="any(v.id in attrib_set for v in a.value_ids)"/>
+                                <details t-if="a_vals" class="rbc-filter-group" t-att-open="'open' if a_selected else None">
+                                    <summary class="rbc-filter-label">
+                                        <t t-out="a.name"/>
+                                        <span t-if="a_selected" class="rbc-filter-count" t-out="len([v for v in a.value_ids if v.id in attrib_set])"/>
+                                    </summary>
+                                    <input t-if="len(a_vals) &gt; 6" type="search" class="rbc-value-search" t-att-placeholder="'Search %s…' % a.name.lower()" aria-label="Search values"/>
+                                    <div class="rbc-attr-values">
+                                        <label t-foreach="a_vals" t-as="v" class="rbc-check">
+                                            <input type="checkbox" name="attrib" t-att-value="'%s-%s' % (a.id, v.id)"
+                                                   t-att-checked="'checked' if v.id in attrib_set else None"/>
+                                            <span t-out="v.name"/>
+                                        </label>
+                                    </div>
+                                </details>
+                            </t>
+                        </form>
+                        <div class="rbc-stock-legend">
+                            <div class="rbc-filter-label">Stock status</div>
+                            <span class="rbc-stock in"><i/>IN STOCK</span>
+                            <span class="rbc-stock low"><i/>LOW</span>
+                            <span class="rbc-stock lead"><i/>LEAD TIME</span>
+                        </div>
+                    </div>
+                </aside>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+
+
+        <!-- Active filter chips (click x to remove one filter) -->
+        <xpath expr="//div[@id='products_grid']//div[hasclass('products_header')]" position="after">
+            <t t-if="website.x_rbc_theme_active and attrib_set">
+                <t t-set="rbc_sel" t-value="request.env['product.attribute.value'].browse(list(attrib_set)).exists()"/>
+                <div class="rbc-chips">
+                    <span class="rbc-chips-label">Active filters:</span>
+                    <t t-foreach="rbc_sel" t-as="sv">
+                        <a class="rbc-fchip" t-att-href="keep(attrib=['%s-%s' % (o.attribute_id.id, o.id) for o in rbc_sel if o.id != sv.id])">
+                            <span class="k" t-out="sv.attribute_id.name"/>: <t t-out="sv.name"/> <i class="fa fa-times"/>
+                        </a>
+                    </t>
+                    <a class="rbc-fchip-clear" t-att-href="keep(attrib=[])">Clear all</a>
+                </div>
+            </t>
+        </xpath>
+
+        <!-- Catalog: dense table (list layout) + compact cards (grid layout) -->
+        <xpath expr="//div[hasclass('o_wsale_products_grid_table_wrapper')]/table" position="replace">
+            <t t-if="website.x_rbc_theme_active">
+                <div class="rbc-catalog">
+                    <div class="rbc-qf-status" aria-live="polite"/>
+                    <div class="rbc-table-wrap">
+                        <table class="rbc-table">
+                            <thead>
+                                <tr>
+                                    <th class="c-part">Part No</th>
+                                    <th class="c-cat">Category</th>
+                                    <th class="c-spec">Specs</th>
+                                    <th class="c-desc">Description</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="products" t-as="product">
+                                    <t t-set="p_lines" t-value="product.attribute_line_ids.filtered(lambda l: l.value_ids).sorted(lambda l: (l.attribute_id.sequence, l.attribute_id.id))"/><t t-set="p_qty" t-value="product.sudo().qty_available if product.type == 'product' else 99"/><t t-set="stock" t-value="('in', 'EN EXISTENCIA' if ((request.env.lang or '')[:2] == 'es') else 'IN STOCK') if p_qty &gt; 10 else (('low', 'POCAS PIEZAS' if ((request.env.lang or '')[:2] == 'es') else 'LOW') if p_qty &gt; 0 else ('lead', 'SOBRE PEDIDO' if ((request.env.lang or '')[:2] == 'es') else 'LEAD TIME'))"/><t t-set="quote" t-value="('Request Quote' in product.product_tag_ids.with_context(lang='en_US').mapped('name')) or (not product._is_add_to_cart_possible()) or (not product.list_price)"/><t t-set="p_cat" t-value="product.public_categ_ids[:1].name or ''"/><t t-set="p_spec" t-value="' · '.join([', '.join(l.value_ids.mapped('name')) for l in p_lines[:4]])"/>
+                                    <td class="c-part"><a t-att-href="product.website_url" class="rbc-pname" t-out="product.name"/></td>
+                                    <td class="c-cat"><span t-if="p_cat" class="rbc-chip" t-out="p_cat"/></td>
+                                    <td class="c-spec rbc-spec" t-out="p_spec"/>
+                                    <td class="c-desc rbc-desc" t-out="product.description_sale or ''"/>
+                                    <td class="rbc-price">
+                                        <t t-if="quote">—</t>
+                                        <t t-else=""><span t-out="products_prices[product.id]['price_reduce']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></t>
+                                    </td>
+                                    <td><span t-attf-class="rbc-stock #{stock[0]}"><i/><t t-out="stock[1]"/></span></td>
+                                    <td class="text-center"><t t-call="rbc_industrial_theme.rbc_catalog_action"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="rbc-cards">
+                        <div t-foreach="products" t-as="product" class="rbc-pcard">
+                            <t t-set="p_lines" t-value="product.attribute_line_ids.filtered(lambda l: l.value_ids).sorted(lambda l: (l.attribute_id.sequence, l.attribute_id.id))"/><t t-set="p_qty" t-value="product.sudo().qty_available if product.type == 'product' else 99"/><t t-set="stock" t-value="('in', 'EN EXISTENCIA' if ((request.env.lang or '')[:2] == 'es') else 'IN STOCK') if p_qty &gt; 10 else (('low', 'POCAS PIEZAS' if ((request.env.lang or '')[:2] == 'es') else 'LOW') if p_qty &gt; 0 else ('lead', 'SOBRE PEDIDO' if ((request.env.lang or '')[:2] == 'es') else 'LEAD TIME'))"/><t t-set="quote" t-value="('Request Quote' in product.product_tag_ids.with_context(lang='en_US').mapped('name')) or (not product._is_add_to_cart_possible()) or (not product.list_price)"/><t t-set="p_cat" t-value="product.public_categ_ids[:1].name or ''"/><t t-set="p_spec" t-value="' · '.join([', '.join(l.value_ids.mapped('name')) for l in p_lines[:4]])"/>
+                            <a t-att-href="product.website_url" class="rbc-pcard-img">
+                                <img t-if="product.image_128" t-att-src="'/web/image/product.template/%s/image_256' % product.id" t-att-alt="product.name" loading="lazy" decoding="async" width="400" height="400"/>
+                                <span t-else="" t-out="product.name"/>
+                            </a>
+                            <div class="rbc-pcard-body">
+                                <div class="d-flex justify-content-between align-items-center gap-1">
+                                    <span t-if="p_cat" class="rbc-chip" t-out="p_cat"/>
+                                    <span t-attf-class="rbc-stock #{stock[0]}"><i/><t t-out="stock[1]"/></span>
+                                </div>
+                                <a t-att-href="product.website_url" class="rbc-part" t-out="product.name"/>
+                                <div class="rbc-desc" t-out="product.description_sale or ''"/>
+                                <div class="rbc-spec" t-out="p_spec"/>
+                                <div class="rbc-pcard-foot">
+                                    <span class="rbc-price">
+                                        <t t-if="not quote"><span t-out="products_prices[product.id]['price_reduce']" t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/></t>
+                                    </span>
+                                    <t t-call="rbc_industrial_theme.rbc_catalog_action"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+
+</odoo>

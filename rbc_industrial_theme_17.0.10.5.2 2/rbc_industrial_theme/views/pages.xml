@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Reusable pieces ================================================== -->
+    <template id="rbc_breadcrumb" name="RBC breadcrumb">
+        <div class="container">
+            <nav class="rbc-breadcrumbs" aria-label="breadcrumb">
+                <a href="/">Home</a><span class="sep">›</span><span class="current" t-out="crumb"/>
+            </nav>
+        </div>
+    </template>
+
+    <template id="rbc_quote_form" name="RBC quote form">
+        <t t-if="website.x_rbc_quote_form_url">
+            <t t-set="ghl_id" t-value="website.x_rbc_quote_form_url.rstrip('/').split('/')[-1]"/>
+            <div class="rbc-ghl-form rbc-ghl-loading">
+                <iframe t-att-src="website.x_rbc_quote_form_url" t-att-id="'inline-' + ghl_id" t-att-data-form-id="ghl_id"
+                        data-layout="{'id':'INLINE'}" data-trigger-type="alwaysShow" data-activation-type="alwaysActivated"
+                        data-deactivation-type="neverDeactivate" data-form-name="RBC Request a Quote" data-layout-iframe-id="'inline-' + ghl_id"
+                        title="Request a Quote" loading="eager" importance="high" onload="this.parentElement.classList.remove('rbc-ghl-loading')" style="width:100%;min-height:760px;border:none;border-radius:4px"/>
+                <script defer="defer" src="https://link.msgsndr.com/js/form_embed.js"/>
+            </div>
+            <p class="rbc-form-note">For immediate line-down emergencies, call <a href="tel:+19158458188">915-845-8188</a>.</p>
+        </t>
+        <t t-else="">
+        <section class="s_website_form rbc-rfq-form" data-vcss="001" data-snippet="s_website_form">
+            <form action="/website/form/" method="post" enctype="multipart/form-data" class="o_mark_required rbc-form"
+                  data-mark="*" data-model_name="crm.lead" data-success-mode="redirect" data-success-page="/contactus-thank-you">
+                <div class="s_website_form_rows row s_col_no_bgcolor">
+                    <div class="s_website_form_field s_website_form_dnone" data-name="Field">
+                        <input type="hidden" class="form-control s_website_form_input" name="name"
+                               t-att-value="('RFQ: ' + product.name) if product else 'RFQ from RBC website'"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2 s_website_form_required" data-type="char" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_name"><span class="s_website_form_label_content">Name</span><span class="s_website_form_mark"> *</span></label>
+                        <input id="rbc_f_name" type="text" class="form-control s_website_form_input" name="contact_name" required="1" placeholder="Your full name"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2" data-type="char" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_company"><span class="s_website_form_label_content">Company</span></label>
+                        <input id="rbc_f_company" type="text" class="form-control s_website_form_input" name="partner_name" placeholder="Company name"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2 s_website_form_required" data-type="email" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_email"><span class="s_website_form_label_content">Email</span><span class="s_website_form_mark"> *</span></label>
+                        <input id="rbc_f_email" type="email" class="form-control s_website_form_input" name="email_from" required="1" placeholder="you@company.com"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2" data-type="tel" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_phone"><span class="s_website_form_label_content">Phone</span></label>
+                        <input id="rbc_f_phone" type="tel" class="form-control s_website_form_input" name="phone" placeholder="(915) 555-0100"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2 s_website_form_custom" data-type="char" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_part"><span class="s_website_form_label_content">Part Number or Need</span></label>
+                        <input id="rbc_f_part" type="text" class="form-control s_website_form_input" name="Part Number or Need" placeholder="e.g. SKF 6205-2RS / or describe application" t-att-value="product and product.name or ''"/>
+                    </div>
+                    <div class="s_website_form_field col-md-6 mb-2 s_website_form_custom" data-type="selection" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_urgency"><span class="s_website_form_label_content">Urgency</span></label>
+                        <select id="rbc_f_urgency" class="form-select s_website_form_input" name="Urgency"><option value="Standard - same business day">Standard — same business day</option><option value="Expedited - 24 hours">Expedited — 24 hours</option><option value="EMERGENCY - line down">Emergency — line down</option></select>
+                    </div>
+                    <div class="s_website_form_field col-12 mb-2" data-type="text" data-name="Field">
+                        <label class="s_website_form_label" for="rbc_f_msg"><span class="s_website_form_label_content">Message</span></label>
+                        <textarea id="rbc_f_msg" class="form-control s_website_form_input" name="description" rows="4" placeholder="Application, quantities, required specs, cross-reference info…"/>
+                    </div>
+                    <div class="s_website_form_submit col-12 mt-1">
+                        <a role="button" href="#" class="btn s_website_form_send rbc-btn-gold">Submit Quote Request</a>
+                        <span id="s_website_form_result"/>
+                    </div>
+                </div>
+            </form>
+            <p class="rbc-form-note">For immediate line-down emergencies, call <a href="tel:+19158458188">915-845-8188</a> instead of waiting on this form.</p>
+        </section>
+        </t>
+    </template>
+
+    <template id="rbc_solution_cards" name="RBC solution cards">
+        <div class="rbc-grid-3">
+            <t t-foreach="[('Precision Bearings', 'Ball, roller, spherical, and ceramic-hybrid bearings with exacting tolerances for high-velocity rotation.', '/shop', ['Bearing'], 'Rodamientos de precisión', 'Rodamientos de bolas, de rodillos, esféricos e híbridos cerámicos, con tolerancias exactas para rotación de alta velocidad.'),
+                   ('Power Transmission', 'Gear reducers, couplings, belting, chains, and sprockets matched to your torque and service-factor demands.', '/shop', ['Power Transmission', 'Gearbox', 'Coupling', 'Chain', 'Belt'], 'Transmisión de potencia', 'Reductores, coples, bandas, cadenas y catarinas seleccionados según su par y factor de servicio.'),
+                   ('Fluid Power', 'Hydraulic seals, hoses, fittings, and pumps specified against chemical compatibility and extreme pressures.', '/shop', ['Fluid', 'Hydraulic', 'Seal'], 'Hidráulica y neumática', 'Sellos hidráulicos, mangueras, conexiones y bombas especificados por compatibilidad química y presiones extremas.'),
+                   ('Motors &amp; Controls', 'AC/DC motors, VFDs, and control gear with harmonic-mitigation guidance for automated lines.', '/shop', ['Motor', 'Electrical', 'Control'], 'Motores y controles', 'Motores de CA/CD, variadores de frecuencia y equipo de control, con asesoría para mitigar armónicos en líneas automatizadas.'),
+                   ('Line Down Support', 'Same-day delivery from El Paso, priority cross-border routing, and rapid cross-referencing.', 'tel:+19158458188', [], 'Soporte por línea parada', 'Entrega el mismo día desde El Paso, ruta transfronteriza prioritaria y equivalencias rápidas.'),
+                   ('Industrial MRO', 'Indirect materials and consumables consolidated into a single, brand-agnostic sourcing relationship.', '/quote', [], 'MRO industrial', 'Materiales indirectos y consumibles consolidados en una sola relación de abastecimiento multimarca.')]" t-as="sol">
+                <t t-set="sol_cat" t-value="request.env['product.public.category'].sudo().search((['|'] * (len(sol[3]) - 1)) + [('name', 'ilike', k) for k in sol[3]], limit=1) if sol[3] else False"/>
+                <t t-set="sol_url" t-value="sol[2] if not sol[3] else (('/shop/category/%s' % slug(sol_cat)) if sol_cat else ('/shop?search=%s' % sol[3][0]))"/>
+                <div class="rbc-solution">
+                    <t t-set="sol_es" t-value="((request.env.lang or '')[:2] == 'es')"/>
+                <t t-set="sol_tile" t-value="{'Precision Bearings': '/rbc_industrial_theme/static/src/img/categories/rbc_category_bearings_1.webp', 'Power Transmission': '/rbc_industrial_theme/static/src/img/categories/rbc_category_power-transmission_68.webp', 'Fluid Power': '/rbc_industrial_theme/static/src/img/categories/rbc_category_fluid-power_70.webp', 'Motors &amp; Controls': '/rbc_industrial_theme/static/src/img/categories/rbc_category_motors-and-controls_32.webp', 'Industrial MRO': '/rbc_industrial_theme/static/src/img/categories/rbc_category_industrial-mro_69.webp', 'Line Down Support': '/rbc_industrial_theme/static/src/img/categories/rbc_category_line-down-support.webp'}.get(sol[0])"/>
+                <a t-if="sol_tile" t-att-href="sol_url" class="rbc-solution-img rbc-solution-tile"><img t-att-src="sol_tile.replace('.webp', '_es.webp') if sol_es else sol_tile" t-att-alt="sol[4] if sol_es else sol[0]" loading="lazy" decoding="async"/></a>
+                <a t-else="" t-att-href="sol_url" class="rbc-solution-img" t-out="sol[4] if sol_es else sol[0]"/>
+                    <div class="rbc-solution-body">
+                        <h3><a t-att-href="sol_url" t-out="sol[4] if sol_es else sol[0]"/></h3>
+                        <p t-out="sol[5] if sol_es else sol[1]"/>
+                        <a t-att-href="sol_url" class="rbc-link" t-out="('Llame al 915-845-8188 →' if sol_es else 'Call 915-845-8188 →') if sol[2].startswith('tel') else ((('Hable con un especialista →' if sol_es else 'Talk to a specialist →')) if sol[2] == '/quote' else ('Ver catálogo →' if sol_es else 'Browse catalog →'))"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="rbc_solutions" name="RBC Solutions">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Solutions</t>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <t t-call="rbc_industrial_theme.rbc_breadcrumb"><t t-set="crumb">Solutions</t></t>
+                <div class="container rbc-page-header">
+                    <h1>Solutions for Mission-Critical Uptime</h1>
+                    <p class="rbc-lead">Integrated solution families covering the mechanical and electrical side of industrial uptime — for manufacturing, refining, mining, and the maquiladora corridor.</p>
+                </div>
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head"><span class="rbc-kicker">Product lines</span><h2>Browse by Solution</h2></div>
+                        <t t-call="rbc_industrial_theme.rbc_solution_cards"/>
+                    </div>
+                </section>
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head"><span class="rbc-kicker">Industries</span><h2>Industries We Serve</h2></div>
+                        <div class="rbc-grid-3">
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_manufacturing_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_manufacturing.webp'" alt="Manufacturing" loading="lazy" decoding="async"/><h3>Manufacturing</h3><p>Assembly and process lines that run around the clock.</p></div>
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_oil-gas-refining_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_oil-gas-refining.webp'" alt="Oil, Gas &amp; Refining" loading="lazy" decoding="async"/><h3>Oil, Gas &amp; Refining</h3><p>Pumps, seals and bearings rated for heat and pressure.</p></div>
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_mining-aggregates_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_mining-aggregates.webp'" alt="Mining &amp; Aggregates" loading="lazy" decoding="async"/><h3>Mining &amp; Aggregates</h3><p>Heavy-duty power transmission for abrasive duty cycles.</p></div>
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_maquiladoras_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_maquiladoras.webp'" alt="Maquiladoras" loading="lazy" decoding="async"/><h3>Maquiladoras</h3><p>Cross-border supply to Ciudad Juárez, five minutes away.</p></div>
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_food-beverage_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_food-beverage.webp'" alt="Food &amp; Beverage" loading="lazy" decoding="async"/><h3>Food &amp; Beverage</h3><p>Wash-down rated bearings and stainless components.</p></div>
+                            <div class="rbc-card rbc-industry-card"><img class="rbc-industry-tile" t-att-src="'/rbc_industrial_theme/static/src/img/categories/rbc_industry_government-defense_es.webp' if ((request.env.lang or '')[:2] == 'es') else '/rbc_industrial_theme/static/src/img/categories/rbc_industry_government-defense.webp'" alt="Government &amp; Defense" loading="lazy" decoding="async"/><h3>Government &amp; Defense</h3><p>SDVOSB and Texas HUB certified sourcing.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="rbc-cta-band">
+                    <div class="container"><div class="rbc-flex">
+                        <div><h2>Not Sure Which Part You Need?</h2><p>Send the application or the part you are replacing — our team will specify and quote it the same business day.</p></div>
+                        <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+                    </div></div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Home ============================================================= -->
+    <template id="rbc_home" name="RBC Industrial Home">
+        <t t-call="website.layout">
+            <t t-set="pageName" t-value="'homepage'"/>
+            <t t-set="additional_title">Home</t>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <section class="rbc-hero">
+                    <div class="container">
+                        <h1>Eliminate Downtime.<br/><span class="rbc-gold">Deliver the Right Part, Every Time.</span></h1>
+                        <p class="rbc-subhead">RBC Industrial is your mission-critical partner for bearings, power transmission, fluid dynamics, and MRO supply — sourced brand-agnostically, shipped same-day from El Paso, and supported by a sales team of trained engineers.</p>
+                        <div class="rbc-ctas">
+                            <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+                            <a href="tel:+19158458188" class="rbc-btn-outline">Same-Day Support</a>
+                        </div>
+                        <div class="rbc-hero-meta">Service-Disabled Veteran-Owned (SDVOSB) · Texas HUB Certified · Founded 1946</div>
+                    </div>
+                </section>
+                <section class="rbc-section">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Why RBC Industrial</span>
+                            <h2>Built for Plants That Can't Afford to Stop</h2>
+                            <p class="rbc-lead">Every line down costs production, and every wrong part costs a second downtime. We engineer our supply chain around one metric: uptime.</p>
+                        </div>
+                        <div class="rbc-grid-4">
+                            <div class="rbc-card"><div class="rbc-icon">EN</div><h3>Engineer-Led Sales Team</h3><p>Your calls are answered by trained engineers who speak torque curves, bearing preload, and seal compatibility — not scripted order-takers.</p></div>
+                            <div class="rbc-card"><div class="rbc-icon">BA</div><h3>Brand-Agnostic Sourcing</h3><p>No captive brand quotas. We cross-reference and source the right part from SKF, Timken, Parker, Baldor-Reliance, and beyond.</p></div>
+                            <div class="rbc-card"><div class="rbc-icon">24</div><h3>Same-Day Response from El Paso</h3><p>Our warehouse at 3950 Doniphan Dr. ships critical parts the same day you call. Line-down emergencies jump the queue.</p></div>
+                            <div class="rbc-card"><div class="rbc-icon">5M</div><h3>5-Minute Border Proximity to Juárez</h3><p>Unmatched cross-border supply to Juárez maquiladoras. Downtime stops at the border — parts keep moving.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="rbc-section pt-0" id="solutions"><span id="industries" class="rbc-anchor"/>
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Solutions</span>
+                            <h2>Industrial Product Lines</h2>
+                            <p class="rbc-lead">Integrated solution families covering the mechanical and electrical side of industrial uptime — for manufacturing, refining, mining, and the maquiladora corridor.</p>
+                        </div>
+                        <t t-call="rbc_industrial_theme.rbc_solution_cards"/>
+                    </div>
+                </section>
+                <section class="rbc-trust">
+                    <div class="container"><div class="rbc-flex">
+                        <div>
+                            <h2>Certified. Verified. Mission-Ready.</h2>
+                            <p>As a Service-Disabled Veteran-Owned small business, RBC Industrial carries federal and state certifications that open doors for prime contractors and government buyers alike.</p>
+                        </div>
+                        <div class="rbc-badges"><span class="rbc-big-badge">SDVOSB Certified</span><span class="rbc-big-badge">Texas HUB</span></div>
+                    </div></div>
+                </section>
+                <section class="rbc-stats">
+                    <div class="container"><div class="rbc-grid-4">
+                        <div class="rbc-stat"><div class="num">1946</div><div class="lbl">Founded</div></div>
+                        <div class="rbc-stat"><div class="num">80+</div><div class="lbl">Years of Legacy</div></div>
+                        <div class="rbc-stat"><div class="num">24hr</div><div class="lbl">Emergency Response</div></div>
+                        <div class="rbc-stat"><div class="num">5min</div><div class="lbl">To Juárez Border</div></div>
+                    </div></div>
+                </section>
+                <section class="rbc-section">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Knowledge Base</span>
+                            <h2>Engineering Intelligence, On Demand</h2>
+                            <p class="rbc-lead">Field-tested technical guidance from our team of trained engineers — the same people who answer your phones.</p>
+                        </div>
+                        <t t-set="rbc_posts" t-value="request.env['blog.post'].search([('website_published', '=', True), ('blog_id.website_id', 'in', [False, website.id])], order='post_date desc', limit=3)"/>
+                        <div class="rbc-grid-3">
+                            <a t-foreach="rbc_posts" t-as="post" t-att-href="post.website_url" class="rbc-kb-item">
+                                <span class="rbc-tag" t-if="post.tag_ids" t-out="post.tag_ids[0].name"/>
+                                <h3 t-out="post.name"/>
+                                <p t-out="(post.subtitle or '').replace('&amp;mdash;', '—').replace('&amp;ndash;', '–').replace('&amp;nbsp;', ' ').replace('&amp;amp;', '&amp;')"/>
+                            </a>
+                        </div>
+                        <p class="mt-3"><a href="/blog" class="rbc-link">All engineering articles →</a></p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- About ============================================================ -->
+    <template id="rbc_about" name="About RBC Industrial">
+        <t t-call="website.layout">
+            <t t-set="additional_title">About RBC Industrial</t>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <t t-call="rbc_industrial_theme.rbc_breadcrumb"><t t-set="crumb">About RBC Industrial</t></t>
+                <div class="container rbc-page-header">
+                    <h1>About RBC Industrial</h1>
+                    <p class="rbc-lead">A service-disabled veteran-owned distributor with a 1946 military precision legacy — now El Paso's mission-critical partner for industrial MRO and power transmission.</p>
+                </div>
+                <section class="rbc-band">
+                    <div class="container">
+                        <h2>From Military Precision to <span class="rbc-gold">Mission-Critical Industry.</span></h2>
+                    </div>
+                </section>
+                <section class="rbc-section">
+                    <div class="container"><div class="rbc-story">
+                        <div>
+                            <span class="rbc-kicker">Our Story</span>
+                            <h2>A Legacy of Precision Since 1946</h2>
+                            <p>RBC Industrial traces its roots to <strong>1946</strong>, when a U.S. Navy Naval Engineering Officer founded the original firm on a simple but demanding standard: <strong>military precision</strong>. What began as the Roger Brown Co. legacy of exacting quality and disciplined delivery has evolved into today's RBC Industrial — a modern, service-disabled veteran-owned distributor serving heavy industry across the border region.</p>
+                            <p>Our team of <strong>trained engineers</strong> applies the same rigor a naval engineer would to a ship's drivetrain — because an idled production line has the same cost as an idled mission.</p>
+                            <p>Based in El Paso at <strong>3950 Doniphan Dr. Ste P</strong>, we operate as a <strong>brand-agnostic sourcing partner</strong>: no captive brand quotas, no sales scripts — just the right part, cross-referenced and delivered at the right time.</p>
+                        </div>
+                        <aside class="rbc-card rbc-timeline-card">
+                            <h3>Company Timeline</h3>
+                            <ul class="rbc-timeline">
+                                <li><b>1946</b><span>Founded by a U.S. Navy Naval Engineering Officer on a standard of military precision.</span></li>
+                                <li><b>Roger Brown Co.</b><span>The founding firm's exacting quality and delivery discipline carries forward.</span></li>
+                                <li><b>Today — RBC Industrial LLC</b><span>SDVOSB distributor in El Paso serving industrial plants and Juárez maquiladoras.</span></li>
+                                <li><b>Every Day</b><span>Engineer-led sales, brand-agnostic sourcing, same-day line-down response.</span></li>
+                            </ul>
+                        </aside>
+                    </div></div>
+                </section>
+                <section class="rbc-mission">
+                    <div class="container">
+                        <blockquote>"Delivering the right product at the right time, every time."</blockquote>
+                        <div class="attr">The RBC Industrial Mission</div>
+                    </div>
+                </section>
+                <section class="rbc-section">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">The Difference</span>
+                            <h2>Engineer-Led, Not Order-Taking</h2>
+                            <p class="rbc-lead">When you call RBC, you reach someone who can read your spec sheet back to you — and challenge it if it's wrong for the application.</p>
+                        </div>
+                        <div class="rbc-grid-3">
+                            <div class="rbc-card"><div class="rbc-icon">EN</div><h3>Engineers on the Phone</h3><p>Torque curves, bearing preload, seal chemistry — our sales team speaks your language.</p></div>
+                            <div class="rbc-card"><div class="rbc-icon">XR</div><h3>Cross-Reference Expertise</h3><p>Equivalent parts across manufacturers, so you are never locked into one brand or a sole-source lead time.</p></div>
+                            <div class="rbc-card"><div class="rbc-icon">UP</div><h3>Uptime-First Mentality</h3><p>Every recommendation is measured against one metric: keeping your production line running.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Certifications</span>
+                            <h2>Certified for Government &amp; Prime Contractors</h2>
+                        </div>
+                        <div class="rbc-grid-3">
+                            <div class="rbc-card"><div class="rbc-seal">SDVOSB</div><h3>Service-Disabled Veteran-Owned</h3><p>Federally recognized SDVOSB certification supporting set-aside opportunities.</p></div>
+                            <div class="rbc-card"><div class="rbc-seal">TX HUB</div><h3>Texas Historically Underutilized Business</h3><p>State of Texas HUB certification for state procurement and cooperative contracts.</p></div>
+                            <div class="rbc-card"><div class="rbc-seal">MIL</div><h3>Military Precision Legacy</h3><p>Founded on the exacting standards of a U.S. Navy Naval Engineering Officer in 1946.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head"><span class="rbc-kicker">Values</span><h2>What We Stand On</h2></div>
+                        <div class="rbc-grid-4">
+                            <div class="rbc-card"><h3>Precision</h3><p>The right part, specified correctly, the first time.</p></div>
+                            <div class="rbc-card"><h3>Reliability</h3><p>Same-day response and delivery you can plan a shutdown around.</p></div>
+                            <div class="rbc-card"><h3>Integrity</h3><p>Brand-agnostic advice — we recommend what runs, not what pays.</p></div>
+                            <div class="rbc-card"><h3>Service</h3><p>A veteran-owned commitment to the people who keep plants running.</p></div>
+                        </div>
+                    </div>
+                </section>
+                <section class="rbc-cta-band">
+                    <div class="container"><div class="rbc-flex">
+                        <div><h2>Put an Engineer on Your Parts Team.</h2><p>Send us the part and the application — we'll source it, often same day from El Paso.</p></div>
+                        <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+                    </div></div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Contact ========================================================== -->
+    <template id="rbc_contact" name="Contact RBC Industrial">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Contact RBC Industrial</t>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <t t-call="rbc_industrial_theme.rbc_breadcrumb"><t t-set="crumb">Contact</t></t>
+                <div class="container rbc-page-header">
+                    <h1>Contact RBC Industrial</h1>
+                    <p class="rbc-lead">Reach our engineer-led sales team for quotes, cross-references, and line-down emergencies. Same-day response from El Paso.</p>
+                </div>
+                <section class="container"><div class="rbc-contact">
+                    <div class="rbc-methods">
+                        <div class="rbc-method"><div class="lbl">Phone — Line Down Emergencies</div><div class="val"><a href="tel:+19158458188">915-845-8188</a></div><div class="note">Same-day delivery from El Paso. Emergency calls jump the queue.</div></div>
+                        <div class="rbc-method"><div class="lbl">Email — Sales &amp; Quotes</div><div class="val"><a href="mailto:Sales@rbc-industrial.com">Sales@rbc-industrial.com</a></div><div class="note">Include part numbers and quantities for fastest turnaround.</div></div>
+                        <div class="rbc-method"><div class="lbl">Fax</div><div class="val">915-845-8183</div></div>
+                        <div class="rbc-method"><div class="lbl">Warehouse &amp; Office</div><div class="val">RBC Industrial LLC</div><div class="note"><a href="https://www.google.com/maps/search/?api=1&amp;query=3950+Doniphan+Dr+Ste+P+El+Paso+TX+79922" target="_blank" rel="noopener">3950 Doniphan Dr. Ste P, El Paso, Texas 79922</a></div></div>
+                        <div class="rbc-method"><div class="lbl">Business Hours</div><div class="note">Monday – Friday: 7:00 AM – 5:00 PM MT<br/>Emergency line: 915-845-8188</div></div>
+                    </div>
+                    <div class="rbc-card rbc-rfq">
+                        <h2>Request a Quote</h2>
+                        <p class="rbc-muted">Line down? Select "Emergency" for priority handling. Otherwise we respond the same business day.</p>
+                        <t t-set="product" t-value="False"/>
+                        <t t-call="rbc_industrial_theme.rbc_quote_form"/>
+                    </div>
+                </div></section>
+                <section class="rbc-promise">
+                    <div class="container"><div class="rbc-grid-3">
+                        <div><div class="big">Same Business Day</div><div class="small">Quote response on standard requests</div></div>
+                        <div><div class="big">24/7</div><div class="small">Line-down emergency line — 915-845-8188</div></div>
+                        <div><div class="big">Engineers</div><div class="small">Your request is handled by trained engineers, not order-takers</div></div>
+                    </div></div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+    <!-- Quote ============================================================ -->
+    <template id="rbc_quote" name="RBC Request a Quote">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Request a Quote</t>
+            <t t-set="product" t-value="request.env['product.template'].sudo().browse(int(request.params.get('product_id') or 0) if (request.params.get('product_id') or '').isdigit() else 0).exists()"/>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <t t-call="rbc_industrial_theme.rbc_breadcrumb"><t t-set="crumb">Request a Quote</t></t>
+                <div class="container rbc-page-header">
+                    <h1>Request a Quote</h1>
+                    <p class="rbc-lead">Tell us the part you need. Our engineers confirm availability, cross-references and pricing — ideal for custom, line-down, or hard-to-find parts.</p>
+                </div>
+                <section class="container rbc-quote-wrap">
+                    <div class="rbc-card rbc-rfq">
+                        <p t-if="product" class="rbc-quote-product">Quoting: <strong t-out="product.name"/> <span class="rbc-muted" t-if="product.description_sale">— <t t-out="product.description_sale"/></span></p>
+                        <t t-call="rbc_industrial_theme.rbc_quote_form"/>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+
+
+    <!-- Bearings in El Paso landing page (17.0.6.7.0) ===================== -->
+    <!-- Content from Dale Betz's handoff (handoff/rbc-bearings-el-paso), restyled
+         with the RBC design. Not in the menu; linked from search and the GBP. -->
+    <template id="rbc_bearings_el_paso" name="Bearings in El Paso">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Bearings in El Paso, TX</t>
+            <div id="wrap" class="oe_structure o_rbc_page">
+                <t t-call="rbc_industrial_theme.rbc_breadcrumb"><t t-set="crumb">Bearings in El Paso</t></t>
+                <div class="container rbc-page-header">
+                    <h1>Bearings in El Paso, Texas</h1>
+                    <p class="rbc-lead">RBC Industrial stocks ball, roller, thrust and housed bearing units for El Paso industry — cross-referenced across every major brand by engineers who work from dimensions and application, not just a part number.</p>
+                    <p>Same-day pickup at 3950 Doniphan Dr, hot-shot delivery across the El Paso corridor, and same-day supply into the Ju&#225;rez maquiladora corridor.</p>
+                    <div class="rbc-ctas">
+                        <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+                        <a href="tel:+19158458188" class="rbc-btn-outline-dark">Call 915-845-8188</a>
+                    </div>
+                </div>
+
+                <section class="rbc-section">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">What We Stock</span>
+                            <h2>Bearing types we stock in El Paso</h2>
+                            <p class="rbc-lead">Our shelves and our supplier network cover the full range of anti-friction bearings used in rotating equipment, plus the adapters, sleeves, locknuts and housings that finish an installation.</p>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><a href="/shop/category/bearings-deep-groove-ball-bearings-27">Deep groove ball bearings</a> — the general-purpose workhorse for motors, pumps and fans</li>
+                                    <li><a href="/shop/category/bearings-angular-contact-ball-bearings-21">Angular contact ball bearings</a> — combined radial and thrust load, matched sets</li>
+                                    <li><a href="/shop/category/bearings-self-aligning-ball-bearing-50">Self-aligning ball bearings</a> — shafts with misalignment</li>
+                                    <li><a href="/shop/category/bearings-cylindrical-roller-bearings-55">Cylindrical roller bearings</a> — high radial capacity at speed</li>
+                                    <li><a href="/shop/category/bearings-spherical-roller-bearings-53">Spherical roller bearings</a> — heavy radial load plus misalignment</li>
+                                    <li><a href="/shop/category/bearings-tapered-roller-bearings-64">Tapered roller bearings</a> — gearboxes, wheel hubs, differentials</li>
+                                    <li><a href="/shop/category/bearings-needle-roller-bearings-63">Needle roller bearings</a> — tight radial envelope</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul>
+                                    <li><a href="/shop/category/bearings-thrust-bearings-58">Thrust bearings</a> — axial load in vertical shafts</li>
+                                    <li><a href="/shop/category/bearings-angular-contact-thrust-bearings-59">Angular contact thrust bearings</a> — combined axial and radial loading</li>
+                                    <li><a href="/shop/category/bearings-pillow-block-bearings-52">Pillow block bearings</a> — conveyors and driven equipment</li>
+                                    <li><a href="/shop/category/bearings-flange-bearings-54">Flange bearings</a> — through-wall and frame mounting</li>
+                                    <li><a href="/shop/category/bearings-insert-bearings-61">Insert bearings</a> — housed units in conveyors and fans</li>
+                                    <li><a href="/shop/category/bearings-take-up-bearings-62">Take-up bearings</a> — conveyor tensioning and belt adjustment</li>
+                                    <li><a href="/shop/category/bearings-cam-followers-60">Cam followers</a> and <a href="/shop/category/bearings-rod-end-bearings-71">rod end bearings</a> — linkage and track applications</li>
+                                    <li><a href="/shop/category/bearings-bearing-components-56">Adapters, sleeves, locknuts and housings</a> — complete the fit</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p>Bearings rarely fail alone. <a href="/shop/category/power-transmission-seals-16">Seals</a> protect them — oil, shaft and hydraulic seals matched on bore, material and profile go out on the same order as the bearing they are protecting.</p>
+                        <p><a href="/shop/category/bearings-1" class="rbc-link">Browse the full bearings catalog &#8594;</a></p>
+                    </div>
+                </section>
+
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Part Numbers</span>
+                            <h2>How to read a bearing part number</h2>
+                            <p class="rbc-lead">A bearing number is a base designation plus prefixes and suffixes. The base tells you the type and the bore; the suffixes tell you how the bearing is closed and how much internal clearance it has. Two suffixes that answer two different questions — do not read one as the other.</p>
+                        </div>
+                        <h3>Seals and shields — the closure suffix</h3>
+                        <div class="rbc-table-wrap">
+                            <table class="rbc-table">
+                                <thead><tr><th>Suffix</th><th>Closure</th><th>Contact?</th><th>Use when</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Open</td><td>None — no seal or shield</td><td>n/a</td><td>Clean environments, or oil circulation / external sealing</td></tr>
+                                    <tr><td>Z</td><td>Metal shield, one side</td><td>Non-contact</td><td>Oriented mounting, dust without moisture</td></tr>
+                                    <tr><td>ZZ or 2Z</td><td>Metal shield, both sides</td><td>Non-contact</td><td>Dust, moderate speed, low drag. Grease retained for life</td></tr>
+                                    <tr><td>RS</td><td>Rubber seal, one side</td><td>Contact</td><td>Moisture and fine contamination on one face</td></tr>
+                                    <tr><td>2RS</td><td>Rubber seal, both sides</td><td>Contact</td><td>Washdown, humidity, fine dust. Best ingress protection of the four</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="rbc-muted">A metal shield seals by a narrow gap and adds almost no drag. A rubber seal rubs the rotating ring, so it protects better but costs a little friction and speed rating. That is the trade.</p>
+                        <h3>Clearance — a separate axis</h3>
+                        <div class="rbc-table-wrap">
+                            <table class="rbc-table">
+                                <thead><tr><th>Code</th><th>Radial internal clearance</th><th>Typical reason</th></tr></thead>
+                                <tbody>
+                                    <tr><td>C2</td><td>Tighter than normal</td><td>Precision spindles, minimal runout</td></tr>
+                                    <tr><td>C0 (no code)</td><td>Normal</td><td>Most general applications</td></tr>
+                                    <tr><td>C3</td><td>Greater than normal</td><td>Heat from the fit, or thermal expansion in service</td></tr>
+                                    <tr><td>C4</td><td>Greater than C3</td><td>Heavy interference fits and elevated running temperature</td></tr>
+                                    <tr><td>C5</td><td>Greater than C4</td><td>Extreme thermal conditions</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>Clearance and closure combine freely. A <strong>6205-2RS-C3</strong> is a 6205 size bearing, rubber sealed both sides, running looser than normal clearance — a very common press or motor choice.</p>
+                    </div>
+                </section>
+
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">Cross-Reference</span>
+                            <h2>Cross-brand equivalents — the same part, different letters</h2>
+                            <p class="rbc-lead">Every manufacturer uses its own letters for identical function. This is where most ordering errors start, and where a brand-agnostic distributor earns its keep.</p>
+                        </div>
+                        <div class="rbc-table-wrap">
+                            <table class="rbc-table">
+                                <thead><tr><th>Function</th><th>SKF</th><th>FAG</th><th>NSK</th><th>NTN</th><th>Timken</th><th>Koyo</th></tr></thead>
+                                <tbody>
+                                    <tr><td>Sealed both sides (contact)</td><td>2RS1 / 2RSH</td><td>2RSR</td><td>DDU</td><td>LLU</td><td>2RS</td><td>2RS</td></tr>
+                                    <tr><td>Shielded both sides</td><td>2Z</td><td>2Z</td><td>ZZ</td><td>ZZ</td><td>ZZ</td><td>ZZ</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p>Give us any of these and we will match across the brands we carry — SKF, Timken, Browning, Morse, McGill, Rollway, Rexnord and Link-Belt among them — and quote what is actually on the shelf.</p>
+                    </div>
+                </section>
+
+                <section class="rbc-band">
+                    <div class="container">
+                        <h2>Same-day bearings for the El Paso and <span class="rbc-gold">Ju&#225;rez corridor.</span></h2>
+                    </div>
+                </section>
+                <section class="rbc-section">
+                    <div class="container">
+                        <p class="rbc-lead">Our stocking location at 3950 Doniphan Dr sits about five minutes from the Ju&#225;rez border. That proximity is the whole point: when a line is down, the answer is not a three-day freight estimate.</p>
+                        <div class="rbc-grid-4">
+                            <div class="rbc-card"><h3>Same-day response</h3><p>Firm delivery dates. You get a committed date, not a range.</p></div>
+                            <div class="rbc-card"><h3>Hot-shot capable</h3><p>From the El Paso stocking location.</p></div>
+                            <div class="rbc-card"><h3>Cross-border supply</h3><p>Into the Ju&#225;rez maquiladora corridor, same day.</p></div>
+                            <div class="rbc-card"><h3>One accountable PO</h3><p>Bearings, power transmission, fluid power, motors and controls, electrical and industrial MRO on a single order.</p></div>
+                        </div>
+                        <p class="mt-3">We supply manufacturing, refining, mining, water and wastewater utilities, higher-education facilities, and federal, defense and DOE sites across the corridor.</p>
+                        <p class="rbc-muted">RBC Industrial carries on the operating lineage of Roger Brown Co., supplying El Paso industry since 1946.</p>
+                    </div>
+                </section>
+
+                <section class="rbc-section pt-0">
+                    <div class="container">
+                        <div class="rbc-section-head">
+                            <span class="rbc-kicker">FAQ</span>
+                            <h2>Bearings in El Paso — common questions</h2>
+                        </div>
+                        <h3>Do you stock bearings locally in El Paso?</h3>
+                        <p>Yes. We hold bearings at our El Paso stocking location at 3950 Doniphan Dr Ste P and can pull from our supplier network for anything not on the shelf. Call 915-845-8188 and we will confirm availability the same day.</p>
+                        <h3>Can you cross-reference a bearing part number I already have?</h3>
+                        <p>Yes, and it is most of what we do. Send the number stamped on the bearing, or the dimensions you measured, and our engineers will match it across every brand we carry. If the number is unreadable, bore, outside diameter and width are enough to identify it.</p>
+                        <h3>Do you deliver bearings into Ju&#225;rez?</h3>
+                        <p>Yes. We support the Ju&#225;rez maquiladora corridor with same-day cross-border supply from our El Paso location.</p>
+                        <h3>What is the difference between 2RS and ZZ bearings?</h3>
+                        <p>2RS means a rubber seal on both sides, contacting the rotating ring. ZZ means a metal shield on both sides, non-contacting. Choose 2RS for moisture and fine contamination, ZZ for dust and higher speed with lower friction.</p>
+                        <h3>Which bearing clearance should I specify?</h3>
+                        <p>Normal clearance suits most applications. Specify C3 where the bearing runs hot from the fit or from thermal expansion in service, which is why C3 is common in electric motors and pumps. C2 is for precision work where runout must stay tight.</p>
+                    </div>
+                </section>
+
+                <section class="rbc-cta-band">
+                    <div class="container"><div class="rbc-flex">
+                        <div><h2>Need a bearing today?</h2><p>Call <a href="tel:+19158458188">915-845-8188</a> or email <a href="mailto:sales@rbc-industrial.com">sales@rbc-industrial.com</a>.</p></div>
+                        <a href="/quote" class="rbc-btn-gold">Request a Quote</a>
+                    </div></div>
+                </section>
+            </div>
+            <!-- FAQPage structured data: same questions and answers as the visible FAQ -->
+            <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
+{"@type": "Question", "name": "Do you stock bearings locally in El Paso?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. We hold bearings at our El Paso stocking location at 3950 Doniphan Dr Ste P and can pull from our supplier network for anything not on the shelf. Call 915-845-8188 and we will confirm availability the same day."}},
+{"@type": "Question", "name": "Can you cross-reference a bearing part number I already have?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, and it is most of what we do. Send the number stamped on the bearing, or the dimensions you measured, and our engineers will match it across every brand we carry. If the number is unreadable, bore, outside diameter and width are enough to identify it."}},
+{"@type": "Question", "name": "Do you deliver bearings into Juárez?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. We support the Juárez maquiladora corridor with same-day cross-border supply from our El Paso location."}},
+{"@type": "Question", "name": "What is the difference between 2RS and ZZ bearings?", "acceptedAnswer": {"@type": "Answer", "text": "2RS means a rubber seal on both sides, contacting the rotating ring. ZZ means a metal shield on both sides, non-contacting. Choose 2RS for moisture and fine contamination, ZZ for dust and higher speed with lower friction."}},
+{"@type": "Question", "name": "Which bearing clearance should I specify?", "acceptedAnswer": {"@type": "Answer", "text": "Normal clearance suits most applications. Specify C3 where the bearing runs hot from the fit or from thermal expansion in service, which is why C3 is common in electric motors and pumps. C2 is for precision work where runout must stay tight."}}
+]}</script>
+        </t>
+    </template>
+
+</odoo>

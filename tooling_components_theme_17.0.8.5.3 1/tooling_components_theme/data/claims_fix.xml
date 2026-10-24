@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Dale, PR #4 / #5: Tooling Components is family-owned since 1987 and veteran-owned since 2023 (founded by
+         the Bowes family); the footer printed the phone number as the fax. Applied to the TC website's own (edited)
+         views on every install / upgrade. Idempotent. -->
+    <record id="action_tc_claims_fix" model="ir.actions.server">
+        <field name="name">Tooling Components: heritage claims fix</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+PAIRS = [
+    ('Veteran-owned since 1987: precision mold and die components', 'Family-owned since 1987, veteran-owned since 2023: precision mold and die components'),
+    ('· Veteran-Owned Since 1987', '· Family-Owned Since 1987 · Veteran-Owned Since 2023'),
+    ('Veteran-Owned Since 1987</span>', 'Family-Owned Since 1987 · Veteran-Owned Since 2023</span>'),
+    ('Veteran-owned since 1987.', 'Family-owned since 1987, veteran-owned since 2023.'),
+    ('Veteran-owned since 1987,', 'Family-owned since 1987, veteran-owned since 2023,'),
+    ('Veteran-owned since 1987 — engineered for', 'Family-owned since 1987, veteran-owned since 2023 — engineered for'),
+    ('stamping plants. Veteran-owned since 1987 — same-day quotes', 'stamping plants. Family-owned since 1987, veteran-owned since 2023 — same-day quotes'),
+    ('<h3>Veteran-Owned</h3><p>Veteran-owned since 1987.', '<h3>Veteran-Owned</h3><p>Family-owned since 1987 and veteran-owned since 2023.'),
+    ('<h3>Veteran-Owned Since 1987</h3><p>Founded and still run on standards of precision and accountability.</p>', '<h3>Family-Owned Since 1987</h3><p>Founded in 1987 by the Bowes family and veteran-owned since 2023 - still run on standards of precision and accountability.</p>'),
+    (' | Fax: 814-438-7657', ''),
+]
+sites = env["website"].sudo().search([("x_tc_theme_active", "=", True)])
+fixed = 0
+if sites:
+    View = env["ir.ui.view"].sudo().with_context(active_test=False, lang="en_US")
+    for view in View.search([("website_id", "in", sites.ids), ("type", "=", "qweb")]):
+        arch = view.arch_db or ""
+        new = arch
+        for a, b in PAIRS:
+            if a in new:
+                new = new.replace(a, b)
+        if new != arch:
+            view.write({"arch_db": new})
+            fixed += 1
+log("Tooling Components claims fix: %s view(s) corrected" % fixed)
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run" eval="[[ref('action_tc_claims_fix')]]"/>
+</odoo>

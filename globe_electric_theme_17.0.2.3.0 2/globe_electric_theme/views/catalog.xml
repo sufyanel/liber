@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- View-only product catalog for Globe Electric (Dale, 14 Oct 2026): products can be browsed, nothing can be
+         bought; every product offers Request a Quote. The catalog is never indexed. Other websites are untouched. -->
+
+    <!-- never indexed: noindex on every catalog and product page (the sitemap leaves /shop out as well) -->
+    <template id="globe_catalog_noindex" inherit_id="website.layout" name="Globe Electric: catalog noindex" priority="62">
+        <xpath expr="//head" position="inside">
+            <t t-set="globe_cat_path" t-value="(request and request.httprequest and request.httprequest.path) or ''"/>
+            <meta t-if="(website and 'x_globe_theme_active' in website and website.x_globe_theme_active) and (globe_cat_path.startswith('/shop') or globe_cat_path.startswith('/es_MX/shop'))"
+                  name="robots" content="noindex, nofollow"/>
+        </xpath>
+    </template>
+
+    <!-- product page: Request a Quote instead of buying -->
+    <template id="globe_catalog_product" inherit_id="website_sale.product" name="Globe Electric: view-only product" priority="62">
+        <xpath expr="//div[@id='o_wsale_cta_wrapper']" position="before">
+            <div t-if="website and 'x_globe_theme_active' in website and website.x_globe_theme_active" class="globe-pdp-cta">
+                <a class="globe-btn globe-btn-accent" t-att-href="'/quote?product_id=%s' % product.id">Request a Quote</a>
+                <a class="globe-btn globe-btn-dark" href="tel:+18327912940">Call (832) 791-2940</a>
+                <p class="globe-pdp-note">View-only catalog. Pricing, availability and lead time are confirmed on your quote.</p>
+            </div>
+        </xpath>
+    </template>
+</odoo>

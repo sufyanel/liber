@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_liber_rebuild_assets" model="ir.actions.server">
+        <field name="name">Liber: rebuild the website stylesheet</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+
+# Force the frontend stylesheet and script bundles to be rebuilt.
+# hooks.py does this too, but Apps > Import Module strips Python, so without
+# this the browser keeps being served the previous stylesheet and none of the
+# theme's changes appear.
+att = env["ir.attachment"].sudo().search([("name", "like", "web.assets_frontend%")])
+count = len(att)
+att.unlink()
+env.registry.clear_cache()
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {"title": "Liber theme assets", "type": "success", "sticky": False,
+               "message": "%s cached asset file(s) cleared. Reload the website with Ctrl+Shift+R." % count},
+}
+]]></field>
+    </record>
+
+    <!-- last data file, so it runs after everything else on install and upgrade -->
+    <function model="ir.actions.server" name="run" eval="[[ref('action_liber_rebuild_assets')]]"/>
+
+    <menuitem id="menu_liber_rebuild_assets" name="Liber: rebuild stylesheet"
+              parent="website.menu_website_configuration" action="action_liber_rebuild_assets"
+              groups="website.group_website_designer" sequence="98"/>
+</odoo>

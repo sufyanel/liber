@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Income Statement: one dashboard per company and year, like the Threshold Dashboard. The budget is entered on the dashboard itself. -->
+    <record id="model_x_isr_dashboard" model="ir.model">
+        <field name="name">Income Statement Dashboard</field>
+        <field name="model">x_isr_dashboard</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_line" model="ir.model">
+        <field name="name">Income Statement Line</field>
+        <field name="model">x_isr_line</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_period" model="ir.model">
+        <field name="name">Income Statement Period</field>
+        <field name="model">x_isr_period</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_value" model="ir.model">
+        <field name="name">Income Statement Figure</field>
+        <field name="model">x_isr_value</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_part" model="ir.model">
+        <field name="name">Income Statement Subtotal Part</field>
+        <field name="model">x_isr_part</field>
+        <field name="info">What a calculated line is made of, for one period: one row per account-based line.</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">char</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_active" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_active</field>
+        <field name="field_description">Active</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_prior_years" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_prior_years</field>
+        <field name="field_description">Earlier Years Shown</field>
+        <field name="ttype">integer</field>
+        <field name="help">Full years before Year shown beside it, for the % of sales comparison.</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_peer_company_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_peer_company_ids</field>
+        <field name="field_description">Also Include Companies</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.company</field>
+        <field name="relation_table">x_isr_dash_peer_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">company_id</field>
+        <field name="help">Accounts of these companies can be mapped too, for example Roger Brown Co. payroll into RBC Industrial.</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_budget_q1" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_budget_q1</field>
+        <field name="field_description">Planned Revenue Q1</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_budget_q2" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_budget_q2</field>
+        <field name="field_description">Planned Revenue Q2</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_budget_q3" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_budget_q3</field>
+        <field name="field_description">Planned Revenue Q3</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_budget_q4" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_budget_q4</field>
+        <field name="field_description">Planned Revenue Q4</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_custom_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_custom_from</field>
+        <field name="field_description">Custom Range From</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_custom_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_custom_to</field>
+        <field name="field_description">Custom Range To</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_unmapped_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_unmapped_account_ids</field>
+        <field name="field_description">Swept Into The Catch-All Line</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_isr_dash_unmapped_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">account_id</field>
+        <field name="readonly" eval="True"/>
+        <field name="help">Filled at each refresh: accounts that are on no line and fall into the catch-all line.</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_currency_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_currency_code</field>
+        <field name="field_description">Currency</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_refreshed" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_refreshed</field>
+        <field name="field_description">Last Refreshed</field>
+        <field name="ttype">datetime</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_note" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_note</field>
+        <field name="field_description">Notes</field>
+        <field name="ttype">text</field>
+    </record>
+
+    <record id="field_x_isr_line__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Line</field>
+        <field name="ttype">char</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <record id="field_x_isr_line__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_line__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_isr_line__x_key" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_key</field>
+        <field name="field_description">Key</field>
+        <field name="ttype">char</field>
+        <field name="required" eval="True"/>
+        <field name="help">Short name used in formulas, e.g. gross_profit_margin.</field>
+    </record>
+
+    <record id="field_x_isr_line__x_kind" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_kind</field>
+        <field name="field_description">Calculated From</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="sel_x_isr_line__x_kind__mapped" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_kind"/>
+        <field name="value">mapped</field>
+        <field name="name">Accounts</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="sel_x_isr_line__x_kind__catchall" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_kind"/>
+        <field name="value">catchall</field>
+        <field name="name">Every other expense account</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="sel_x_isr_line__x_kind__computed" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_kind"/>
+        <field name="value">computed</field>
+        <field name="name">Other lines (formula)</field>
+        <field name="sequence">30</field>
+    </record>
+
+    <record id="field_x_isr_line__x_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_account_ids</field>
+        <field name="field_description">Accounts</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_isr_line_account_rel</field>
+        <field name="column1">line_id</field>
+        <field name="column2">account_id</field>
+    </record>
+
+    <record id="field_x_isr_line__x_auto_types" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_auto_types</field>
+        <field name="field_description">Also Every Account Of Type</field>
+        <field name="ttype">char</field>
+        <field name="help">Comma separated account types, e.g. income_other.</field>
+    </record>
+
+    <record id="field_x_isr_line__x_formula" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_formula</field>
+        <field name="field_description">Formula</field>
+        <field name="ttype">char</field>
+        <field name="help">Other line keys added and subtracted, e.g. sales_revenue - less_cost_of_sales.</field>
+    </record>
+
+    <record id="field_x_isr_line__x_sign" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_sign</field>
+        <field name="field_description">Shown As</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="sel_x_isr_line__x_sign__positive" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_sign"/>
+        <field name="value">positive</field>
+        <field name="name">Positive</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="sel_x_isr_line__x_sign__negative" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_sign"/>
+        <field name="value">negative</field>
+        <field name="name">Negative (a cost)</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <record id="field_x_isr_line__x_bold" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_bold</field>
+        <field name="field_description">Bold</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_line__x_show_pct" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_show_pct</field>
+        <field name="field_description">Show % of Sales</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_line__x_is_revenue" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_is_revenue</field>
+        <field name="field_description">Revenue Line</field>
+        <field name="ttype">boolean</field>
+        <field name="help">The line every % of sales is measured against. One per dashboard.</field>
+    </record>
+
+    <record id="field_x_isr_line__x_budget_pct" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_budget_pct</field>
+        <field name="field_description">Budget % of Sales</field>
+        <field name="ttype">float</field>
+        <field name="help">Budget for this line as a percentage of the planned revenue.</field>
+    </record>
+
+    <record id="field_x_isr_line__x_bridge" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_bridge</field>
+        <field name="field_description">Waterfall</field>
+        <field name="ttype">selection</field>
+    </record>
+    <record id="sel_x_isr_line__x_bridge__none" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="value">none</field>
+        <field name="name">Not shown</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="sel_x_isr_line__x_bridge__base" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="value">base</field>
+        <field name="name">Starting bar</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="sel_x_isr_line__x_bridge__add" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="value">add</field>
+        <field name="name">Adds</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="sel_x_isr_line__x_bridge__subtract" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="value">subtract</field>
+        <field name="name">Takes away</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="sel_x_isr_line__x_bridge__total" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_line__x_bridge"/>
+        <field name="value">total</field>
+        <field name="name">Closing bar</field>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="field_x_isr_line__x_kpi" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_kpi</field>
+        <field name="field_description">KPI Card</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_line__x_resolved_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_line"/>
+        <field name="name">x_resolved_account_ids</field>
+        <field name="field_description">Accounts Used</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_isr_line_resolved_rel</field>
+        <field name="column1">line_id</field>
+        <field name="column2">account_id</field>
+        <field name="readonly" eval="True"/>
+        <field name="help">Filled at each refresh, including what a catch-all line swept up.</field>
+    </record>
+
+    <record id="field_x_isr_period__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_isr_period__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_period__x_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_code</field>
+        <field name="field_description">Code</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_isr_period__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_isr_period__x_date_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_date_from</field>
+        <field name="field_description">Date From</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_isr_period__x_date_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_date_to</field>
+        <field name="field_description">Date To</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_isr_period__x_is_future" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_is_future</field>
+        <field name="field_description">Future Period</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_period__x_is_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_is_year</field>
+        <field name="field_description">Full Year</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_period__x_is_prior" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_is_prior</field>
+        <field name="field_description">Earlier Year</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_period__x_is_custom" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_is_custom</field>
+        <field name="field_description">Custom Range</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_isr_period__x_revenue" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_revenue</field>
+        <field name="field_description">Revenue</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_period__x_budget_revenue" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_period"/>
+        <field name="name">x_budget_revenue</field>
+        <field name="field_description">Planned Revenue</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_value__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_value__x_period_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_period_id</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_period</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_value__x_line_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_line_id</field>
+        <field name="field_description">Line</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_line</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_isr_value__x_key" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_key</field>
+        <field name="field_description">Key</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_isr_value__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_isr_value__x_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_amount</field>
+        <field name="field_description">Actual</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_value__x_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_budget</field>
+        <field name="field_description">Budget</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_value__x_pct" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_value"/>
+        <field name="name">x_pct</field>
+        <field name="field_description">% of Sales</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_isr_part__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Line</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_isr_part__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_dashboard</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_part__x_period_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_period_id</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_period</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_part__x_line_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_line_id</field>
+        <field name="field_description">Calculated Line</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_line</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_part__x_part_line_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_part_line_id</field>
+        <field name="field_description">Made Of</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_line</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_part__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_isr_part__x_coef" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_coef</field>
+        <field name="field_description">Counted As</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_isr_part__x_leaf_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_leaf_amount</field>
+        <field name="field_description">Line Figure</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_isr_part__x_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_amount</field>
+        <field name="field_description">Contribution</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_isr_part__x_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_part"/>
+        <field name="name">x_budget</field>
+        <field name="field_description">Budget Contribution</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_isr_dashboard__x_missing_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_missing_account_ids</field>
+        <field name="field_description">Not On The Statement</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_isr_dash_missing_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">account_id</field>
+        <field name="readonly" eval="True"/>
+        <field name="help">Filled at each refresh: income and expense accounts with postings in the years shown that no line reads.</field>
+    </record>
+
+    <!-- one2many fields last: their inverse many2one must already exist -->
+    <record id="field_x_isr_dashboard__x_line_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_line_ids</field>
+        <field name="field_description">Statement Lines</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_isr_line</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+
+    <record id="field_x_isr_dashboard__x_period_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="name">x_period_ids</field>
+        <field name="field_description">Periods</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_isr_period</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+
+    <!-- the real order, now that the fields it names exist -->
+    <record id="model_x_isr_dashboard" model="ir.model"><field name="order">x_year desc, id</field></record>
+    <record id="model_x_isr_line" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_isr_period" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_isr_value" model="ir.model"><field name="order">x_period_id, x_sequence, id</field></record>
+    <record id="model_x_isr_part" model="ir.model"><field name="order">x_period_id, x_line_id, x_sequence, id</field></record>
+</odoo>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Settings > Technical > Server Actions > "Liber Login Aliases: diagnose and repair" > Run.
+         Re-attaches the alias logic to every website's login page, then shows what is in place. -->
+    <record id="action_login_aliases_diagnose" model="ir.actions.server">
+        <field name="name">Liber Login Aliases: diagnose and repair</field>
+        <field name="model_id" ref="base.model_ir_ui_view"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+attach = env.ref('liber_login_aliases.action_attach_to_site_login_copies', raise_if_not_found=False)
+if attach:
+    attach.sudo().run()
+View = env['ir.ui.view'].sudo().with_context(active_test=False)
+lines = []
+mod = env['ir.module.module'].sudo().search([('name', '=', 'liber_login_aliases')], limit=1)
+lines.append('Module: %s %s (%s)' % (mod.name, mod.latest_version, mod.state))
+fallback = env.ref('liber_login_aliases.login_alias_server_fallback', raise_if_not_found=False)
+keep = env.ref('liber_login_aliases.login_alias_keep_typed', raise_if_not_found=False)
+lines.append('Server sign-in with alternative logins: %s | real login hidden after a failed attempt: %s' % (
+    'on' if fallback and fallback.active else 'OFF', 'on' if keep and keep.active else 'OFF'))
+lines.append('')
+lines.append('Websites:')
+for site in env['website'].sudo().search([]):
+    copy = View.search([('key', '=', 'web.login'), ('website_id', '=', site.id)], limit=1)
+    if copy:
+        n = View.search_count([('inherit_id', '=', copy.id), ('key', 'like', 'liber_login_aliases_'), ('active', '=', True)])
+        lines.append('  %s (%s): own edited login page - alias logic attached: %s' % (site.name, site.domain or '-', 'yes (%s)' % n if n else 'NO'))
+    else:
+        lines.append('  %s (%s): standard login page - alias logic: yes' % (site.name, site.domain or '-'))
+lines.append('')
+lines.append('Alternative logins:')
+Users = env['res.users'].sudo().with_context(active_test=False)
+aliases = env['x_login_alias'].sudo().search([])
+if not aliases:
+    lines.append('  NONE - add them on the user: Settings > Users > Alternative Logins')
+for alias in aliases:
+    name = (alias.x_name or '').strip()
+    clash = Users.search([('login', '=ilike', name.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_'))], limit=1)
+    if clash:
+        state = 'NOT USED - it is the real login of %s' % clash.name
+    elif not alias.x_user_id.active:
+        state = 'NOT USED - user archived'
+    elif name != name.lower() or name != alias.x_name:
+        state = 'ok (signs in as %s; stored as "%s")' % (alias.x_user_id.login, alias.x_name)
+    else:
+        state = 'ok - signs in as %s' % alias.x_user_id.login
+    lines.append('  %s -> %s: %s' % (name, alias.x_user_id.name, state))
+lines.append('')
+lines.append('Sign in with an alternative login and the user\'s normal password. If the real login with the same password also fails, the password is the problem.')
+raise UserError('\n'.join(lines))
+]]></field>
+    </record>
+</odoo>

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ==================================================================
+         Configuration agreed with Dale, created when the module is installed
+         and left alone on every later update:
+         - RBC Industrial 2026: Roger Brown Co combined (14 Aug 2026), four
+           earlier years (2022-2026, as Income_Statement_2026.xlsx), Budget %
+           of Sales = FY2025 actual ratios (31 Jul 2026).
+         - Tooling Components 2026: four earlier years.
+         Then, if the old Income Statement module is still installed, its
+         account mapping and confirmed budgets are copied over, so it can be
+         uninstalled afterwards. A company whose name is not found is skipped.
+         The records get the same external ids as the import spreadsheet, so
+         re-importing it updates them instead of duplicating them.
+         ================================================================== -->
+    <record id="action_isr_install_setup" model="ir.actions.server">
+        <field name="name">Income Statement: install the agreed configuration</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+LINES = [  # key, label, kind, formula, sign, bold, show %, revenue, bridge, kpi, auto types
+    ('sales_revenue', 'SALES REVENUE', 'mapped', '', 'positive', True, False, True, 'base', True, ''),
+    ('less_cost_of_sales', 'Less Cost of Sales', 'computed', 'cost_purchased_finished_goods + variable_overhead_landed_costs', 'negative', True, True, False, 'none', False, ''),
+    ('cost_purchased_finished_goods', 'Cost of Purchased Finished Goods', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('variable_overhead_landed_costs', 'Variable Overhead Landed Costs', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('gross_profit_margin', 'GROSS PROFIT MARGIN', 'computed', 'sales_revenue - less_cost_of_sales', 'positive', True, True, False, 'none', True, ''),
+    ('add_back_fixed_overhead', 'Add back Fixed Overhead', 'mapped', '', 'positive', False, True, False, 'add', False, ''),
+    ('less_variable_operating_expense', 'Less Variable Operating Expense', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('contribution_margin', 'CONTRIBUTION MARGIN', 'computed', 'gross_profit_margin + add_back_fixed_overhead - less_variable_operating_expense', 'positive', True, True, False, 'none', True, ''),
+    ('selling_general_administrative', 'Selling, General & Administrative', 'catchall', '', 'negative', False, True, False, 'subtract', False, 'expense'),
+    ('operating_profit', 'OPERATING PROFIT', 'computed', 'contribution_margin - selling_general_administrative', 'positive', True, True, False, 'none', True, ''),
+    ('other_income_expense', 'Other income or expense', 'mapped', '', 'positive', True, True, False, 'add', False, 'income_other'),
+    ('interest_expense', 'Interest expense', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('profit_before_tax', 'PROFIT BEFORE TAX', 'computed', 'operating_profit + other_income_expense - interest_expense', 'positive', True, True, False, 'none', False, ''),
+    ('taxes', 'Taxes', 'mapped', '', 'negative', False, True, False, 'subtract', False, ''),
+    ('net_income', 'NET INCOME', 'computed', 'profit_before_tax - taxes', 'positive', True, True, False, 'total', True, ''),
+]
+
+FY2025_PCT = {'cost_purchased_finished_goods': 66.59, 'variable_overhead_landed_costs': 0.27,
+              'add_back_fixed_overhead': 1.44, 'less_variable_operating_expense': 0.12,
+              'selling_general_administrative': 2.32, 'other_income_expense': 0.66}
+CONFIG = [
+    # company, dashboard name, year, earlier years, combined companies, external id, slug, Budget % of Sales
+    ('RBC Industrial LLC', 'RBC Industrial 2026', 2026, 4, ['Roger Brown Co'], 'isr_dashboard_rbc_2026', 'rbc_2026', FY2025_PCT),
+    ('Tooling Components', 'Tooling Components 2026', 2026, 4, [], 'isr_dashboard_tooling_2026', 'tooling_2026', {}),
+]
+Data = env['ir.model.data'].sudo()
+Company = env['res.company'].sudo()
+
+
+def remember(name, rec):
+    if not Data.search_count([('module', '=', '__import__'), ('name', '=', name)]):
+        Data.create({'module': '__import__', 'name': name, 'model': rec._name, 'res_id': rec.id, 'noupdate': True})
+
+
+# 1. Income Statement Accounts with the standard codes (the old module's install hook)
+env.ref('axiom_income_statement.action_isr_mapping_seed').sudo().with_context(isr_quiet=True).run()
+# 2. the old module's mapping and budgets, when it is still installed
+if env['ir.model'].sudo().search_count([('model', 'in', ['income.statement.account.mapping', 'income.statement.budget'])]):
+    env.ref('axiom_income_statement.action_isr_import_old').sudo().with_context(
+        isr_quiet=True, active_model='x_isr_dashboard', active_ids=[], active_id=False).run()
+# 3. the dashboards, their accounts from Income Statement Accounts
+created = env['x_isr_dashboard'].sudo()
+for spec in CONFIG:
+    company = Company.search([('name', '=', spec[0])], limit=1)
+    if not company:
+        continue
+    if env['x_isr_dashboard'].sudo().with_context(active_test=False).search_count(
+            [('x_company_id', '=', company.id), ('x_year', '=', spec[2])]):
+        continue
+    dashboard = env['x_isr_dashboard'].sudo().create({
+        'x_name': spec[1], 'x_company_id': company.id, 'x_year': spec[2], 'x_prior_years': spec[3],
+        'x_peer_company_ids': [(6, 0, Company.search([('name', 'in', spec[4])]).ids)],
+    })
+    remember(spec[5], dashboard)
+    sequence = 0
+    for ls in LINES:
+        sequence += 10
+        line = env['x_isr_line'].sudo().create({
+            'x_dashboard_id': dashboard.id, 'x_sequence': sequence, 'x_key': ls[0], 'x_name': ls[1],
+            'x_kind': ls[2], 'x_formula': ls[3], 'x_sign': ls[4], 'x_bold': ls[5], 'x_show_pct': ls[6],
+            'x_is_revenue': ls[7], 'x_bridge': ls[8], 'x_kpi': ls[9], 'x_auto_types': ls[10],
+            'x_budget_pct': spec[7].get(ls[0], 0.0),
+        })
+        remember('isr_line_%s_%s' % (spec[6], ls[0]), line)
+    created |= dashboard
+
+if created:
+    ctx = dict(active_model='x_isr_dashboard', active_id=created[0].id, active_ids=created.ids, isr_quiet=True)
+    env.ref('axiom_income_statement.action_isr_seed').sudo().with_context(**ctx).run()
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run">
+        <value eval="[ref('axiom_income_statement.action_isr_install_setup')]"/>
+    </function>
+</odoo>

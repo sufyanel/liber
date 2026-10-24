@@ -1,0 +1,20 @@
+{
+    "name": "Website Blog Auto Translate",
+    "summary": "Machine-translate blog posts on the fly, and translate the existing ones in one run.",
+    "category": "Website/Website",
+    "license": "LGPL-3",
+    "version": "17.0.3.0.0",
+    "author": "Axiom World",
+    "website_url": "https://axiomworld.net",
+    "maintainer": "Axiom World",
+    "depends": ["website_blog"],
+    "external_dependencies": {"python": ["deep-translator"]},
+    "data": [
+        "data/translate_action.xml",
+        "views/blog_views.xml",
+        "views/res_config_settings_views.xml",
+    ],
+    "installable": True,
+    "auto_install": False,
+    "application": False,
+}

@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_tc_translations_es_mx" model="ir.actions.server">
+        <field name="name">Tooling Components: apply es_MX translations</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# es_MX translations for the Tooling Components theme. Stored as module data so they ship
+# with the module and are re-applied on every install/upgrade (never hand-edited in production).
+MAP = {
+"tooling_components_theme.tc_home": {
+"Home": "Inicio",
+"Forged &amp; Molded.<br/><span class=\"tc-gold\">Built for Zero-Failure Reliability.</span>": "Forjado y moldeado.<br/><span class=\"tc-gold\">Hecho para una confiabilidad sin fallas.</span>",
+"Tooling Components supplies precision ejector pins, leader pins, die springs and mold &amp; die components to North American mold makers and stamping plants. Family-owned since 1987, veteran-owned since 2023 — same-day quotes on every RFQ.": "Tooling Components suministra botadores de precisión, pernos guía, resortes para troquel y componentes de molde y troquel a moldeadores y plantas de estampado de Norteamérica. Empresa familiar desde 1987 y de veteranos desde 2023, con cotización el mismo día en cada solicitud.",
+"Request a Quote": "Solicitar cotización",
+"Browse Products": "Ver productos",
+"15,000+ SKUs In Stock · Same-Day Shipping On Standard Sizes · Family-Owned Since 1987 · Veteran-Owned Since 2023": "Más de 15,000 SKU en existencia · Envío el mismo día en medidas estándar · Empresa familiar desde 1987 y de veteranos desde 2023",
+"<span class=\"tc-kicker\">Why Tooling Components</span>": "<span class=\"tc-kicker\">Por qué Tooling Components</span>",
+"Why Tooling Components": "Por qué Tooling Components",
+"Four reasons engineers keep our part numbers in their BOMs.": "Cuatro razones por las que los ingenieros mantienen nuestros números de parte en sus listas de materiales.",
+"Precision Tolerances": "Tolerancias de precisión",
+"Centerless-ground diameters held to ±0.0002″. Inch, DIN and JIS standards, with certified dimensional reports on request.": "Diámetros rectificados sin centros con tolerancia de ±0.0002″. Normas en pulgadas, DIN y JIS, con reportes dimensionales certificados a solicitud.",
+"15K": "15K",
+"In-Stock Availability": "Disponibilidad en existencia",
+"Live stock status on every part — 15,000+ SKUs on the shelf and no backorder surprises on the shop floor.": "Existencia en tiempo real para cada pieza: más de 15,000 SKU en anaquel y sin sorpresas de pedidos pendientes en piso.",
+"VET": "VET",
+"Veteran-Owned": "Empresa de veteranos",
+"Family-owned since 1987, veteran-owned since 2023. Precision, accountability and mission-focus on every order — delivered per your BOM, labeled and ready.": "Empresa familiar desde 1987 y de veteranos desde 2023. Precisión, responsabilidad y enfoque en la misión en cada pedido: entregado según su lista de materiales, etiquetado y listo.",
+"24h": "24 h",
+"Same-Day Quotes": "Cotizaciones el mismo día",
+"Submit a print or BOM and receive a detailed, itemized quote the same business day. No runaround, no waiting.": "Envíe un plano o lista de materiales y reciba una cotización detallada, partida por partida, el mismo día hábil. Sin rodeos ni esperas.",
+"<span class=\"tc-kicker\">Solutions</span>": "<span class=\"tc-kicker\">Soluciones</span>",
+"Product Categories": "Categorías de productos",
+"Ten catalog lines covering the full mold &amp; die component spectrum — from a single ejector pin to complete die sets.": "Diez líneas de catálogo que cubren toda la gama de componentes de molde y troquel: desde un solo botador hasta portatroqueles completos.",
+"Precision You Can Specify With Confidence.": "Precisión que puede especificar con confianza.",
+"Family-owned since 1987, veteran-owned since 2023. Dimensional inspection reports, material certificates and CAD files available on request.": "Empresa familiar desde 1987 y de veteranos desde 2023. Reportes de inspección dimensional, certificados de material y archivos CAD a solicitud.",
+"<span class=\"tc-big-badge\">Est. 1987</span><span class=\"tc-big-badge\">Veteran-Owned</span>": "<span class=\"tc-big-badge\">Desde 1987</span><span class=\"tc-big-badge\">Empresa de veteranos</span>",
+"SKUs In Stock": "SKU en existencia",
+"Veteran-Owned Since": "Empresa de veteranos desde",
+"Same-Day": "El mismo día",
+"Quote Response": "Respuesta de cotización",
+"Per BOM": "Según BOM",
+"Labeled &amp; Packed Orders": "Pedidos etiquetados y empacados",
+"<span class=\"tc-kicker\">Technical Resources</span>": "<span class=\"tc-kicker\">Recursos técnicos</span>",
+"Technical Resources": "Recursos técnicos",
+"Application notes from our engineering team — written for mold makers and die designers who need answers fast.": "Notas de aplicación de nuestro equipo de ingeniería, escritas para moldeadores y diseñadores de troqueles que necesitan respuestas rápidas.",
+"All technical articles →": "Todos los artículos técnicos →"
+},
+"tooling_components_theme.tc_about": {
+"About Tooling Components": "Acerca de Tooling Components",
+"Family-owned since 1987, veteran-owned since 2023. Precision components for molds and dies, built on the belief that a tooling supplier should be measured by the molds it keeps running.": "Empresa familiar desde 1987 y de veteranos desde 2023. Componentes de precisión para moldes y troqueles, con la convicción de que un proveedor de herramental se mide por los moldes que mantiene en operación.",
+"Forged in 1987. <span class=\"tc-gold\">Machined to Zero-Failure Standards.</span>": "Forjada en 1987. <span class=\"tc-gold\">Maquinada con estándares de cero fallas.</span>",
+"<span class=\"tc-kicker\">Our Story</span>": "<span class=\"tc-kicker\">Nuestra historia</span>",
+"A Legacy of Precision Since 1987": "Un legado de precisión desde 1987",
+"Tooling Components was founded in <strong>1987</strong> on a simple, demanding standard: a mold component either meets print, or it does not ship. That standard still governs every pin, bushing, pillar and spring we stock.": "Tooling Components fue fundada en <strong>1987</strong> con un estándar sencillo pero exigente: un componente de molde cumple con el plano, o no se envía. Ese estándar sigue rigiendo cada perno, buje, columna y resorte que tenemos en existencia.",
+"Our team applies the same rigor to a <strong>±0.0002″ ground diameter</strong> as to a full die set — because a mold down on the floor costs a plant thousands an hour.": "Nuestro equipo aplica el mismo rigor a un <strong>diámetro rectificado de ±0.0002″</strong> que a un portatroquel completo, porque un molde parado en piso le cuesta a una planta miles por hora.",
+"From <strong>8349 West High St., Union City, PA</strong>, we hold <strong>15,000+ SKUs</strong> in stock and quote the same business day — inch, DIN and JIS, standard or machined to your print.": "Desde <strong>8349 West High St., Union City, PA</strong>, mantenemos <strong>más de 15,000 SKU</strong> en existencia y cotizamos el mismo día hábil: en pulgadas, DIN y JIS, estándar o maquinado según su plano.",
+"Company Timeline": "Trayectoria de la empresa",
+"<b>1987</b><span>Founded on a standard of zero-failure precision.</span>": "<b>1987</b><span>Fundada con un estándar de precisión de cero fallas.</span>",
+"<b>Quality</b><span>Documented inspection, dimensional reports and traceability on every order.</span>": "<b>Calidad</b><span>Inspección documentada, reportes dimensionales y trazabilidad en cada pedido.</span>",
+"<b>Today — Tooling Components LLC</b><span>15,000+ SKUs serving mold makers and stamping plants across North America.</span>": "<b>Hoy — Tooling Components LLC</b><span>Más de 15,000 SKU al servicio de moldeadores y plantas de estampado en toda Norteamérica.</span>",
+"<b>Every Day</b><span>Same-day quotes, orders labeled and packed per BOM, ready for the bench.</span>": "<b>Todos los días</b><span>Cotizaciones el mismo día y pedidos etiquetados y empacados según su lista de materiales, listos para el banco de trabajo.</span>",
+"\"Keep mission-critical molds and dies running — with components that meet print, every time.\"": "\"Mantener en operación los moldes y troqueles de misión crítica, con componentes que cumplen con el plano, siempre.\"",
+"The Tooling Components Mission": "La misión de Tooling Components",
+"<span class=\"tc-kicker\">The Difference</span>": "<span class=\"tc-kicker\">La diferencia</span>",
+"Talk to a Real Engineer": "Hable con un ingeniero de verdad",
+"Send us a print or a BOM. If we cannot hold a tolerance, we say so before we quote — not after the mold is down.": "Envíenos un plano o una lista de materiales. Si no podemos sostener una tolerancia, se lo decimos antes de cotizar, no después de que el molde se detenga.",
+"EN": "IN",
+"Engineers on the Phone": "Ingenieros al teléfono",
+"Tolerance classes, tool steels, nitriding and fits — our team speaks your language.": "Clases de tolerancia, aceros grado herramienta, nitrurado y ajustes: nuestro equipo habla su idioma.",
+"STD": "NOR",
+"Inch · DIN · JIS": "Pulgadas · DIN · JIS",
+"Cross-standard equivalents so you are never locked into one supplier or a sole-source lead time.": "Equivalencias entre normas para que nunca dependa de un solo proveedor ni del tiempo de entrega de un proveedor único.",
+"BOM": "BOM",
+"Built Around Your BOM": "Hecho según su lista de materiales",
+"Orders labeled and packed per BOM so the right part reaches the right bench, first time.": "Pedidos etiquetados y empacados según la lista de materiales, para que la pieza correcta llegue al banco correcto a la primera.",
+"<span class=\"tc-kicker\">Certifications</span>": "<span class=\"tc-kicker\">Certificaciones</span>",
+"Certifications &amp; Capability": "Certificaciones y capacidades",
+"QA": "CC",
+"Documented Inspection": "Inspección documentada",
+"Dimensional inspection reports available on request.": "Reportes de inspección dimensional disponibles a solicitud.",
+"VET": "VET",
+"Family-Owned Since 1987": "Empresa familiar desde 1987",
+"Founded and still run on standards of precision and accountability.": "Fundada y operada todavía con estándares de precisión y responsabilidad.",
+"CAD": "CAD",
+"CAD &amp; Material Certs": "CAD y certificados de material",
+"CAD files, material certificates and dimensional reports available with your order.": "Archivos CAD, certificados de material y reportes dimensionales disponibles con su pedido.",
+"<span class=\"tc-kicker\">Values</span>": "<span class=\"tc-kicker\">Valores</span>",
+"What We Stand On": "En qué creemos",
+"Precision": "Precisión",
+"Ground, inspected and certified to print — no exceptions.": "Rectificado, inspeccionado y certificado según plano, sin excepciones.",
+"Reliability": "Confiabilidad",
+"Live stock status and same-day shipping you can plan a tool build around.": "Existencia en tiempo real y envío el mismo día, con los que puede planear la fabricación de un herramental.",
+"Integrity": "Integridad",
+"If we cannot hold the tolerance, we tell you before we quote.": "Si no podemos sostener la tolerancia, se lo decimos antes de cotizar.",
+"Service": "Servicio",
+"A veteran-owned commitment to the people who build and run the tools.": "El compromiso de una empresa de veteranos con quienes fabrican y operan el herramental.",
+"Ready to Keep Your Mold Running?": "¿Listo para mantener su molde en operación?",
+"Send us your print or BOM and get a detailed, itemized quote the same business day.": "Envíenos su plano o lista de materiales y reciba una cotización detallada, partida por partida, el mismo día hábil.",
+"Request a Quote": "Solicitar cotización"
+},
+"tooling_components_theme.tc_contact": {
+"Contact Tooling Components": "Contacto con Tooling Components",
+"Contact": "Contacto",
+"Straight answers from a real engineer. Send us your print or BOM and get a detailed quote the same business day.": "Respuestas directas de un ingeniero de verdad. Envíenos su plano o lista de materiales y reciba una cotización detallada el mismo día hábil.",
+"Phone — Quotes &amp; Technical": "Teléfono — Cotizaciones y soporte técnico",
+"Mon–Fri, 7:00 AM – 5:00 PM ET. Press 1 for quoting.": "Lun. a vie., 7:00 a. m. – 5:00 p. m. (ET). Marque 1 para cotizaciones.",
+"Email — Sales &amp; Quotes": "Correo — Ventas y cotizaciones",
+"sales@toolingcomponent.com": "sales@toolingcomponent.com",
+"Attach prints, BOMs and PDFs up to 25 MB. Same-day reply on quotes.": "Adjunte planos, listas de materiales y PDF de hasta 25 MB. Respuesta de cotización el mismo día.",
+"Fax": "Fax",
+"Warehouse &amp; Office": "Almacén y oficina",
+"Tooling Components LLC": "Tooling Components LLC",
+"8349 West High St., Union City, PA 16438": "8349 West High St., Union City, PA 16438",
+"Business Hours": "Horario de atención",
+"Monday – Friday: 7:00 AM – 5:00 PM ET<br/>Saturday: by appointment · Sunday: closed<br/>Mold-down support: call and press 2": "Lunes a viernes: 7:00 a. m. – 5:00 p. m. (ET)<br/>Sábado: con cita · Domingo: cerrado<br/>Soporte por molde parado: llame y marque 2",
+"Request a Quote": "Solicitar cotización",
+"Submit your RFQ before 3:00 PM ET and receive a detailed, itemized quote the same business day.": "Envíe su solicitud de cotización antes de las 3:00 p. m. (ET) y reciba una cotización detallada, partida por partida, el mismo día hábil.",
+"Same Business Day": "El mismo día hábil",
+"Detailed, itemized quote on every RFQ": "Cotización detallada, partida por partida, en cada solicitud",
+"SKUs in stock, ready to ship": "SKU en existencia, listos para envío",
+"Engineers": "Ingenieros",
+"Your RFQ is quoted by engineers, not order-takers": "Su solicitud la cotizan ingenieros, no capturistas"
+},
+"tooling_components_theme.tc_quote": {
+"Request a Quote": "Solicitar cotización",
+"Send us the part number, print or BOM. Our engineers confirm availability, equivalents and pricing — standard sizes or machined to your print.": "Envíenos el número de parte, el plano o la lista de materiales. Nuestros ingenieros confirman disponibilidad, equivalencias y precios: medidas estándar o maquinado según su plano.",
+"Quoting:": "Cotizando:"
+},
+"tooling_components_theme.tc_solutions": {
+"Solutions": "Soluciones",
+"Solutions for Mold Makers &amp; Stamping Plants": "Soluciones para moldeadores y plantas de estampado",
+"Ten catalog lines covering the full mold &amp; die component spectrum — from a single ejector pin to complete die sets.": "Diez líneas de catálogo que cubren toda la gama de componentes de molde y troquel: desde un solo botador hasta portatroqueles completos.",
+"<span class=\"tc-kicker\">Product lines</span>": "<span class=\"tc-kicker\">Líneas de producto</span>",
+"Browse by Solution": "Explore por solución",
+"<span class=\"tc-kicker\">Industries</span>": "<span class=\"tc-kicker\">Industrias</span>",
+"Industries We Serve": "Industrias que atendemos",
+"Injection Molding": "Moldeo por inyección",
+"Ejector, alignment and cooling components for high-cycle molds.": "Componentes de expulsión, alineación y enfriamiento para moldes de alto ciclaje.",
+"Metal Stamping": "Estampado de metal",
+"Die springs, punches and guide sets for progressive dies.": "Resortes para troquel, punzones y juegos de guías para troqueles progresivos.",
+"Die Casting": "Fundición a presión",
+"Hot-work steel components that hold tolerance under heat.": "Componentes de acero para trabajo en caliente que sostienen la tolerancia bajo calor.",
+"Automotive": "Automotriz",
+"PPAP-ready supply for tier suppliers and tool rooms.": "Suministro listo para PPAP, para proveedores Tier y talleres de herramental.",
+"Medical &amp; Packaging": "Médico y empaque",
+"Clean-room grade pins and precision alignment.": "Pernos grado cuarto limpio y alineación de precisión.",
+"Tool &amp; Die Shops": "Talleres de moldes y troqueles",
+"Same-day quotes and orders packed per BOM.": "Cotizaciones el mismo día y pedidos empacados según la lista de materiales.",
+"Not Sure Which Part You Need?": "¿No sabe qué pieza necesita?",
+"Send the application or the part you are replacing — our team will specify and quote it the same business day.": "Envíenos la aplicación o la pieza que va a reemplazar: nuestro equipo la especifica y la cotiza el mismo día hábil.",
+"Request a Quote": "Solicitar cotización"
+},
+"tooling_components_theme.tc_quote_form": {
+"Request a Quote": "Solicitar cotización",
+"For immediate line-down emergencies, call": "Para emergencias inmediatas por línea parada, llame al",
+"<span class=\"s_website_form_label_content\">Name</span><span class=\"s_website_form_mark\"> *</span>": "<span class=\"s_website_form_label_content\">Nombre</span><span class=\"s_website_form_mark\"> *</span>",
+"Your full name": "Su nombre completo",
+"<span class=\"s_website_form_label_content\">Company</span>": "<span class=\"s_website_form_label_content\">Empresa</span>",
+"Company name": "Nombre de la empresa",
+"<span class=\"s_website_form_label_content\">Email</span><span class=\"s_website_form_mark\"> *</span>": "<span class=\"s_website_form_label_content\">Correo electrónico</span><span class=\"s_website_form_mark\"> *</span>",
+"you@company.com": "usted@empresa.com",
+"<span class=\"s_website_form_label_content\">Phone</span>": "<span class=\"s_website_form_label_content\">Teléfono</span>",
+"<span class=\"s_website_form_label_content\">Part Number or Need</span>": "<span class=\"s_website_form_label_content\">Número de parte o requerimiento</span>",
+"e.g. SKF 6205-2RS / or describe application": "p. ej. SKF 6205-2RS / o describa la aplicación",
+"<span class=\"s_website_form_label_content\">Urgency</span>": "<span class=\"s_website_form_label_content\">Urgencia</span>",
+"<select id=\"tc_f_urgency\" class=\"form-select s_website_form_input\" name=\"Urgency\"><option value=\"Standard - same business day\">Standard — same business day</option><option value=\"Expedited - 24 hours\">Expedited — 24 hours</option><option value=\"EMERGENCY - line down\">Emergency — line down</option></select>": "<select id=\"tc_f_urgency\" class=\"form-select s_website_form_input\" name=\"Urgency\"><option value=\"Standard - same business day\">Estándar — el mismo día hábil</option><option value=\"Expedited - 24 hours\">Urgente — 24 horas</option><option value=\"EMERGENCY - line down\">Emergencia — línea parada</option></select>",
+"<span class=\"s_website_form_label_content\">Message</span>": "<span class=\"s_website_form_label_content\">Mensaje</span>",
+"Application, quantities, required specs, cross-reference info…": "Aplicación, cantidades, especificaciones requeridas, datos de equivalencia…",
+"Submit Quote Request": "Enviar solicitud de cotización",
+"Mold down right now? Call": "¿Molde parado ahora mismo? Llame al",
+"and press 2 instead of waiting on this form.": "y marque 2 en lugar de esperar la respuesta de este formulario."
+},
+"tooling_components_theme.tc_breadcrumb": {
+"Home": "Inicio",
+"<span class=\"sep\">›</span>": "<span class=\"sep\">›</span>",
+"breadcrumb": "ruta de navegación"
+},
+"tooling_components_theme.tc_shop": {
+"Product Catalog": "Catálogo de productos",
+"Search ejector pins, leader pins, support pillars, die springs and mold components from Tooling Components — 15,000+ SKUs, same-day shipping from Union City, PA.": "Busque botadores, pernos guía, columnas de soporte, resortes para troquel y componentes de molde en Tooling Components: más de 15,000 SKU y envío el mismo día desde Union City, PA.",
+"Dense, scannable, part-number first. Live stock status on every line — in-stock items ship same day from Union City, PA.": "Catálogo de productos organizado por número de parte, con existencia en tiempo real en cada renglón: los artículos en existencia se envían el mismo día desde Union City, PA.",
+"Don't See Your Part Number?": "¿No encuentra su número de parte?",
+"Send us the print or the competitor part number — we cross-reference inch, DIN and JIS, and machine to print when needed.": "Envíenos el plano o el número de parte de la competencia: hacemos la equivalencia en pulgadas, DIN y JIS, y maquinamos según plano cuando se requiere.",
+"Request a Quote": "Solicitar cotización",
+"<span>Filter Products</span>": "<span>Filtrar productos</span>",
+"Clear all": "Limpiar todo",
+"Category": "Categoría",
+"All Products": "Todos los productos",
+"Search values": "Buscar valores",
+"Stock status": "Existencia",
+"<span class=\"tc-stock in\"><i/>IN STOCK</span>\n                            <span class=\"tc-stock low\"><i/>LOW</span>\n                            <span class=\"tc-stock lead\"><i/>LEAD TIME</span>": "<span class=\"tc-stock in\"><i/>EN EXISTENCIA</span> <span class=\"tc-stock low\"><i/>POCAS PIEZAS</span> <span class=\"tc-stock lead\"><i/>SOBRE PEDIDO</span>",
+"<span class=\"tc-chips-label\">Active filters:</span>": "<span class=\"tc-chips-label\">Filtros activos:</span>",
+"Part No": "No. de parte",
+"Specs": "Especificaciones",
+"Description": "Descripción",
+"Price": "Precio",
+"Stock": "Existencia",
+"Action": "Acción"
+},
+"tooling_components_theme.tc_catalog_action": {
+"Select": "Elegir",
+"Choose options": "Elegir opciones",
+"<i class=\"fa fa-shopping-cart\"/> Add": "<i class=\"fa fa-shopping-cart\"/> Agregar",
+"Add to Cart": "Agregar al carrito",
+"RFQ": "Cotizar",
+"Request a quote": "Solicitar cotización"
+},
+"tooling_components_theme.tc_product": {
+"<span><span class=\"tc-pulse\"/><b>MOLD DOWN?</b> Need this part shipped today from Union City, PA?</span>": "<span><span class=\"tc-pulse\"/><b>¿MOLDE PARADO?</b> ¿Necesita esta pieza enviada hoy desde Union City, PA?</span>",
+"Call 814-438-7657": "Llame al 814-438-7657",
+"— UNION CITY": "— UNION CITY",
+"Request a Quote": "Solicitar cotización",
+"Long description: applications, cross-references and compatibility notes.": "Descripción detallada: aplicaciones, equivalencias y notas de compatibilidad.",
+"Standards &amp; Equivalents": "Normas y equivalencias",
+"Inch, DIN and JIS equivalents cross-referenced by our engineers. CAD files, material certificates and dimensional reports available on request.": "Equivalencias en pulgadas, DIN y JIS verificadas por nuestros ingenieros. Archivos CAD, certificados de material y reportes dimensionales a solicitud.",
+"<span>Quality:</span><span class=\"tc-cert-badge\">Inspected to Print</span><span class=\"tc-cert-badge\">Veteran-Owned</span>": "<span>Calidad:</span><span class=\"tc-cert-badge\">Inspeccionado según plano</span><span class=\"tc-cert-badge\">Empresa de veteranos</span>"
+},
+"tooling_components_theme.tc_layout_header": {
+"<span class=\"tc-pulse\"/>\n                        MOLD DOWN? SAME-DAY QUOTES &amp; SHIPPING ON 15,000+ IN-STOCK SKUs —": "<span class=\"tc-pulse\"/> ¿MOLDE PARADO? COTIZACIÓN Y ENVÍO EL MISMO DÍA EN MÁS DE 15,000 SKU EN EXISTENCIA —",
+"CALL 814-438-7657": "LLAME AL 814-438-7657",
+"Tooling Components": "Tooling Components",
+"Tooling Components home": "Inicio de Tooling Components",
+"Toggle navigation": "Mostrar navegación",
+"Home": "Inicio",
+"<span class=\"tc-cert-badge\">EST. 1987</span>\n                                    <span class=\"tc-cert-badge\">VETERAN-OWNED</span>": "<span class=\"tc-cert-badge\">DESDE 1987</span> <span class=\"tc-cert-badge\">EMPRESA DE VETERANOS</span>",
+"Request a Quote": "Solicitar cotización",
+"<i class=\"fa fa-download\"/> <span class=\"d-lg-none d-xl-inline\">Line Card</span>": "<i class=\"fa fa-download\"/> <span class=\"d-lg-none d-xl-inline\">Catálogo de líneas</span>",
+"Download Line Card (PDF)": "Descargar catálogo de líneas (PDF)",
+"Cart": "Carrito"
+},
+"tooling_components_theme.tc_layout_footer": {
+"Tooling Components LLC": "Tooling Components LLC",
+"Precision components for molds and dies. Family-owned since 1987, veteran-owned since 2023 — engineered for zero-failure reliability in mission-critical manufacturing.": "Componentes de precisión para moldes y troqueles. Empresa familiar desde 1987 y de veteranos desde 2023, con ingeniería para una confiabilidad sin fallas en manufactura de misión crítica.",
+"8349 West High St., Union City, PA 16438<br/>\n                                    Phone:": "8349 West High St., Union City, PA 16438<br/> Teléfono:",
+"| Fax: 814-438-7657<br/>": "| Fax: 814-438-7657<br/>",
+"sales@toolingcomponent.com": "sales@toolingcomponent.com",
+"<span class=\"tc-cert-badge tc-cert-badge-dark\">Established 1987</span>\n                                    <span class=\"tc-cert-badge tc-cert-badge-dark\">Family-Owned Since 1987 · Veteran-Owned Since 2023</span>": "<span class=\"tc-cert-badge tc-cert-badge-dark\">Fundada en 1987</span> <span class=\"tc-cert-badge tc-cert-badge-dark\">Empresa familiar desde 1987 y de veteranos desde 2023</span>",
+"Solutions": "Soluciones",
+"Request a Quote": "Solicitar cotización",
+"Resources": "Recursos",
+"Technical Resources": "Recursos técnicos",
+"About Tooling Components": "Acerca de Tooling Components",
+"<i class=\"fa fa-download\"/> Download Line Card (PDF)": "<i class=\"fa fa-download\"/> Descargar catálogo de líneas (PDF)",
+"Request Quote": "Solicitar cotización",
+"Tooling Components LLC. All rights reserved.": "Tooling Components LLC. Todos los derechos reservados."
+},
+"tooling_components_theme.tc_blog_index": {
+"Technical Resources": "Recursos técnicos",
+"Precision engineering insights, application notes and technical guides — written for mold makers, die designers and plant engineers.": "Conocimiento de ingeniería de precisión, notas de aplicación y guías técnicas, escritas para moldeadores, diseñadores de troqueles e ingenieros de planta.",
+"List view": "Vista de lista",
+"Card view": "Vista de tarjetas",
+"Layout": "Diseño",
+"No articles found.": "No se encontraron artículos."
+},
+"tooling_components_theme.tc_blog_post": {
+"Home": "Inicio",
+"<span class=\"sep\">›</span>": "<span class=\"sep\">›</span>",
+"Technical Resources": "Recursos técnicos",
+"Blog Post Title": "Título del artículo",
+"Subtitle": "Subtítulo",
+"Tooling Components": "Tooling Components",
+"<span>Technical Resources · www.toolingcomponent.com</span>": "<span>Recursos técnicos · www.toolingcomponent.com</span>"
+},
+"tooling_components_theme.tc_blog_print_fallback": {
+"<i class=\"fa fa-print\"/> Print / Save as PDF": "<i class=\"fa fa-print\"/> Imprimir / Guardar como PDF",
+"<span>Technical Resources · www.toolingcomponent.com</span>": "<span>Recursos técnicos · www.toolingcomponent.com</span>"
+}
+}
+MENU_ES = {"Home": "Inicio", "Products": "Productos", "Solutions": "Soluciones", "Technical Resources": "Recursos técnicos", "About": "Nosotros", "Contact": "Contacto"}
+PAGE_META = {
+"/": [
+"",
+"",
+"Veteran-owned supplier of precision ejector pins, leader pins, die springs and mold & die components. 15,000+ SKUs in stock, same-day quotes. Call 814-438-7657.",
+"Proveedor de veteranos de botadores de precisión, pernos guía, resortes para troquel y componentes de molde y troquel. Más de 15,000 SKU en existencia y cotización el mismo día. Llame al 814-438-7657."
+],
+"/about-us": [
+"",
+"",
+"Family-owned since 1987, veteran-owned since 2023: precision mold and die components that meet print, every time.",
+"Empresa familiar desde 1987 y de veteranos desde 2023: componentes de precisión para moldes y troqueles que cumplen con el plano, siempre."
+],
+"/contactus": [
+"",
+"",
+"Send your print or BOM and get a detailed, itemized quote the same business day. Call 814-438-7657.",
+"Envíe su plano o lista de materiales y reciba una cotización detallada el mismo día hábil. Llame al 814-438-7657."
+],
+"/quote": [
+"",
+"",
+"Request a quote for standard or custom mold and die components: inch, DIN and JIS, machined to your print.",
+"Solicite cotización de componentes de molde y troquel estándar o especiales: en pulgadas, DIN y JIS, maquinados según su plano."
+],
+"/solutions": [
+"",
+"",
+"Components for injection molding, metal stamping, die casting, automotive and tool & die shops.",
+"Componentes para moldeo por inyección, estampado de metal, fundición a presión, automotriz y talleres de moldes y troqueles."
+]
+}
+es = env['res.lang'].search([('code', '=', 'es_MX'), ('active', '=', True)], limit=1)
+Website = env['website'].sudo()
+website = Website.search([('x_tc_theme_active', '=', True)], limit=1) or Website.search([('name', '=ilike', 'Tooling Components%')], limit=1)
+if es and website:
+    # 1. page / template copy
+    for key, terms in MAP.items():
+        view = env.ref(key, raise_if_not_found=False)
+        if view:
+            # Odoo matches updates against the CURRENT Spanish text of each phrase, so look it up:
+            # this also corrects phrases already translated by an earlier version.
+            current = view.sudo().get_field_translations('arch_db', langs=['es_MX'])[0]
+            mapping = {}
+            for term in current:
+                wanted = terms.get(term['source'])
+                existing = term.get('value') or term['source']
+                if wanted and existing != wanted:
+                    mapping[existing] = wanted
+            if mapping:
+                view.sudo().update_field_translations('arch_db', {'es_MX': mapping})
+    # 2. menu labels
+    for menu in env['website.menu'].sudo().search([('website_id', '=', website.id)]):
+        if menu.name in MENU_ES:
+            menu.update_field_translations('name', {'es_MX': MENU_ES[menu.name]})
+    # 3. page titles (only if an English meta title exists) and meta descriptions
+    Page = env['website.page'].sudo()
+    for url, meta in PAGE_META.items():
+        t_en, t_es, d_en, d_es = meta
+        page = Page.search([('url', '=', url), ('website_id', '=', website.id)], limit=1)
+        if not page:
+            continue
+        if not page.website_meta_description or 'ISO 9001' in page.website_meta_description or 'eteran-owned since 1987' in page.website_meta_description:
+            page.write({'website_meta_description': d_en})     # also replaces an earlier, incorrect ISO claim
+        page.update_field_translations('website_meta_description', {'es_MX': d_es})
+        if page.website_meta_title:
+            page.update_field_translations('website_meta_title', {'es_MX': t_es})
+    # 5. product tag shown to visitors, and blog names (quote detection uses the English name)
+    for tag in env['product.tag'].sudo().with_context(lang='en_US').search([('name', '=', 'Request Quote')]):
+        tag.update_field_translations('name', {'es_MX': 'Solicitar cotización'})
+    for blog in env['blog.blog'].sudo().with_context(lang='en_US').search([('website_id', 'in', [website.id, False])]):
+        es_name = {'Technical Resources': 'Recursos técnicos'}.get(blog.name)
+        if es_name:
+            blog.update_field_translations('name', {'es_MX': es_name})
+    # 6. attribute names (spec labels on product pages and filters)
+    ATTR_ES = {'Brand': 'Marca', 'Bore Diameter': 'Diámetro interior', 'Outside Diameter': 'Diámetro exterior', 'Width': 'Ancho', 'Seals': 'Sellos', 'Seal': 'Sello', 'Material': 'Material', 'Diameter': 'Diámetro', 'Length': 'Longitud', 'Hardness': 'Dureza', 'Standard': 'Norma', 'Power': 'Potencia', 'Speed': 'Velocidad', 'Voltage': 'Voltaje', 'Ratio': 'Relación', 'Type': 'Tipo', 'Size': 'Tamaño', 'Series': 'Serie', 'Weight': 'Peso', 'Color': 'Color', 'Bore': 'Diámetro interior', 'Thread': 'Rosca', 'Pitch': 'Paso', 'Teeth': 'Dientes', 'Shaft Diameter': 'Diámetro de flecha', 'Load Rating': 'Capacidad de carga', 'Housing Diameter (in) [D]': 'Diámetro de alojamiento (in) [D]', 'Rod Diameter (in) [d]': 'Diámetro de vástago (in) [d]', 'Free Length (in) [Lo]': 'Longitud libre (in) [Lo]', 'Rate (lbs/in) [R]': 'Constante (lbs/in) [R]', 'Unit Weight (lbs)': 'Peso unitario (lbs)'}
+    for attr in env['product.attribute'].sudo().with_context(lang='en_US').search([('name', 'in', list(ATTR_ES))]):
+        attr.update_field_translations('name', {'es_MX': ATTR_ES[attr.name]})
+    # 7. Variant Sales Description: see data/variant_documents.xml
+# 8. product page template: use Odoo's current template on this site.
+# Editing a product page with the website editor makes Odoo keep a private copy of the product template for
+# that site. An imported theme cannot keep such a copy in step with its changes, and an old copy breaks the
+# product page (plain page, or a 500 error). Archive this site's copy so the current template - with this
+# theme's changes - is used. It is archived, not deleted: Settings > Technical > Views > Archived to restore.
+View = env['ir.ui.view'].sudo().with_context(active_test=False)
+own_site = env['website'].sudo().search([('x_tc_theme_active', '=', True)], limit=1) or env['website'].sudo().search([('name', '=ilike', 'Tooling Components%')], limit=1)
+my_keys = env['ir.model.data'].sudo().search([('module', '=', 'tooling_components_theme'), ('model', '=', 'ir.ui.view')]).mapped('complete_name')
+other_keys = env['ir.model.data'].sudo().search([('module', '=', 'rbc_industrial_theme'), ('model', '=', 'ir.ui.view')]).mapped('complete_name')
+# remove theme copies created by earlier versions (this theme's anywhere, the other theme's on this site)
+stray = View.search([('key', 'in', my_keys), ('website_id', '!=', False)])
+if own_site:
+    stray |= View.search([('key', 'in', other_keys), ('website_id', '=', own_site.id)])
+stray.unlink()
+if own_site:
+    View.search([('key', '=', 'website_sale.product'), ('website_id', '=', own_site.id), ('active', '=', True)]).write({'active': False})
+# 9 + 10. "Translate to Spanish" on products and blog posts. Existing entries (including any from the older
+# separate translator module) are pointed at this theme's translator, so the newest version always runs.
+Actions = env['ir.actions.server'].sudo()
+for model_name, extra in (('product.template', ''), ('blog.post', ", 'model': 'blog.post'")):
+    model = env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+    if not model:
+        continue
+    code = "action = {'type': 'ir.actions.client', 'tag': 'rbc_tc_translate_es', 'params': {'ids': records.ids%s}}" % extra
+    existing = Actions.search([('name', '=', 'Translate to Spanish'), ('model_id', '=', model.id)])
+    if existing:
+        existing.write({'code': code})
+        existing[:1].write({'binding_model_id': model.id, 'binding_view_types': 'list,form'})
+        existing[1:].write({'binding_model_id': False})   # one menu entry only
+    else:
+        Actions.create({'name': 'Translate to Spanish', 'model_id': model.id, 'binding_model_id': model.id,
+                        'binding_view_types': 'list,form', 'state': 'code', 'code': code})
+# 11. "Translate ALL to Spanish": every blog post / product on all websites (independent of the list selection)
+for model_name, extra in (('product.template', ''), ('blog.post', ", 'model': 'blog.post'")):
+    model = env['ir.model'].sudo().search([('model', '=', model_name)], limit=1)
+    if not model:
+        continue
+    code = "action = {'type': 'ir.actions.client', 'tag': 'rbc_tc_translate_es', 'params': {'ids': [], 'all': True%s}}" % extra
+    act = Actions.search([('name', '=', 'Translate ALL to Spanish'), ('model_id', '=', model.id)], limit=1)
+    if act:
+        act.write({'code': code})
+    else:
+        Actions.create({'name': 'Translate ALL to Spanish', 'model_id': model.id, 'binding_model_id': model.id,
+                        'binding_view_types': 'list', 'state': 'code', 'code': code})
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run">
+        <value eval="[ref('tooling_components_theme.action_tc_translations_es_mx')]"/>
+    </function>
+</odoo>

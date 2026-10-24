@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Content corrections rev 4 (Dale, 2026-10-15) - Liber Holdings and Liber Industrial.
+         A server action (not Python), so it runs whether the module is pushed through the repository or imported
+         through Apps > Import Module. Applied to the live views of the two Liber sites on every install / upgrade.
+         Idempotent. Never touches Tooling Components, RBC Industrial or Globe Electric views. Founder names
+         (Roger Brown, Sr./Jr.) and the historical acquisition sentence are never matched. -->
+    <record id="action_liber_content_corrections" model="ir.actions.server">
+        <field name="name">Liber: content corrections rev 4</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+PAIRS = [
+    ('Est. 1987 • Veteran-Owned Enterprise', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Est. 2018 • Liber Holdings Group</t><t t-else="">Est. 2016 • Veteran-Owned Enterprise</t>'),
+    ('Industrial Distribution &amp; Precision Manufacturing Group', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Liber Industrial company overview</t><t t-else="">Industrial Distribution &amp; Precision Component Sourcing</t>'),
+    ('Liber Holdings is the parent operating company uniting specialized industrial distributors and precision tooling suppliers across North America. Over 35+ years of operational excellence supporting aerospace, automotive stamping, manufacturing plants, and heavy industry.', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Liber Industrial is the industrial MRO supply and specialty chemical distribution company of the Liber Holdings group, based in Bulverde, Texas - vendor-managed inventory, plant storeroom optimization, strategic sourcing, DOD-related MRO parts and brewing chemicals for regional breweries.</t><t t-else="">Liber Holdings is the parent operating company uniting specialized industrial distributors and precision tooling suppliers across North America - operating heritage since 1946, supporting aerospace, automotive stamping, production plants and heavy industry.</t>'),
+    ('Over 35+ years of operational excellence', 'Operating heritage since 1946'),
+    ('<div class="o_liber_metric_num">1987</div>', '<div class="o_liber_metric_num"><t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">2018</t><t t-else="">2016</t></div>'),
+    ('Established History', 'Established'),
+    ('35+ Years in Distribution', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Liber Holdings Group</t><t t-else="">Heritage Since 1946</t>'),
+    ('<div class="o_liber_metric_sub">Certified Enterprise</div>', '<div class="o_liber_metric_sub">CVE-certified SDVOSB · Liber Holdings LLC</div>'),
+    ('Roger Brown Co. • El Paso, TX', 'RBC Industrial • El Paso, TX'),
+    ('Established in 1987. Premier industrial distributor', 'Established 1946. Premier industrial distributor'),
+    ('Timken, SKF, Dodge, Browning', 'Timken, SKF, Sealmaster, Browning'),
+    ('serving Southwest plants and manufacturing facilities', 'serving Southwest plants and production facilities'),
+    ('If you are a prospective manufacturer, distributor, or credit officer conducting trade verification for Liber Holdings or our subsidiaries, please contact our corporate administration.', 'If you are a prospective supplier, distributor, or credit officer conducting trade verification for Liber Holdings or our subsidiaries, please contact our corporate administration.</p><p class="small text-muted mb-4 o_liber_cert_line"><b>Veteran-Owned · Service-Disabled Veteran-Owned (CVE Certified) · TX HUB · SAM Registered</b><br/>Liber Holdings LLC · UEI UAM8RE2L11U8 · CAGE 24H34 · verify in SBA VetCert'),
+    ('<a href="mailto:corporate@liberholding.com" class="fw-bold text-dark fs-6">corporate@liberholding.com</a>', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))"><a href="mailto:sales@liberindustrial.com" class="fw-bold text-dark fs-6">sales@liberindustrial.com</a></t><t t-else=""><a href="mailto:AP@liberholding.com" class="fw-bold text-dark fs-6">AP@liberholding.com</a></t>'),
+    ('corporate@liberholding.com', 'AP@liberholding.com'),
+    ('sales@liberholdings.com', 'AP@liberholding.com'),
+    ('<h4 class="o_liber_footer_brand text-uppercase fw-bold text-white mb-2">Liber Holdings</h4>', '<h4 class="o_liber_footer_brand text-uppercase fw-bold text-white mb-2"><t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Liber Industrial</t><t t-else="">Liber Holdings</t></h4>'),
+    ('Est. 1987 • Veteran-Owned', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Est. 2018 • Liber Holdings Group</t><t t-else="">Est. 2016 • Veteran-Owned</t>'),
+    ('Industrial distribution and precision manufacturing holding company. Serving manufacturing plants, aerospace, stamping, and heavy industrial facilities across North America.', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Industrial MRO supply and specialty chemical distribution - a Liber Holdings company based in Bulverde, Texas.</t><t t-else="">Industrial distribution and precision component sourcing holding company. Serving production plants, aerospace, stamping, and heavy industrial facilities across North America.</t>'),
+    ('Precision industrial supply since 1987.', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">Liber Industrial LLC · Bulverde, Texas.</t><t t-else="">Industrial supply heritage since 1946.</t>'),
+    ('Over 35+ years of operational continuity supplying heavy manufacturing, aerospace, automotive stamping, and critical infrastructure across North America.', 'Operating heritage since 1946, supplying heavy industry, aerospace, automotive stamping, and critical infrastructure across North America.'),
+    ('Founded in 1987, the organization began as Roger Brown Co. (RBC Industrial) providing precision bearings, power transmission, and specialized mechanical replacement parts to Southwest manufacturing plants.', 'Liber Holdings LLC was formed in 2016 and in August of that year acquired Roger Brown Co. of El Paso, Texas, which was founded in 1946 and operates today as RBC Industrial - supplying precision bearings, power transmission, and specialized mechanical replacement parts to Southwest plants.'),
+    ('Over the subsequent decades, the group expanded by integrating strategic manufacturing specialists—including Tooling Components (established precision die spring and tooling experts in Union City, PA) and Globe Electric Supply', 'Since then the group has grown to include Liber Industrial (2018), Tooling Components (precision die spring and tooling specialists in Union City, PA) and Globe Electric Supply'),
+    ('Continuous operating history since 1987', 'Continuous operating heritage since 1946'),
+    ('Founded in 1987, Liber Holdings is a veteran-owned industrial distribution and precision tooling group based in El Paso, TX.', 'Liber Holdings LLC (est. 2016) is a veteran-owned industrial distribution group with operating heritage since 1946, based in El Paso, TX.'),
+    ('launched for prospective manufacturing suppliers.', 'launched for prospective suppliers.'),
+    ('Built over four decades', 'Operating heritage since 1946'),
+    ('<h3 class="o_liber_tl_title">Roger Brown Co - Founded</h3>', '<h3 class="o_liber_tl_title">RBC Industrial — Founded 1946</h3>'),
+    ('Roger Brown Co - Founded', 'RBC Industrial — Founded 1946'),
+    ('Roger Brown Co - Acquisition', 'RBC Industrial — Acquired by Liber Holdings'),
+    ('Liber Industrial was founded in Houston, Texas to support our government sales of DOD MRO parts, janitorial and chemical supplies.', "Liber Industrial was formed in 2018 in Bulverde, Texas as a separate operating entity within the Liber Holdings group, originally to serve public-sector school-district supply programs while shielding the group's other entities from contract liability. That line has since closed. Liber Industrial today focuses on industrial MRO supply and specialty chemical distribution."),
+    ('founded in Houston, Texas', 'based in Bulverde, Texas'),
+    ('Roger Brown Co. (RBC Industrial), Tooling Components, and Globe Electric Supply.', 'RBC Industrial, Tooling Components, and Globe Electric Supply.'),
+    ('distributes premier domestic and international manufacturers across', 'distributes premier domestic and international brands across'),
+    ('Becoming a Manufacturer Partner', 'Becoming a Supplier Partner'),
+    ('Premier manufacturers distributed by', 'Premier brands distributed by'),
+    ('RBC Industrial (Roger Brown Co.)', 'RBC Industrial'),
+    ('Roger Brown Co. (RBC Industrial)', 'RBC Industrial'),
+    ('Roger Brown Company', 'RBC Industrial'),
+    ('Est. 2018 • Liber Holdings Group', 'Est. 2018 • SDVOSB · Service-Disabled Veteran-Owned Small Business'),
+    ('Liber Holdings Group</t><t t-else="">Heritage Since 1946', 'SDVOSB · CVE Certified</t><t t-else="">Heritage Since 1946'),
+    ('Distributed regionally via', 'Distributed nationwide via'),
+    ('<span class="badge bg-danger mb-3 px-2 py-1 small text-uppercase">', '<span class="badge bg-danger mb-3 px-2 py-1 small text-uppercase text-wrap text-start lh-sm" style="white-space: normal; max-width: 100%; display: inline-block;">'),
+    ('<i class="fa fa-map-marker text-danger me-2"/> 3950 Doniphan Dr, Ste P, El Paso, TX 79922', '<i class="fa fa-map-marker text-danger me-2"/> <t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))">30131 Bulverde Ln, #370, Bulverde, TX 78163</t><t t-else="">3950 Doniphan Dr, Ste P, El Paso, TX 79922</t>'),
+    ('<a href="tel:+18327912535" class="text-white text-decoration-none">+1 (832) 791-2535</a>', '<t t-if="website and (website.id == 7 or \'liberindustrial\' in (website.domain or \'\'))"><a href="tel:+18327647979" class="text-white text-decoration-none">+1 (832) 764-7979</a></t><t t-else=""><a href="tel:+18327912535" class="text-white text-decoration-none">+1 (832) 791-2535</a></t>'),
+]
+BRANDS_BLOCK = '<style>\n    /* only needed at desktop 4-up, where unequal copy length would leave\n       ragged card bottoms. Safe to drop — the block still renders correctly. */\n    @media (min-width: 992px) { .liber-brands-pt .card p { min-height: 4.5em; } }\n</style>\n\n<div class="mb-5 pb-4 border-bottom liber-brands-pt">\n    <div class="d-flex align-items-center mb-3">\n        <span class="p-2 bg-danger bg-opacity-10 text-danger rounded me-3"><i class="fa fa-circle-o-notch fa-2x"></i></span>\n        <div>\n            <h2 class="h3 fw-bold mb-0">Bearings, Seals &amp; Power Transmission</h2>\n            <small class="text-muted">Distributed nationwide via <strong>RBC Industrial</strong> (El Paso, TX)</small>\n        </div>\n    </div>\n    <div class="row g-4 mt-1">\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-circle-o-notch"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">SKF</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Bearings &amp; Seals</span>\n                <p class="small text-muted mb-0">Ball, roller and mounted bearings, lubrication systems and Chicago Rawhide seals.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-dot-circle-o"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Timken</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Bearings &amp; Seals</span>\n                <p class="small text-muted mb-0">Tapered and cylindrical roller bearings, Fafnir machine-tool bearings, and National oil seals.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-hdd-o"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Sealmaster</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Mounted Bearings</span>\n                <p class="small text-muted mb-0">Pillow blocks, flanged units and rod ends for food, beverage and aggregate duty.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-link"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Rexnord</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Mounted Bearings &amp; Couplings</span>\n                <p class="small text-muted mb-0">Link-Belt housed units, pillow blocks and Thomas disc couplings for heavy drives.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-bullseye"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Browning</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Sheaves, Bushings &amp; V-Belts</span>\n                <p class="small text-muted mb-0">V-belts, sheaves, QD and split-taper bushings, and mounted bearings for fan drives.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-bars"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">ContiTech · Bando</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Timing Belts &amp; Sprockets</span>\n                <p class="small text-muted mb-0">SilentSync and Eagle synchronous belts, timing sprockets and precision drive belts.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-cog"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Martin Sprocket</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Sprockets &amp; Gears</span>\n                <p class="small text-muted mb-0">Roller chain sprockets, spur gears, timing pulleys and bulk screw conveyors.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-chain"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Diamond Chain <small class="text-muted fw-normal">(Timken)</small></h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Roller Chain</span>\n                <p class="small text-muted mb-0">ANSI and engineered roller chain, attachment chain and connecting links for drives.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-cubes"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Grove Gear</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Gear Reducers</span>\n                <p class="small text-muted mb-0">Worm, helical and shaft-mounted gear reducers for conveyor and process duty.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-cogs"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">SEW-Eurodrive · Nord</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Gearmotors &amp; Drives</span>\n                <p class="small text-muted mb-0">Integral gearmotors, right-angle drives and modular drive packages rated up to 200 hp.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-bolt"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">Leeson · Marathon · Techtop</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Motors &amp; Drives</span>\n                <p class="small text-muted mb-0">General-purpose, severe-duty and washdown AC motors and NEMA premium TEFC motors.</p>\n            </div>\n        </div>\n\n        <div class="col-md-6 col-lg-3">\n            <div class="card h-100 border rounded-3 p-3 bg-light shadow-sm">\n                <div class="d-flex align-items-center mb-1">\n                    <span class="text-danger me-2"><i class="fa fa-life-ring"></i></span>\n                    <h5 class="fw-bold text-dark mb-0">McGill</h5>\n                </div>\n                <span class="badge bg-secondary mb-2 align-self-start">Cam Followers &amp; Bearings</span>\n                <p class="small text-muted mb-0">Cam followers, track rollers and mounted bearings for cam-driven and indexing machinery.</p>\n            </div>\n        </div>\n\n    </div>\n</div>'
+NEW_CARDS = [('Diamond Chain (Timken)', 'Roller Chain', 'Premium ANSI roller chain and attachment chain for drives and conveyors.'), ('Leeson · Marathon · Techtop', 'Industrial Motors', 'General-purpose, severe-duty and washdown AC motors.')]
+SKIP_KEYS = ("tooling_components_theme.", "rbc_industrial_theme.", "globe_electric_theme.")
+
+
+def apply_pairs(text):
+    out = text or ""
+    for find, repl in PAIRS:
+        if find in out:
+            out = out.replace(find, repl)
+    return out
+
+
+def fix_timeline_year(text):
+    # the RBC founding node showed 1987: RBC was founded in 1946
+    i = text.find("RBC Industrial — Founded 1946</h3>")
+    if i < 0:
+        return text
+    j = text.find('o_liber_tl_year">1987<', i)
+    k = text.find("o_liber_tl_row", i)
+    if j < 0 or (0 <= k < j):
+        return text
+    return text[:j] + 'o_liber_tl_year">1946<' + text[j + len('o_liber_tl_year">1987<'):]
+
+
+def card_bounds(text, idx):
+    # the <div class="col..."> element that contains position idx
+    start = text.rfind('<div class="col', 0, idx)
+    if start < 0:
+        return False
+    depth = 0
+    pos = start
+    while True:
+        o = text.find("<div", pos)
+        c = text.find("</div>", pos)
+        if c < 0:
+            return False
+        if 0 <= o < c:
+            depth += 1
+            pos = o + 4
+        else:
+            depth -= 1
+            pos = c + 6
+            if depth == 0:
+                return (start, pos)
+
+
+def set_inner(block, marker, closing, value):
+    i = block.find(marker)
+    if i < 0:
+        return block
+    a = block.find(">", i) + 1
+    b = block.find(closing, a)
+    return block[:a] + value + block[b:] if b > 0 else block
+
+
+def fix_brand_grid(text):
+    # Dale's 01-brands-section.html (rev 3 grid, confirmed unchanged in rev 4): 12 cards, replaces the whole
+    # "Bearings, Seals & Power Transmission" group. Idempotent (the block carries the liber-brands-pt class).
+    if "liber-brands-pt" in text:
+        return text
+    h = text.find("Bearings, Seals &amp; Power Transmission")
+    if h < 0:
+        return text
+    start = text.rfind('<div class="mb-5 pb-4 border-bottom', 0, h)
+    if start < 0:
+        return text
+    depth = 0
+    pos = start
+    end = -1
+    while True:
+        o = text.find("<div", pos)
+        c = text.find("</div>", pos)
+        if c < 0:
+            break
+        if 0 <= o < c:
+            depth += 1
+            pos = o + 4
+        else:
+            depth -= 1
+            pos = c + 6
+            if depth == 0:
+                end = pos
+                break
+    if end < 0:
+        return text
+    return text[:start] + BRANDS_BLOCK + text[end:]
+
+def li_first(text):
+    # Liber Industrial site: the contact page leads with Liber Industrial's own details
+    name = '<div class="o_liber_company_name">Liber Industrial</div>'
+    lst = '<div class="o_liber_company_list">'
+    i = text.find(name)
+    j = text.find(lst)
+    if i < 0 or j < 0:
+        return text
+    start = text.rfind('<div class="o_liber_company_block">', 0, i)
+    if start < 0 or start == j + len(lst):
+        return text
+    depth = 0
+    pos = start
+    end = -1
+    while True:
+        o = text.find("<div", pos)
+        c = text.find("</div>", pos)
+        if c < 0:
+            break
+        if 0 <= o < c:
+            depth += 1
+            pos = o + 4
+        else:
+            depth -= 1
+            pos = c + 6
+            if depth == 0:
+                end = pos
+                break
+    if end < 0:
+        return text
+    block = text[start:end]
+    text = text[:start] + text[end:]
+    k = text.find(lst) + len(lst)
+    return text[:k] + block + text[k:]
+
+
+def correct(text):
+    return fix_brand_grid(fix_timeline_year(apply_pairs(text)))
+
+
+# the two Liber sites: Liber Holdings and Liber Industrial (never a sibling-theme website)
+flags = env["ir.model.fields"].sudo().search([("model", "=", "website"), ("name", "in", ["x_tc_theme_active", "x_rbc_theme_active", "x_globe_theme_active", "x_tooling_theme_active"])]).mapped("name")
+sites = env["website"]
+for w in env["website"].sudo().search([]):
+    dom = w.domain or ""
+    name = (w.name or "").lower()
+    is_liber = ("liberholdings" in dom or "liberindustrial" in dom or w.id in (1, 7)
+                or name.startswith("liber holdings") or name.startswith("liber industrial"))
+    claimed = False
+    for f in flags:
+        if w[f]:
+            claimed = True
+    if is_liber and not claimed:
+        sites |= w
+if sites:
+    View = env["ir.ui.view"].sudo().with_context(active_test=False, lang="en_US")
+    Page = env["website.page"].sudo().with_context(active_test=False, lang="en_US")
+    pages = Page.search([("website_id", "in", sites.ids)])
+    views = View.search([("website_id", "in", sites.ids)]) | pages.mapped("view_id")
+    shared = View.browse(5728).exists()
+    if shared and (not shared.website_id or shared.website_id in sites):
+        views |= shared
+    fixed = 0
+    for view in views:
+        if (view.key or "").startswith(SKIP_KEYS) or view.type != "qweb":
+            continue
+        arch = view.arch_db or ""
+        new = correct(arch)
+        # Request a Quote links in the Liber sites' own (edited) pages -> the standalone /request-quote page.
+        # Only views that belong to a Liber website: shared views are left alone (other sites keep /quote).
+        if view.website_id and view.website_id in sites:
+            for a, b in (('href="/quote"', 'href="/request-quote"'), ('href="/quote?', 'href="/request-quote?'),
+                         ("'/quote?product_id=%s' % product.id", "'/request-quote?product_id=%s' % product.id"),
+                         ('href="/quote#', 'href="/request-quote#')):
+                if a in new:
+                    new = new.replace(a, b)
+        site = view.website_id
+        if site and ("liberindustrial" in (site.domain or "") or site.id == 7 or (site.name or "").lower().startswith("liber industrial")):
+            new = li_first(new)
+        if new != arch:
+            view.write({"arch_db": new})
+            fixed += 1
+    for page in pages:
+        vals = {}
+        for fname in ("website_meta_title", "website_meta_description"):
+            cur = page[fname] or ""
+            new = apply_pairs(cur)
+            if new != cur:
+                vals[fname] = new
+        if vals:
+            page.write(vals)
+
+    # Shop in the top menu of both Liber sites (view-only catalog, Request a Quote)
+    for site in sites:
+        if site.menu_id and not env["website.menu"].sudo().search([("website_id", "=", site.id), ("url", "in", ["/shop", "/es_MX/shop"])], limit=1):
+            env["website.menu"].sudo().create({"name": "Shop", "url": "/shop", "sequence": 15, "parent_id": site.menu_id.id, "website_id": site.id})
+
+    # menu items on the Liber sites that still open /quote
+    for menu in env["website.menu"].sudo().search([("website_id", "in", sites.ids), ("url", "in", ["/quote", "/es_MX/quote"])]):
+        menu.write({"url": "/request-quote"})
+
+    # /quote and /quote-received as real pages: Import Module never loads the Python routes, so without these
+    # pages the Request a Quote button returns 404. When the module is repository-deployed the route still wins.
+    for site in sites:
+        for url, tpl in (("/quote", "liber_holdings_theme.quote_page"), ("/quote-received", "liber_holdings_theme.quote_received_page"), ("/request-quote", "liber_holdings_theme.request_quote_page"), ("/request-quote-received", "liber_holdings_theme.request_quote_received_page")):
+            if Page.search_count([("url", "=", url), ("website_id", "=", site.id)]):
+                continue
+            key = "liber_holdings_theme.liber_page_%s_%s" % (url.strip("/").replace("-", "_"), site.id)
+            pview = View.search([("key", "=", key), ("website_id", "=", site.id)], limit=1)
+            if not pview:
+                pview = View.create({"name": "Liber %s (%s)" % (url, site.name), "type": "qweb", "key": key, "website_id": site.id,
+                                     "arch": '<t t-name="%s"><t t-call="%s"/></t>' % (key, tpl)})
+            Page.create({"url": url, "view_id": pview.id, "website_id": site.id, "is_published": True, "website_indexed": False})
+
+# Shop / category <title>: edited per-website copies of liber_holdings_theme.products_shop_meta on the live database
+# (views 4971 / 4972) still hard-code "Industrial Spare Parts Shop" and a Liber Holdings meta description on every
+# site (Dale, 28 Sep). Reset any such copy to the module's current version. All websites; idempotent.
+ShopView = env["ir.ui.view"].sudo().with_context(active_test=False, lang="en_US")
+base_meta = env.ref("liber_holdings_theme.products_shop_meta", raise_if_not_found=False)
+if base_meta:
+    for copy in ShopView.search([("key", "=", "liber_holdings_theme.products_shop_meta"), ("website_id", "!=", False)]):
+        if "Industrial Spare Parts Shop" in (copy.arch_db or ""):
+            copy.write({"arch_db": base_meta.with_context(lang="en_US").arch_db})
+log("Liber content corrections rev 4 applied on %s Liber website(s): %s" % (len(sites), sites.ids))
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run" eval="[[ref('action_liber_content_corrections')]]"/>
+</odoo>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Knowledge Base index: compact list (default) or cards, no author, short text -->
+    <template id="tc_blog_index" inherit_id="website_blog.blog_post_short" name="Tooling Components: Knowledge Base" priority="60">
+        <xpath expr="//div[@id='o_wblog_posts_loop_container'][last()]" position="before">
+            <div t-if="website.x_tc_theme_active" class="tc-kb-head">
+                <div>
+                    <h1>Technical Resources</h1>
+                    <p>Precision engineering insights, application notes and technical guides — written for mold makers, die designers and plant engineers.</p>
+                </div>
+                <t t-set="tc_view" t-value="request.params.get('view') == 'cards' and 'cards' or 'list'"/>
+                <div class="tc-view-toggle" role="group" aria-label="Layout">
+                    <a t-att-href="request.httprequest.path" t-attf-class="#{'active' if tc_view == 'list' else ''}" title="List view"><i class="fa fa-th-list"/></a>
+                    <a t-att-href="request.httprequest.path + '?view=cards'" t-attf-class="#{'active' if tc_view == 'cards' else ''}" title="Card view"><i class="fa fa-th-large"/></a>
+                </div>
+            </div>
+        </xpath>
+        <xpath expr="//t[@t-call='website_blog.posts_loop']" position="replace">
+            <t t-if="website.x_tc_theme_active">
+                <div t-if="not posts" class="tc-muted py-4">No articles found.</div>
+                <div t-attf-class="tc-kb-#{tc_view}">
+                    <article t-foreach="posts" t-as="post" class="tc-kb-row">
+                        <t t-set="cp" t-value="post.cover_properties or ''"/><t t-set="thumb" t-value="cp.split('url(')[1].split(')')[0].replace('&quot;', '').replace(&quot;'&quot;, '').replace('\\', '') if 'url(' in cp else ''"/>
+                        <t t-set="pc" t-value="post.content or ''"/>
+                        <t t-set="img_at" t-value="pc.find('&lt;img')"/>
+                        <t t-if="not thumb and img_at &gt;= 0 and 'src=&quot;' in pc[img_at:img_at + 600]" t-set="thumb" t-value="pc[img_at:img_at + 600].split('src=&quot;')[1].split('&quot;')[0]"/>
+                        <a t-att-href="post.website_url" class="tc-kb-thumb">
+                            <img t-if="thumb" t-att-src="thumb" t-att-alt="post.name" loading="lazy" class="tc-kb-thumb-img"/>
+                            <span t-attf-class="tc-kb-brief #{'tc-kb-brief-fallback' if thumb else ''}">
+                                <span class="tc-kb-brief-top"><b>TC</b><em t-out="'Ficha técnica' if ((request.env.lang or '')[:2] == 'es') else 'Technical brief'"/></span>
+                                <strong t-out="post.name"/>
+                                <i/><i/>
+                            </span>
+                        </a>
+                        <div class="tc-kb-body">
+                            <div class="tc-kb-tags"><span t-foreach="post.tag_ids[:2]" t-as="tag" class="tc-tag" t-out="tag.name"/></div>
+                            <h3><a t-att-href="post.website_url" t-out="post.name"/></h3>
+                            <p t-if="tc_view == 'cards' and post.subtitle" class="tc-kb-sub" t-out="(post.subtitle or '').replace('&amp;mdash;', '—').replace('&amp;ndash;', '–').replace('&amp;nbsp;', ' ').replace('&amp;amp;', '&amp;')"/>
+                        </div>
+                        <time class="tc-kb-date" t-out="post.post_date" t-options="{'widget': 'date'}"/>
+                    </article>
+                </div>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+
+    <!-- Blog post: compact title block instead of the full-width cover band and author bar -->
+    <template id="tc_blog_post" inherit_id="website_blog.blog_post_complete" name="Tooling Components: blog post" priority="60">
+        <xpath expr="//section[@id='o_wblog_post_top'][not(contains(@class, 'rbc-post-head'))]" position="replace">
+            <t t-if="website.x_tc_theme_active">
+                <section id="o_wblog_post_top" class="tc-post-head">
+                    <div class="container">
+                        <nav class="tc-breadcrumbs"><a href="/">Home</a><span class="sep">›</span><a href="/blog">Technical Resources</a></nav>
+                        <div class="tc-kb-tags"><span t-foreach="blog_post.tag_ids" t-as="tag" class="tc-tag" t-out="tag.name"/></div>
+                        <h1 t-field="blog_post.name" id="o_wblog_post_name" placeholder="Blog Post Title"/>
+                        <div t-field="blog_post.subtitle" id="o_wblog_post_subtitle" class="tc-post-sub" placeholder="Subtitle"/>
+                        <div class="tc-post-actions">
+                        </div>
+                        <div class="tc-print-brand">
+                            <img src="/tooling_components_theme/static/src/img/tc_logo.png" alt="Tooling Components"/>
+                            <span>Technical Resources · www.toolingcomponent.com</span>
+                        </div>
+                    </div>
+                </section>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+    </template>
+
+
+    <!-- Print button that does not depend on the post header being replaced -->
+    <template id="tc_blog_print_fallback" inherit_id="website_blog.blog_post_complete" name="TC: print button" priority="70">
+        <xpath expr="//section[@id='o_wblog_post_main']" position="before">
+            <div t-if="website.x_tc_theme_active" class="container tc-print-bar">
+                <button type="button" class="tc-print-btn" onclick="window.print()"><i class="fa fa-print"/> Print / Save as PDF</button>
+            </div>
+            <div t-if="website.x_tc_theme_active" class="tc-print-brand">
+                <img src="/tooling_components_theme/static/src/img/tc_logo.png" alt=""/>
+                <span>Technical Resources &#183; www.toolingcomponent.com</span>
+            </div>
+        </xpath>
+    </template>
+</odoo>

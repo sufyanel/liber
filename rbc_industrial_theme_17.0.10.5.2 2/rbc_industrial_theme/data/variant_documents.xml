@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Variant Sales Description and the retired SEO Description (Dale, 7 + 9 Oct 2026).
+         Same code in both themes; records are keyed, so running it twice is harmless.
+         Every view it adds is attempted in a savepoint with fallback anchors: a customised report or form is
+         skipped (and listed in System Parameter liber_variant_docs.report), it never blocks the import. -->
+    <record id="action_rbc_variant_documents" model="ir.actions.server">
+        <field name="name">RBC Industrial: variant sales description and documents</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Variant Sales Description: field, backend forms, retired SEO Description, printed documents.
+# Requested by Dale on 7 and 9 October 2026. Identical in rbc_industrial_theme and tooling_components_theme:
+# every record below has a fixed key, so whichever theme runs last simply refreshes the same records.
+Fields = env['ir.model.fields'].sudo()
+View = env['ir.ui.view'].sudo().with_context(active_test=False)
+KEY = 'liber_variant_docs.'
+
+# 1. the field (text, translatable, one per variant)
+HELP = ('Brand-specific text for this variant (for example Raymond or Bordignon). Shown on the website product page '
+        'under the product Sales Description, which stays visible, and printed on the delivery slip.')
+fld = Fields.search([('model', '=', 'product.product'), ('name', '=', 'x_variant_description')], limit=1)
+if not fld:
+    Fields.create({'model_id': env.ref('product.model_product_product').id, 'name': 'x_variant_description',
+                   'field_description': 'Variant Sales Description', 'ttype': 'text', 'translate': True, 'help': HELP})
+elif fld.field_description != 'Variant Sales Description' or fld.help != HELP:
+    fld.write({'field_description': 'Variant Sales Description', 'help': HELP})
+
+REPORT = []
+
+def upsert(key, vals):
+    view = View.search([('key', '=', key)], limit=1)
+    vals = dict(vals, key=key, active=True)
+    if view:
+        view.write(vals)
+    else:
+        view = View.create(vals)
+    return view
+
+def hook(key, vals, archs, label):
+    """Create or refresh one extension view with the first arch that fits its parent.
+    Each attempt runs in a savepoint, so a parent view that differs from standard Odoo (another module or
+    a customised report) never breaks the import: that document is skipped and the reason recorded."""
+    for n, arch in enumerate(archs):
+        sp = env.cr.savepoint()
+        try:
+            upsert(key, dict(vals, arch=arch))
+            sp.close(rollback=False)
+            REPORT.append('%s: ok (anchor %s of %s)' % (label, n + 1, len(archs)))
+            return True
+        except Exception as e:
+            sp.close(rollback=True)
+            env.invalidate_all(flush=False)
+            last = str(e).splitlines()[0][:160] if str(e) else 'error'
+    old = View.search([('key', '=', key)], limit=1)
+    if old:
+        sp = env.cr.savepoint()
+        try:
+            old.write({'active': False})
+            sp.close(rollback=False)
+        except Exception:
+            sp.close(rollback=True)
+            env.invalidate_all(flush=False)
+    REPORT.append('%s: SKIPPED, no matching place in the parent view (%s)' % (label, last))
+    return False
+
+# 2. the field on the variant forms (Sales > Products > Product Variants, and the variant pop-up)
+FORM_ARCH = ('<data><xpath expr="//sheet" position="inside"><group string="Variant Sales Description">'
+             '<field name="x_variant_description" nolabel="1" colspan="2" placeholder="Brand-specific text for this variant. '
+             'Printed on the delivery slip and shown on the website under the Sales Description."/></group></xpath></data>')
+for parent_xmlid, vkey in (('product.product_normal_form_view', 'x_variant_description_form'),
+                           ('product.product_variant_easy_edit_view', 'x_variant_description_easy')):
+    parent = env.ref(parent_xmlid, raise_if_not_found=False)
+    if not parent:
+        continue
+    old = View.search([('key', '=', 'website_variant_desc.' + vkey)], limit=1)   # created by earlier versions
+    if old:
+        old.write({'key': KEY + vkey})
+    hook(KEY + vkey, {'name': 'Variant Sales Description', 'type': 'form', 'model': 'product.product', 'mode': 'extension',
+                      'inherit_id': parent.id, 'priority': 99},
+         [FORM_ARCH, FORM_ARCH.replace('//sheet', '//form')], 'variant form ' + vkey)
+
+# 3. SEO Description removed from every product form and list, for everyone (developer mode included):
+#    the website and documents use the Sales Description and the Variant Sales Description only, so a
+#    third description field would only cause inconsistency. The stored text is NOT deleted: it stays in the
+#    database and in Export, so it can still be moved into Variant Sales Description.
+for model_name in ('product.template', 'product.product'):
+    if model_name not in env or 'seo_description' not in env[model_name]._fields:
+        continue
+    hosts = View.search([('model', '=', model_name), ('type', 'in', ('form', 'tree', 'list')),
+                         ('arch_db', 'like', 'seo_description'), ('key', 'not like', KEY + '%')])
+    for host in hosts:
+        arch = host.arch_db or ''
+        if 'name="seo_description"' not in arch and "name='seo_description'" not in arch:
+            continue
+        hide = 'column_invisible' if host.type in ('tree', 'list') else 'invisible'
+        xp = ['<xpath expr="//field[@name=\'seo_description\']" position="attributes">'
+              '<attribute name="%s">1</attribute><attribute name="groups"></attribute></xpath>' % hide]
+        if 'for="seo_description"' in arch or "for='seo_description'" in arch:
+            xp.append('<xpath expr="//label[@for=\'seo_description\']" position="attributes">'
+                      '<attribute name="invisible">1</attribute></xpath>')
+        hook(KEY + 'hide_seo_%s' % host.id, {'name': 'SEO Description removed', 'type': host.type, 'model': model_name,
+                                             'mode': 'extension', 'inherit_id': host.id, 'priority': 999},
+             ['<data>%s</data>' % ''.join(xp), '<data>%s</data>' % xp[0]], 'hide SEO Description in view %s' % host.id)
+
+# 4. printed documents: the brand, and on the delivery slip also the Variant Sales Description.
+#    Odoo leaves the brand out of the product name when a product has only one brand
+#    (for example XH012: Bordignon only), so it is printed on its own line.
+LINES_ARCH = '''
+<t t-name="liber_variant_docs.lines">
+    <t t-if="vd_product">
+        <t t-set="vd_brands" t-value="vd_product.product_template_attribute_value_ids.filtered(lambda v: 'brand' in (v.attribute_id.name or '').lower() or 'manufacturer' in (v.attribute_id.name or '').lower() or 'marca' in (v.attribute_id.name or '').lower())"/>
+        <t t-if="vd_skip_text" t-set="vd_brands" t-value="vd_brands.filtered(lambda v: (v.name or '') not in vd_skip_text)"/>
+        <div t-foreach="vd_brands" t-as="vd_b" class="o_variant_brand"><strong t-out="vd_b.attribute_id.name"/>: <t t-out="vd_b.name"/></div>
+        <t t-if="vd_with_desc" t-set="vd_desc" t-value="'x_variant_description' in vd_product and vd_product.x_variant_description"/>
+        <div t-if="vd_with_desc and vd_desc" class="o_variant_desc text-muted"><t t-out="vd_desc" t-options="{'widget': 'text'}"/></div>
+    </t>
+</t>'''
+LINES_OK = hook(KEY + 'lines', {'name': 'Variant brand and description (documents)', 'type': 'qweb'}, [LINES_ARCH], 'shared lines template')
+
+# Candidate anchors per document, most specific first. Product expressions are guarded, so an anchor that
+# lands in a cell where the variable does not exist prints nothing instead of failing at print time.
+MOVE = "(move.product_id if move else False)"
+DOCS = [
+    ('delivery_moves', 'stock.report_delivery_document', MOVE, True, None, [
+        "//table[@name='stock_move_table']//td[span[@t-field='move.product_id']]",
+        "//table[@name='stock_move_table']//td[.//*[@t-field='move.product_id' or @t-esc='move.product_id.display_name' or @t-out='move.product_id.display_name' or @t-esc='move.product_id.name' or @t-out='move.product_id.name']]",
+        "//td[.//*[@t-field='move.product_id' or @t-esc='move.product_id.display_name' or @t-out='move.product_id.display_name']]",
+        "//table[@name='stock_move_table']//tbody//tr/td[1]",
+        "//*[@t-as='move']//td[1]",
+    ]),
+    ('delivery_backorder', 'stock.report_delivery_document', "(bo_line.product_id if bo_line else False)", True, None, [
+        "//td[span[@t-field='bo_line.product_id']]",
+        "//td[.//*[@t-field='bo_line.product_id' or @t-esc='bo_line.product_id.display_name' or @t-out='bo_line.product_id.display_name']]",
+    ]),
+    ('delivery_done', 'stock.stock_report_delivery_aggregated_move_lines',
+     "(aggregated_lines[line].get('product') if (aggregated_lines and line) else False)", True, None, [
+        "//td[span[@t-esc=\"aggregated_lines[line]['name']\"]]",
+        "//td[.//*[contains(@t-esc, \"['name']\") or contains(@t-out, \"['name']\")]]",
+        "//tr/td[1]",
+    ]),
+    ('delivery_serial', 'stock.stock_report_delivery_has_serial_move_line', "(move_line.product_id if move_line else False)", True, None, [
+        "//td[span[@t-field='move_line.product_id']]",
+        "//td[.//*[@t-field='move_line.product_id' or @t-esc='move_line.product_id.display_name' or @t-out='move_line.product_id.display_name']]",
+        "//td[1]",
+    ]),
+    ('sale_order', 'sale.report_saleorder_document', "(line.product_id if line else False)", False, "(line.name if line else '')", [
+        "//td[@name='td_name']",
+        "//td[.//*[@t-field='line.name']]",
+    ]),
+    ('invoice', 'account.report_invoice_document', "(line.product_id if line else False)", False, "(line.name if line else '')", [
+        "//td[@name='account_invoice_line_name']",
+        "//td[.//*[@t-field='line.name']]",
+    ]),
+]
+for vkey, parent_xmlid, product_expr, with_desc, skip_expr, xpaths in (DOCS if LINES_OK else []):
+    parent = env.ref(parent_xmlid, raise_if_not_found=False)
+    if not parent:
+        REPORT.append('%s: not installed here' % vkey)
+        continue
+    sets = '<t t-set="vd_product" t-value="%s"/><t t-set="vd_with_desc" t-value="%s"/><t t-set="vd_skip_text" t-value="%s"/>' % (
+        product_expr.replace('"', '&quot;'), with_desc, (skip_expr or 'False').replace('"', '&quot;'))
+    archs = ['<data><xpath expr="%s" position="inside"><t t-call="liber_variant_docs.lines">%s</t></xpath></data>' % (
+        xp.replace('"', '&quot;'), sets) for xp in xpaths]
+    hook(KEY + vkey, {'name': 'Variant brand on documents (%s)' % vkey, 'type': 'qweb', 'mode': 'extension',
+                      'inherit_id': parent.id, 'priority': 99}, archs, vkey)
+
+# What happened, readable without logs: Settings > Technical > System Parameters > liber_variant_docs.report
+env['ir.config_parameter'].sudo().set_param('liber_variant_docs.report', ' | '.join(REPORT))
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run">
+        <value eval="[ref('rbc_industrial_theme.action_rbc_variant_documents')]"/>
+    </function>
+</odoo>

@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Invoice Comparison: one dashboard per company and year, like the Threshold Dashboard. -->
+    <record id="model_x_invcmp_dashboard" model="ir.model">
+        <field name="name">Invoice Comparison Dashboard</field>
+        <field name="model">x_invcmp_dashboard</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_invcmp_period" model="ir.model">
+        <field name="name">Invoice Comparison Period</field>
+        <field name="model">x_invcmp_period</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_invcmp_customer" model="ir.model">
+        <field name="name">Invoice Comparison Customer</field>
+        <field name="model">x_invcmp_customer</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_invcmp_cell" model="ir.model">
+        <field name="name">Invoice Comparison Figure</field>
+        <field name="model">x_invcmp_cell</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_invcmp_budget" model="ir.model">
+        <field name="name">Invoice Comparison Budget Share</field>
+        <field name="model">x_invcmp_budget</field>
+        <field name="info">The part of one analytic budget line that a dashboard counts for one customer and month.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">char</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_active" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_active</field>
+        <field name="field_description">Active</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+        <field name="required" eval="True"/>
+        <field name="help">The most recent year of the comparison.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_years_count" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_years_count</field>
+        <field name="field_description">Years Compared</field>
+        <field name="ttype">integer</field>
+        <field name="help">How many years are shown side by side, ending with Year.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_peer_company_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_peer_company_ids</field>
+        <field name="field_description">Also Include Companies</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.company</field>
+        <field name="relation_table">x_invcmp_dash_peer_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">company_id</field>
+        <field name="help">Add a company to combine its invoicing with this one, for example Roger Brown Co. into RBC Industrial.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_rollup_parents" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_rollup_parents</field>
+        <field name="field_description">Group Under Parent Customer</field>
+        <field name="ttype">boolean</field>
+        <field name="help">Invoices to a delivery or accounts payable contact are shown under the top-level customer.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_include_refunds" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_include_refunds</field>
+        <field name="field_description">Deduct Credit Notes</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_exclude_group" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_exclude_group</field>
+        <field name="field_description">Exclude Group Companies</field>
+        <field name="ttype">boolean</field>
+        <field name="help">Leaves out sales between the companies of this database.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_exclude_partner_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_exclude_partner_ids</field>
+        <field name="field_description">Also Exclude Contacts</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.partner</field>
+        <field name="relation_table">x_invcmp_dash_excl_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">partner_id</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_use_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_use_budget</field>
+        <field name="field_description">Include Budget</field>
+        <field name="ttype">boolean</field>
+        <field name="help">Months still to come in the current year use the analytic budget of each customer.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_budget_post_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_budget_post_ids</field>
+        <field name="field_description">Budgetary Positions</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.budget.post</field>
+        <field name="relation_table">x_invcmp_dash_post_rel</field>
+        <field name="column1">dashboard_id</field>
+        <field name="column2">post_id</field>
+        <field name="help">Leave empty to use every position that contains an income account.</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_custom_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_custom_from</field>
+        <field name="field_description">Custom Range From</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_custom_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_custom_to</field>
+        <field name="field_description">Custom Range To</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_currency_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_currency_code</field>
+        <field name="field_description">Currency</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_refreshed" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_refreshed</field>
+        <field name="field_description">Last Refreshed</field>
+        <field name="ttype">datetime</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_note" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_note</field>
+        <field name="field_description">Notes</field>
+        <field name="ttype">text</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_code" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_code</field>
+        <field name="field_description">Code</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_date_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_date_from</field>
+        <field name="field_description">Date From</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_date_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_date_to</field>
+        <field name="field_description">Date To</field>
+        <field name="ttype">date</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_is_future" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_is_future</field>
+        <field name="field_description">Future Period</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_is_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_is_year</field>
+        <field name="field_description">Full Year</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_is_custom" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_is_custom</field>
+        <field name="field_description">Custom Range</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_invoiced" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_invoiced</field>
+        <field name="field_description">Invoiced</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_budget</field>
+        <field name="field_description">Budget (months to come)</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_total</field>
+        <field name="field_description">Outlook</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_prev_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_prev_total</field>
+        <field name="field_description">Same Period Last Year</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_customers" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_customers</field>
+        <field name="field_description">Customers</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_new_customers" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_new_customers</field>
+        <field name="field_description">New Customers</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_period__x_lost_customers" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_period"/>
+        <field name="name">x_lost_customers</field>
+        <field name="field_description">Lapsed Customers</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Customer</field>
+        <field name="ttype">char</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_partner_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_partner_id</field>
+        <field name="field_description">Contact</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.partner</field>
+        <field name="on_delete">set null</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_partner_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_partner_ids</field>
+        <field name="field_description">Contacts Included</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.partner</field>
+        <field name="relation_table">x_invcmp_cust_partner_rel</field>
+        <field name="column1">customer_id</field>
+        <field name="column2">partner_id</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Rank</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_total</field>
+        <field name="field_description">This Year</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_prev_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_prev_total</field>
+        <field name="field_description">Last Year</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_growth" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_growth</field>
+        <field name="field_description">Growth %</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_budget</field>
+        <field name="field_description">Budget (months to come)</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_is_new" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_is_new</field>
+        <field name="field_description">New Customer</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_is_lost" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_is_lost</field>
+        <field name="field_description">Lapsed Customer</field>
+        <field name="ttype">boolean</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_dashboard</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_customer_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_customer_id</field>
+        <field name="field_description">Customer</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_customer</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_month" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_month</field>
+        <field name="field_description">Month</field>
+        <field name="ttype">integer</field>
+        <field name="help">1 to 12, or 0 for the custom range.</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_invoiced" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_invoiced</field>
+        <field name="field_description">Invoiced</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_budget" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_budget</field>
+        <field name="field_description">Budget</field>
+        <field name="ttype">float</field>
+    </record>
+
+    <record id="field_x_invcmp_cell__x_total" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_total</field>
+        <field name="field_description">Total</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_invcmp_cell__x_label" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_cell"/>
+        <field name="name">x_label</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Description</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_dashboard_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_dashboard_id</field>
+        <field name="field_description">Dashboard</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_dashboard</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_customer_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_customer_id</field>
+        <field name="field_description">Customer</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_invcmp_customer</field>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_partner_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_partner_id</field>
+        <field name="field_description">Analytic Partner</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.partner</field>
+        <field name="on_delete">set null</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_month" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_month</field>
+        <field name="field_description">Month</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_label" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_label</field>
+        <field name="field_description">Period</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_amount</field>
+        <field name="field_description">Budget Counted</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_planned" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_planned</field>
+        <field name="field_description">Line Planned Amount</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_line_from" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_line_from</field>
+        <field name="field_description">Line From</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_line_to" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_line_to</field>
+        <field name="field_description">Line To</field>
+        <field name="ttype">date</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_budget_line_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_budget_line_id</field>
+        <field name="field_description">Budget Line</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">crossovered.budget.lines</field>
+        <field name="on_delete">set null</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_budget_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_budget_id</field>
+        <field name="field_description">Budget</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">crossovered.budget</field>
+        <field name="on_delete">set null</field>
+    </record>
+    <record id="field_x_invcmp_budget__x_analytic_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_budget"/>
+        <field name="name">x_analytic_id</field>
+        <field name="field_description">Analytic Account</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">account.analytic.account</field>
+        <field name="on_delete">set null</field>
+    </record>
+
+    <!-- one2many fields last: their inverse many2one must already exist -->
+    <record id="field_x_invcmp_dashboard__x_period_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_period_ids</field>
+        <field name="field_description">Periods</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_invcmp_period</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+
+    <record id="field_x_invcmp_dashboard__x_customer_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="name">x_customer_ids</field>
+        <field name="field_description">Customers</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_invcmp_customer</field>
+        <field name="relation_field">x_dashboard_id</field>
+    </record>
+
+    <record id="field_x_invcmp_customer__x_cell_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_invcmp_customer"/>
+        <field name="name">x_cell_ids</field>
+        <field name="field_description">Figures</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_invcmp_cell</field>
+        <field name="relation_field">x_customer_id</field>
+    </record>
+
+    <!-- the real order, now that the fields it names exist -->
+    <record id="model_x_invcmp_dashboard" model="ir.model"><field name="order">x_year desc, id</field></record>
+    <record id="model_x_invcmp_period" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_invcmp_customer" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_invcmp_cell" model="ir.model"><field name="order">x_customer_id, x_year, x_month, id</field></record>
+    <record id="model_x_invcmp_budget" model="ir.model"><field name="order">x_customer_id, x_year, x_month, id</field></record>
+
+    <!-- Dale, 23 Oct 2026: consolidate duplicate or plant contacts (El Paso Water plants, Adler) under one customer
+         on the dashboards, without merging contacts or touching posted invoices -->
+    <record id="field_res_partner__x_invcmp_report_under_id" model="ir.model.fields">
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="name">x_invcmp_report_under_id</field>
+        <field name="field_description">Report Under (dashboards)</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.partner</field>
+        <field name="on_delete">set null</field>
+        <field name="help">Sales of this contact are shown under the selected customer on the Invoice Comparison and Income Statement dashboards. Use it for plants, ship-to addresses, renamed or replaced companies, including archived contacts. Invoices are not changed.</field>
+    </record>
+</odoo>

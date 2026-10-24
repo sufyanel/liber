@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- What the old Income Statement module held, as data: Income Statement Accounts,
+         Budget Allocation and the Income Statement report wizard. -->
+    <record id="model_x_isr_mapping" model="ir.model">
+        <field name="name">Income Statement Account Mapping</field>
+        <field name="model">x_isr_mapping</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_budget" model="ir.model">
+        <field name="name">Income Statement Budget</field>
+        <field name="model">x_isr_budget</field>
+        <field name="order">id</field>
+        <field name="is_mail_thread" eval="True"/>
+        <field name="is_mail_activity" eval="True"/>
+    </record>
+    <record id="model_x_isr_budget_line" model="ir.model">
+        <field name="name">Income Statement Budget Line</field>
+        <field name="model">x_isr_budget_line</field>
+        <field name="order">id</field>
+    </record>
+    <record id="model_x_isr_report" model="ir.model">
+        <field name="name">Income Statement Report</field>
+        <field name="model">x_isr_report</field>
+        <field name="order">id</field>
+        <field name="transient" eval="True"/>
+    </record>
+    <record id="field_x_isr_mapping__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_mapping"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_isr_mapping__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_mapping"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_mapping"/>
+        <field name="name">x_row_key</field>
+        <field name="field_description">Row</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_sales_revenue" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">sales_revenue</field>
+        <field name="name">Sales Revenue</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_cost_purchased_finished_goods" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">cost_purchased_finished_goods</field>
+        <field name="name">Cost of Purchased Finished Goods</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_variable_overhead_landed_costs" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">variable_overhead_landed_costs</field>
+        <field name="name">Variable Overhead Landed Costs</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_add_back_fixed_overhead" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">add_back_fixed_overhead</field>
+        <field name="name">Add back Fixed Overhead</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_less_variable_operating_expense" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">less_variable_operating_expense</field>
+        <field name="name">Less Variable Operating Expense</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_interest_expense" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">interest_expense</field>
+        <field name="name">Interest Expense</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="field_x_isr_mapping__x_row_key_sel_taxes" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_mapping__x_row_key"/>
+        <field name="value">taxes</field>
+        <field name="name">Taxes</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="field_x_isr_mapping__x_account_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_mapping"/>
+        <field name="name">x_account_ids</field>
+        <field name="field_description">Accounts</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">account.account</field>
+        <field name="relation_table">x_isr_mapping_account_rel</field>
+        <field name="column1">mapping_id</field>
+        <field name="column2">account_id</field>
+    </record>
+    <record id="field_x_isr_budget__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+        <field name="tracking" eval="1"/>
+    </record>
+    <record id="field_x_isr_budget__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Year</field>
+        <field name="ttype">integer</field>
+        <field name="required" eval="True"/>
+        <field name="tracking" eval="1"/>
+    </record>
+    <record id="field_x_isr_budget__x_quarter" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_quarter</field>
+        <field name="field_description">Quarter</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+        <field name="tracking" eval="1"/>
+    </record>
+    <record id="field_x_isr_budget__x_quarter_sel_q1" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_quarter"/>
+        <field name="value">q1</field>
+        <field name="name">Q1</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_budget__x_quarter_sel_q2" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_quarter"/>
+        <field name="value">q2</field>
+        <field name="name">Q2</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_budget__x_quarter_sel_q3" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_quarter"/>
+        <field name="value">q3</field>
+        <field name="name">Q3</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_isr_budget__x_quarter_sel_q4" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_quarter"/>
+        <field name="value">q4</field>
+        <field name="name">Q4</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_isr_budget__x_sales_revenue" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_sales_revenue</field>
+        <field name="field_description">Sales Revenue</field>
+        <field name="ttype">float</field>
+        <field name="tracking" eval="1"/>
+    </record>
+    <record id="field_x_isr_budget__x_state" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_state</field>
+        <field name="field_description">Status</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+        <field name="tracking" eval="1"/>
+    </record>
+    <record id="field_x_isr_budget__x_state_sel_draft" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_state"/>
+        <field name="value">draft</field>
+        <field name="name">Draft</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_budget__x_state_sel_confirmed" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget__x_state"/>
+        <field name="value">confirmed</field>
+        <field name="name">Confirmed</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_budget__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+        <field name="compute">for record in self:
+    record['x_name'] = ('Budget %s %s' % (record.x_year, (record.x_quarter or '').upper())) if record.x_year and record.x_quarter else ''</field>
+        <field name="depends">x_year,x_quarter</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+    </record>
+    <record id="field_x_isr_budget_line__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_budget_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_budget_id</field>
+        <field name="field_description">Budget</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">x_isr_budget</field>
+        <field name="required" eval="True"/>
+        <field name="on_delete">cascade</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_company_id" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_company_id</field>
+        <field name="field_description">Company</field>
+        <field name="ttype">many2one</field>
+        <field name="relation">res.company</field>
+        <field name="related">x_budget_id.x_company_id</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+    </record>
+    <record id="field_x_isr_budget_line__x_sequence" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_sequence</field>
+        <field name="field_description">Sequence</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_line_type</field>
+        <field name="field_description">Line Type</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_cost_purchased_finished_goods" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">cost_purchased_finished_goods</field>
+        <field name="name">Cost of Purchased Finished Goods</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_variable_overhead_landed_costs" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">variable_overhead_landed_costs</field>
+        <field name="name">Variable Overhead Landed Costs</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_add_back_fixed_overhead" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">add_back_fixed_overhead</field>
+        <field name="name">Add back Fixed Overhead</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_less_variable_operating_expense" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">less_variable_operating_expense</field>
+        <field name="name">Less Variable Operating Expense (xxx)</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_selling_general_administrative" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">selling_general_administrative</field>
+        <field name="name">Selling, General &amp; Administrative</field>
+        <field name="sequence">50</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_total_operating_expenses" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">total_operating_expenses</field>
+        <field name="name">Total Operating Expenses</field>
+        <field name="sequence">60</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_interest_expense" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">interest_expense</field>
+        <field name="name">Interest expense (xxx)</field>
+        <field name="sequence">70</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_line_type_sel_taxes" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_budget_line__x_line_type"/>
+        <field name="value">taxes</field>
+        <field name="name">Taxes (xxx)</field>
+        <field name="sequence">80</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_percentage" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_percentage</field>
+        <field name="field_description">Percentage</field>
+        <field name="ttype">float</field>
+    </record>
+    <record id="field_x_isr_budget_line__x_amount" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget_line"/>
+        <field name="name">x_amount</field>
+        <field name="field_description">Calculated Amount</field>
+        <field name="ttype">float</field>
+        <field name="compute">for record in self:
+    record['x_amount'] = (record.x_budget_id.x_sales_revenue or 0.0) * (record.x_percentage or 0.0) / 100.0</field>
+        <field name="depends">x_percentage,x_budget_id.x_sales_revenue</field>
+        <field name="store" eval="True"/>
+        <field name="readonly" eval="True"/>
+    </record>
+    <record id="field_x_isr_report__x_name" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="name">x_name</field>
+        <field name="field_description">Name</field>
+        <field name="ttype">char</field>
+    </record>
+    <record id="field_x_isr_report__x_company_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="name">x_company_ids</field>
+        <field name="field_description">Companies</field>
+        <field name="ttype">many2many</field>
+        <field name="relation">res.company</field>
+        <field name="relation_table">x_isr_report_company_rel</field>
+        <field name="column1">report_id</field>
+        <field name="column2">company_id</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_isr_report__x_report_mode" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="name">x_report_mode</field>
+        <field name="field_description">Report Type</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="field_x_isr_report__x_report_mode_sel_quarterly" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_report_mode"/>
+        <field name="value">quarterly</field>
+        <field name="name">Quarterly</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_report__x_report_mode_sel_yearly" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_report_mode"/>
+        <field name="value">yearly</field>
+        <field name="name">Yearly</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_report__x_year" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="name">x_year</field>
+        <field name="field_description">Current Year</field>
+        <field name="ttype">integer</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_report"/>
+        <field name="name">x_expense_pct_years</field>
+        <field name="field_description">Sales % For</field>
+        <field name="ttype">selection</field>
+        <field name="required" eval="True"/>
+        <field name="help">Number of most-recent years (out of the 5 years pulled into the report) for which the Sales % column is shown. The current year is always included.</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years_sel_1" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="value">1</field>
+        <field name="name">1 Year</field>
+        <field name="sequence">10</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years_sel_2" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="value">2</field>
+        <field name="name">2 Years</field>
+        <field name="sequence">20</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years_sel_3" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="value">3</field>
+        <field name="name">3 Years</field>
+        <field name="sequence">30</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years_sel_4" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="value">4</field>
+        <field name="name">4 Years</field>
+        <field name="sequence">40</field>
+    </record>
+    <record id="field_x_isr_report__x_expense_pct_years_sel_5" model="ir.model.fields.selection">
+        <field name="field_id" ref="field_x_isr_report__x_expense_pct_years"/>
+        <field name="value">5</field>
+        <field name="name">5 Years</field>
+        <field name="sequence">50</field>
+    </record>
+    <!-- one2many last: its inverse must exist -->
+    <record id="field_x_isr_budget__x_line_ids" model="ir.model.fields">
+        <field name="model_id" ref="model_x_isr_budget"/>
+        <field name="name">x_line_ids</field>
+        <field name="field_description">Budget Lines</field>
+        <field name="ttype">one2many</field>
+        <field name="relation">x_isr_budget_line</field>
+        <field name="relation_field">x_budget_id</field>
+    </record>
+    <record id="model_x_isr_budget" model="ir.model"><field name="order">x_year desc, x_quarter, id</field></record>
+    <record id="model_x_isr_budget_line" model="ir.model"><field name="order">x_sequence, id</field></record>
+    <record id="model_x_isr_mapping" model="ir.model"><field name="order">x_company_id, x_row_key, id</field></record>
+</odoo>

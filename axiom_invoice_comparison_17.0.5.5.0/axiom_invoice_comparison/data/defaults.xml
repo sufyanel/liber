@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="default_invcmp_active" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_active"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_invcmp_years" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_years_count"/>
+        <field name="json_value">5</field>
+    </record>
+    <record id="default_invcmp_rollup" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_rollup_parents"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_invcmp_refunds" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_include_refunds"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_invcmp_group" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_exclude_group"/>
+        <field name="json_value">true</field>
+    </record>
+    <record id="default_invcmp_budget" model="ir.default">
+        <field name="field_id" ref="field_x_invcmp_dashboard__x_use_budget"/>
+        <field name="json_value">true</field>
+    </record>
+</odoo>

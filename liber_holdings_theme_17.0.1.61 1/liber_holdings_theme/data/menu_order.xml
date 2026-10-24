@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_liber_menu_order" model="ir.actions.server">
+        <field name="name">Liber: put Home first and point the root at it</field>
+        <field name="model_id" ref="website.model_website"/>
+        <field name="groups_id" eval="[(4, ref('website.group_website_designer'))]"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+
+# Puts the Liber menus in a sensible order and points the root at the home page.
+# Pure data action, so it also runs when the module is installed through
+# Apps > Import Module, which strips Python.
+ORDER = [("home", 10), ("brands", 30), ("blog", 40), ("about", 50), ("contact", 60)]
+Website = env["website"].sudo()
+Menu = env["website.menu"].sudo()
+Page = env["website.page"].sudo()
+
+sites = Website.search([]).filtered(
+    lambda w: "liber" in (w.name or "").lower()
+    or "liberholdings" in (w.domain or "").lower()
+)
+if not sites:
+    sites = Website.search([], limit=1)
+
+report = []
+FLAGS = ("x_rbc_theme_active", "x_tc_theme_active", "x_tooling_theme_active", "x_tooling_components_theme_active")
+for site in sites:
+    # Liber Holdings is view-only (Dale, 9 Oct 2026): no catalog in its menu. Siblings and Liber Industrial untouched.
+    holding = ("industrial" not in (site.name or "").lower()) and not any(f in site._fields and site[f] for f in FLAGS)
+    if holding:
+        catalog = Menu.search([("website_id", "=", site.id), ("url", "=like", "/shop%")])
+        if catalog:
+            report.append("%s: %s catalog menu entry(ies) removed" % (site.name, len(catalog)))
+            catalog.unlink()
+    menus = Menu.search([("website_id", "=", site.id), ("parent_id", "!=", False)])
+    home = menus.filtered(lambda m: (m.url or "") in ("/", "/home"))
+    page = Page.search([
+        ("url", "in", ["/home", "/"]),
+        ("website_id", "in", [site.id, False]),
+        ("is_published", "=", True),
+    ], order="url desc", limit=1)
+
+    # A Home entry has to exist before it can be put first
+    if not home and page:
+        top = Menu.search([("website_id", "=", site.id), ("parent_id", "=", False)], limit=1)
+        if top:
+            home = Menu.create({
+                "name": "Home", "url": page.url, "parent_id": top.id,
+                "website_id": site.id, "sequence": 10,
+            })
+            report.append("%s: Home entry created at %s" % (site.name, page.url))
+
+    for menu in menus | home:
+        url = (menu.url or "").lower()
+        name = (menu.name or "").lower()
+        seq = None
+        for key, value in ORDER:
+            if key == "home" and (url in ("/", "/home") or name in ("home", "inicio")):
+                seq = value
+            elif key != "home" and (key in url or key in name):
+                seq = value
+            if seq is not None:
+                break
+        if seq is not None and menu.sequence != seq:
+            menu.write({"sequence": seq})
+
+    if page and "homepage_url" in site._fields and site.homepage_url != page.url:
+        site.write({"homepage_url": page.url})
+        report.append("%s: root now serves %s" % (site.name, page.url))
+
+    # More than one Contact entry: keep one
+    contacts = Menu.search([("website_id", "=", site.id), ("parent_id", "!=", False),
+                            ("url", "in", ["/contactus", "/contact"])], order="sequence, id")
+    if len(contacts) > 1:
+        extra = contacts[1:]
+        report.append("%s: %s duplicate Contact entry(ies) removed" % (site.name, len(extra)))
+        extra.unlink()
+
+    # More than one Home entry: keep the first and remove the rest
+    homes = Menu.search([("website_id", "=", site.id), ("parent_id", "!=", False),
+                         ("url", "in", ["/", "/home"])], order="sequence, id")
+    if len(homes) > 1:
+        extra = homes[1:]
+        report.append("%s: %s duplicate Home entry(ies) removed" % (site.name, len(extra)))
+        extra.unlink()
+
+    order = Menu.search([("website_id", "=", site.id), ("parent_id", "!=", False)], order="sequence, id")
+    report.append("%s: %s" % (site.name, " > ".join(order.mapped("name"))))
+
+action = {
+    "type": "ir.actions.client",
+    "tag": "display_notification",
+    "params": {"title": "Liber menu order", "type": "success", "sticky": True,
+               "message": " | ".join(report) or "Nothing to change."},
+}
+]]></field>
+    </record>
+
+    <!-- runs on install and on every upgrade, with no Python needed -->
+    <function model="ir.actions.server" name="run" eval="[[ref('action_liber_menu_order')]]"/>
+
+    <menuitem id="menu_liber_menu_order" name="Liber: fix menu order"
+              parent="website.menu_website_configuration" action="action_liber_menu_order"
+              groups="website.group_website_designer" sequence="97"/>
+</odoo>

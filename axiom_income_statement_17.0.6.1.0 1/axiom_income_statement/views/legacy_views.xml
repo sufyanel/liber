@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_x_isr_report_form" model="ir.ui.view">
+        <field name="name">x_isr_report.form</field>
+        <field name="model">x_isr_report</field>
+        <field name="arch" type="xml">
+            <form string="Income Statement">
+                <group>
+                    <field name="x_company_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="x_report_mode"/>
+                    <field name="x_year" string="Year" options="{'enable_formatting': false}" placeholder="Current year"/>
+                    <field name="x_expense_pct_years"/>
+                </group>
+                <footer>
+                    <button name="%(axiom_income_statement.action_isr_report_download)d" string="Download Excel" type="action" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <record id="action_x_isr_report" model="ir.actions.act_window">
+        <field name="name">Income Statement</field>
+        <field name="res_model">x_isr_report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="view_x_isr_budget_tree" model="ir.ui.view">
+        <field name="name">x_isr_budget.tree</field>
+        <field name="model">x_isr_budget</field>
+        <field name="arch" type="xml">
+            <tree string="Budgets">
+                <field name="x_name"/>
+                <field name="x_company_id"/>
+                <field name="x_year" options="{'enable_formatting': false}"/>
+                <field name="x_quarter"/>
+                <field name="x_sales_revenue"/>
+                <field name="x_state" widget="badge" decoration-success="x_state == 'confirmed'" decoration-info="x_state == 'draft'"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_x_isr_budget_form" model="ir.ui.view">
+        <field name="name">x_isr_budget.form</field>
+        <field name="model">x_isr_budget</field>
+        <field name="arch" type="xml">
+            <form string="Budget">
+                <header>
+                    <button name="%(axiom_income_statement.action_isr_budget_confirm)d" string="Confirm" type="action" class="btn-primary" invisible="x_state != 'draft' or not id"/>
+                    <button name="%(axiom_income_statement.action_isr_budget_draft)d" string="Set to Draft" type="action" invisible="x_state != 'confirmed'"/>
+                    <button name="%(axiom_income_statement.action_isr_budget_lines)d" string="Load Budget Lines" type="action" invisible="x_state != 'draft' or not id or x_line_ids"/>
+                    <button name="%(axiom_income_statement.action_isr_budget_duplicate)d" string="Duplicate to Next Quarter" type="action" invisible="not id"/>
+                    <field name="x_state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                </header>
+                <sheet>
+                    <group>
+                        <field name="x_name"/>
+                        <field name="x_company_id" options="{'no_create': True}" readonly="x_state == 'confirmed'"/>
+                        <field name="x_year" options="{'enable_formatting': false}" readonly="x_state == 'confirmed'"/>
+                        <field name="x_quarter" readonly="x_state == 'confirmed'"/>
+                        <field name="x_sales_revenue" readonly="x_state == 'confirmed'" required="x_state == 'draft'"/>
+                    </group>
+                    <notebook>
+                        <page string="Budget Lines">
+                            <field name="x_line_ids" nolabel="1" readonly="x_state == 'confirmed'">
+                                <tree editable="bottom">
+                                    <field name="x_sequence" widget="handle"/>
+                                    <field name="x_line_type"/>
+                                    <field name="x_percentage" string="Percentage (%)"/>
+                                    <field name="x_amount" readonly="1"/>
+                                </tree>
+                            </field>
+                            <div class="text-muted small">Save the budget, then Load Budget Lines adds the eight standard lines.
+                                Confirmed budgets feed the Income Statement report and the Income Statement Dashboard.</div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+    <record id="action_x_isr_budget" model="ir.actions.act_window">
+        <field name="name">Budget Allocation</field>
+        <field name="res_model">x_isr_budget</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="view_x_isr_mapping_tree" model="ir.ui.view">
+        <field name="name">x_isr_mapping.tree</field>
+        <field name="model">x_isr_mapping</field>
+        <field name="arch" type="xml">
+            <tree string="Income Statement Accounts">
+                <field name="x_company_id"/>
+                <field name="x_row_key"/>
+                <field name="x_account_ids" widget="many2many_tags" domain="[]"/>
+            </tree>
+        </field>
+    </record>
+    <record id="view_x_isr_mapping_form" model="ir.ui.view">
+        <field name="name">x_isr_mapping.form</field>
+        <field name="model">x_isr_mapping</field>
+        <field name="arch" type="xml">
+            <form string="Account Mapping">
+                <sheet>
+                    <group>
+                        <field name="x_company_id" options="{'no_create': True}"/>
+                        <field name="x_row_key"/>
+                    </group>
+                    <separator string="Accounts"/>
+                    <field name="x_account_ids" widget="many2many_tags" domain="[]"/>
+                    <div class="text-muted small">Accounts of any company can be mapped, e.g. Roger Brown Co accounts into RBC Industrial.
+                        Used by the Income Statement report and by Load Standard Lines on the dashboards.</div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+    <record id="action_x_isr_mapping" model="ir.actions.act_window">
+        <field name="name">Income Statement Accounts</field>
+        <field name="res_model">x_isr_mapping</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- from a dashboard's settings straight to the mapping and the budgets it reads -->
+    <record id="action_isr_open_mapping" model="ir.actions.server">
+        <field name="name">Income Statement Accounts for this dashboard</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+company_ids = (record.x_company_id | record.x_peer_company_ids).ids
+action = {'type': 'ir.actions.act_window', 'name': 'Income Statement Accounts', 'res_model': 'x_isr_mapping',
+          'views': [[env.ref('axiom_income_statement.view_x_isr_mapping_tree').id, 'list'], [env.ref('axiom_income_statement.view_x_isr_mapping_form').id, 'form']],
+          'domain': [('x_company_id', 'in', company_ids)], 'context': {'default_x_company_id': record.x_company_id.id}, 'target': 'current'}
+]]></field>
+    </record>
+    <record id="action_isr_open_budget" model="ir.actions.server">
+        <field name="name">Budget Allocation for this dashboard</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+company_ids = (record.x_company_id | record.x_peer_company_ids).ids
+action = {'type': 'ir.actions.act_window', 'name': 'Budget Allocation', 'res_model': 'x_isr_budget',
+          'views': [[env.ref('axiom_income_statement.view_x_isr_budget_tree').id, 'list'], [env.ref('axiom_income_statement.view_x_isr_budget_form').id, 'form']],
+          'domain': [('x_company_id', 'in', company_ids), ('x_year', '=', record.x_year)],
+          'context': {'default_x_company_id': record.x_company_id.id, 'default_x_year': record.x_year}, 'target': 'current'}
+]]></field>
+    </record>
+    <record id="view_x_isr_dashboard_form_shortcuts" model="ir.ui.view">
+        <field name="name">x_isr_dashboard.form.shortcuts</field>
+        <field name="model">x_isr_dashboard</field>
+        <field name="inherit_id" ref="axiom_income_statement.view_x_isr_dashboard_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(axiom_income_statement.action_isr_open_mapping)d" type="action" string="Income Statement Accounts" invisible="not id"/>
+                <button name="%(axiom_income_statement.action_isr_open_budget)d" type="action" string="Budget Allocation" invisible="not id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Excel download report removed from the menu (Dale, 23 Oct 2026): the dashboard is the one to use -->
+    <menuitem id="menu_isr_report" name="Income Statement (Excel)" parent="account.menu_finance_reports" action="action_x_isr_report" sequence="110" active="False"/>
+    <menuitem id="menu_isr_budget" name="Budget Allocation" parent="menu_isr_root" action="action_x_isr_budget" sequence="20"/>
+    <menuitem id="menu_isr_mapping" name="Account Mapping" parent="menu_isr_root" action="action_x_isr_mapping" sequence="10"/>
+</odoo>

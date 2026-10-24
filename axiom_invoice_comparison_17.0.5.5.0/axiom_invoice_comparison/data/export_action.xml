@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_invcmp_export" model="ir.actions.server">
+        <field name="name">Download Invoice Comparison</field>
+        <field name="model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="binding_model_id" ref="model_x_invcmp_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+# Workbook for the dashboard: one sheet for the full year and, when the
+# dashboard is showing a quarter or the custom range, one sheet for it.
+# Written as SpreadsheetML 2003 because an imported module cannot use
+# xlsxwriter; Excel and LibreOffice open it with all its formatting.
+
+WINDOW_MONTHS = {'Q1': [1, 2, 3], 'Q2': [4, 5, 6], 'Q3': [7, 8, 9], 'Q4': [10, 11, 12],
+                 'FY': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 'CUSTOM': [0]}
+ACCENT = '#13294B'
+HIGHLIGHT = '#FFF3C4'
+
+
+def esc(value):
+    text = '' if value is None else str(value)
+    return text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
+def sheet_name(text):
+    """Excel refuses \\ / ? * [ ] : in a sheet name and anything over 31 characters."""
+    clean = ''
+    for char in text:
+        clean += '-' if char in '\\/?*[]:' else char
+    return clean[:31]
+
+
+def cell(value, style, number=False, merge=0):
+    attrs = ' ss:StyleID="%s"' % style
+    if merge:
+        attrs += ' ss:MergeAcross="%d"' % merge
+    if value is None or value == '':
+        return '<Cell%s/>' % attrs
+    if number:
+        return '<Cell%s><Data ss:Type="Number">%s</Data></Cell>' % (attrs, repr(round(float(value), 6)))
+    return '<Cell%s><Data ss:Type="String">%s</Data></Cell>' % (attrs, esc(value))
+
+
+def style(sid, bold=False, size=10, color='', fill='', align='Left', number='', border=True):
+    out = '<Style ss:ID="%s"><Alignment ss:Horizontal="%s" ss:Vertical="Center"/>' % (sid, align)
+    out += '<Font ss:FontName="Arial" ss:Size="%d"%s%s/>' % (
+        size, ' ss:Bold="1"' if bold else '', ' ss:Color="%s"' % color if color else '')
+    if fill:
+        out += '<Interior ss:Color="%s" ss:Pattern="Solid"/>' % fill
+    if number:
+        out += '<NumberFormat ss:Format="%s"/>' % number
+    if border:
+        out += '<Borders>'
+        for side in ('Top', 'Bottom', 'Left', 'Right'):
+            out += '<Border ss:Position="%s" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9DEE7"/>' % side
+        out += '</Borders>'
+    return out + '</Style>'
+
+
+MONEY = '#,##0;(#,##0);-'
+PCT = '0.0%;(0.0%);-'
+STYLES = '<Styles>' + ''.join([
+    style('title', True, 16, '#FFFFFF', ACCENT, 'Left', '', False),
+    style('info', False, 9, '#5B6472', '', 'Left', '', False),
+    style('head', True, 10, '#FFFFFF', ACCENT, 'Center'),
+    style('name', False, 10),
+    style('nameNew', False, 10, '', HIGHLIGHT),
+    style('num', False, 10, '', '', 'Right', MONEY),
+    style('numNew', False, 10, '', HIGHLIGHT, 'Right', MONEY),
+    style('pct', False, 10, '#0E7C86', '', 'Right', PCT),
+    style('pctNew', False, 10, '#0E7C86', HIGHLIGHT, 'Right', PCT),
+    style('blank', False, 10, '', '', 'Right'),
+    style('totalName', True, 10, '', '#EEF2F7'),
+    style('total', True, 10, '', '#EEF2F7', 'Right', MONEY),
+    style('totalPct', True, 10, '#0E7C86', '#EEF2F7', 'Right', PCT),
+]) + '</Styles>'
+
+
+def sheet(dashboard, code, label, years, customers, figures):
+    """Customers down the side, the years across, growth between them."""
+    months = WINDOW_MONTHS[code]
+    columns = ['Customer']
+    for index, year in enumerate(years):
+        columns.append(str(year))
+        if index:
+            columns.append('Growth %')
+    columns.append('Budget %d' % years[-1])
+    last = len(columns) - 1
+
+    rows = []
+    rows.append('<Row ss:Height="26">%s</Row>' % cell(
+        'INVOICE COMPARISON  -  %s  -  %s' % (dashboard.x_company_id.name, label), 'title', merge=last))
+    peers = dashboard.x_peer_company_ids.mapped('name')
+    rows.append('<Row>%s</Row>' % cell(
+        'Companies: %s' % ', '.join([dashboard.x_company_id.name] + peers), 'info', merge=last))
+    rows.append('<Row>%s</Row>' % cell(
+        'Current year = invoiced to date plus the budget for months still to come. '
+        'New customers are shaded. Refreshed %s.' % (dashboard.x_refreshed or 'never'),
+        'info', merge=last))
+    rows.append('<Row/>')
+    rows.append('<Row>%s</Row>' % ''.join([cell(c, 'head') for c in columns]))
+
+    totals = [0.0 for unused in years]
+    budget_total = 0.0
+    printed = 0
+    for customer in customers:
+        values, budget = [], 0.0
+        for year in years:
+            amount = 0.0
+            for month in months:
+                pair = figures.get((customer.id, year, month), (0.0, 0.0))
+                amount += pair[0] + pair[1]
+                if year == years[-1]:
+                    budget += pair[1]
+            values.append(amount)
+        if not any(values):
+            continue
+        new = customer.x_is_new
+        line = [cell(customer.x_name, 'nameNew' if new else 'name')]
+        for index, amount in enumerate(values):
+            line.append(cell(amount, 'numNew' if new else 'num', True))
+            totals[index] += amount
+            if index:
+                before = values[index - 1]
+                if before:
+                    line.append(cell((amount - before) / abs(before), 'pctNew' if new else 'pct', True))
+                else:
+                    line.append(cell('', 'blank'))
+        line.append(cell(budget, 'numNew' if new else 'num', True))
+        budget_total += budget
+        rows.append('<Row>%s</Row>' % ''.join(line))
+        printed += 1
+
+    if printed:
+        line = [cell('Total', 'totalName')]
+        for index, amount in enumerate(totals):
+            line.append(cell(amount, 'total', True))
+            if index:
+                before = totals[index - 1]
+                line.append(cell((amount - before) / abs(before), 'totalPct', True) if before
+                            else cell('', 'totalName'))
+        line.append(cell(budget_total, 'total', True))
+        rows.append('<Row>%s</Row>' % ''.join(line))
+
+    widths = '<Column ss:Width="220"/>'
+    for name in columns[1:]:
+        widths += '<Column ss:Width="%d"/>' % (62 if name == 'Growth %' else 92)
+    return ('<Worksheet ss:Name="%s"><Table>%s%s</Table>'
+            '<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">'
+            '<FreezePanes/><FrozenNoSplit/><SplitHorizontal>5</SplitHorizontal>'
+            '<TopRowBottomPane>5</TopRowBottomPane><SplitVertical>1</SplitVertical>'
+            '<LeftColumnRightPane>1</LeftColumnRightPane><ActivePane>0</ActivePane>'
+            '</WorksheetOptions></Worksheet>') % (esc(sheet_name(label)), widths, ''.join(rows))
+
+
+dashboard = record
+if not dashboard:
+    raise UserError("Open an Invoice Comparison dashboard first.")
+dashboard = dashboard.sudo()
+customers = env['x_invcmp_customer'].sudo().search(
+    [('x_dashboard_id', '=', dashboard.id)], order='x_sequence, id')
+if not customers:
+    raise UserError("There are no figures yet. Click Refresh first.")
+
+figures = {}
+for row in env['x_invcmp_cell'].sudo().search_read(
+        [('x_dashboard_id', '=', dashboard.id)],
+        ['x_customer_id', 'x_year', 'x_month', 'x_invoiced', 'x_budget']):
+    figures[(row['x_customer_id'][0], row['x_year'], row['x_month'])] = (
+        row['x_invoiced'], row['x_budget'])
+count = dashboard.x_years_count or 5
+years = list(range(dashboard.x_year - count + 1, dashboard.x_year + 1))
+
+window = env.context.get('invcmp_window') or 'FY'
+if window not in WINDOW_MONTHS:
+    window = 'FY'
+labels = {'FY': 'FY'}
+for period in dashboard.x_period_ids:
+    labels[period.x_code] = period.x_name.replace(' %d' % dashboard.x_year, '') \
+        if period.x_code != 'CUSTOM' else 'Custom ' + period.x_name
+if window == 'CUSTOM' and 'CUSTOM' not in labels:
+    window = 'FY'
+
+sheets = [sheet(dashboard, 'FY', 'Full Year', years, customers, figures)]
+if window != 'FY':
+    sheets.append(sheet(dashboard, window, labels.get(window, window), years, customers, figures))
+
+content = ('<?xml version="1.0"?><?mso-application progid="Excel.Sheet"?>'
+           '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'
+           ' xmlns:o="urn:schemas-microsoft-com:office:office"'
+           ' xmlns:x="urn:schemas-microsoft-com:office:excel"'
+           ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">%s%s</Workbook>') % (
+    STYLES, ''.join(sheets))
+
+attachment = env['ir.attachment'].sudo().create({
+    'name': 'Invoice Comparison %s.xls' % dashboard.x_name,
+    'type': 'binary',
+    'datas': b64encode(content.encode('utf-8')),
+    'res_model': 'x_invcmp_dashboard',
+    'res_id': dashboard.id,
+    'mimetype': 'application/vnd.ms-excel',
+})
+action = {'type': 'ir.actions.act_url', 'url': '/web/content/%s?download=true' % attachment.id,
+          'target': 'self'}
+]]></field>
+    </record>
+</odoo>

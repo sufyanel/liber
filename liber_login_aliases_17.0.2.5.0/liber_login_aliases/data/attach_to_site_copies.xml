@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- A website whose login page was edited (Website Builder or a theme) has its own copy of web.login, and
+         additions to the generic login page never reach such a copy. Attach the alias logic to every site copy
+         directly, as Odoo does with existing extensions when it creates the copy. Runs on install / upgrade. -->
+    <record id="action_attach_to_site_login_copies" model="ir.actions.server">
+        <field name="name">Liber Login Aliases: attach to every website's login page</field>
+        <field name="model_id" ref="base.model_ir_ui_view"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+View = env['ir.ui.view'].sudo().with_context(active_test=False)
+children = []
+for xmlid in ('liber_login_aliases.login_alias_server_fallback', 'liber_login_aliases.login_alias_keep_typed'):
+    child = env.ref(xmlid, raise_if_not_found=False)
+    if child:
+        children.append(child)
+attached = 0
+# 17.0.2.5.0: the browser-side lookup is gone - remove the lookup page and the old scripts (the importer never deletes)
+for old in ('liber_login_aliases.page_login_alias_lookup', 'liber_login_aliases.login_alias_lookup', 'liber_login_aliases.login_alias_script'):
+    rec = env.ref(old, raise_if_not_found=False)
+    if rec:
+        rec.sudo().unlink()
+# the browser-side lookup was removed in 17.0.2.5.0: remove its copies from edited login pages
+View.search([('key', 'like', 'liber_login_aliases_login_alias_script_site_%')]).unlink()
+for site_copy in View.search([('key', '=', 'web.login'), ('website_id', '!=', False)]):
+    for child in children:
+        site_key = '%s_site_%s' % (child.key.replace('.', '_'), site_copy.website_id.id)
+        existing = View.search([('key', '=', site_key)], limit=1)
+        vals = {'name': '%s (%s)' % (child.name, site_copy.website_id.name), 'type': 'qweb', 'key': site_key, 'mode': 'extension', 'priority': child.priority,
+                'inherit_id': site_copy.id, 'website_id': site_copy.website_id.id, 'arch_db': child.arch_db,
+                'active': child.active}
+        if existing:
+            existing.write(vals)
+        else:
+            View.create(vals)
+        attached += 1
+log("Liber Login Aliases: attached to %s website login page copies" % attached)
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run" eval="[[ref('action_attach_to_site_login_copies')]]"/>
+</odoo>

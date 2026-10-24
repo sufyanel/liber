@@ -1,0 +1,19 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_x_isr_dashboard_manager,x_isr_dashboard manager,model_x_isr_dashboard,account.group_account_manager,1,1,1,1
+access_x_isr_dashboard_user,x_isr_dashboard user,model_x_isr_dashboard,account.group_account_user,1,1,0,0
+access_x_isr_line_manager,x_isr_line manager,model_x_isr_line,account.group_account_manager,1,1,1,1
+access_x_isr_line_user,x_isr_line user,model_x_isr_line,account.group_account_user,1,0,0,0
+access_x_isr_period_manager,x_isr_period manager,model_x_isr_period,account.group_account_manager,1,1,1,1
+access_x_isr_period_user,x_isr_period user,model_x_isr_period,account.group_account_user,1,1,1,1
+access_x_isr_value_manager,x_isr_value manager,model_x_isr_value,account.group_account_manager,1,1,1,1
+access_x_isr_value_user,x_isr_value user,model_x_isr_value,account.group_account_user,1,1,1,1
+access_x_isr_part_manager,x_isr_part manager,model_x_isr_part,account.group_account_manager,1,1,1,1
+access_x_isr_part_user,x_isr_part user,model_x_isr_part,account.group_account_user,1,1,1,1
+access_x_isr_mapping_user,x_isr_mapping user,model_x_isr_mapping,account.group_account_user,1,1,1,1
+access_x_isr_mapping_invoice,x_isr_mapping billing,model_x_isr_mapping,account.group_account_invoice,1,1,1,1
+access_x_isr_budget_user,x_isr_budget user,model_x_isr_budget,account.group_account_user,1,1,1,1
+access_x_isr_budget_invoice,x_isr_budget billing,model_x_isr_budget,account.group_account_invoice,1,1,1,1
+access_x_isr_budget_line_user,x_isr_budget_line user,model_x_isr_budget_line,account.group_account_user,1,1,1,1
+access_x_isr_budget_line_invoice,x_isr_budget_line billing,model_x_isr_budget_line,account.group_account_invoice,1,1,1,1
+access_x_isr_report_user,x_isr_report user,model_x_isr_report,account.group_account_user,1,1,1,1
+access_x_isr_report_invoice,x_isr_report billing,model_x_isr_report,account.group_account_invoice,1,1,1,1

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Rebuild every dashboard when the module is installed or upgraded, so figures calculated by an earlier
+         version are replaced straight away instead of after the nightly refresh. -->
+    <record id="action_isr_refresh_all_on_upgrade" model="ir.actions.server">
+        <field name="name">Income Statement: refresh all dashboards (on upgrade)</field>
+        <field name="model_id" ref="model_x_isr_dashboard"/>
+        <field name="state">code</field>
+        <field name="code"><![CDATA[
+refresh = env.ref('axiom_income_statement.action_isr_refresh', raise_if_not_found=False)
+if refresh:
+    for dashboard in env['x_isr_dashboard'].sudo().search([]):
+        refresh.sudo().with_context(active_model='x_isr_dashboard', active_id=dashboard.id, active_ids=[dashboard.id]).run()
+]]></field>
+    </record>
+    <function model="ir.actions.server" name="run" eval="[[ref('action_isr_refresh_all_on_upgrade')]]"/>
+</odoo>
